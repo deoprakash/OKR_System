@@ -1,0 +1,58 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build outputs
+build/
+out/
+coverage/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Environment files
+.env
+.env.*
+
+# Miscellaneous
+*.bak
+*.tmp
+*.orig
+*.rej
+
+# Mac system files
+.AppleDouble
+.LSOverride
+
+# Windows image file caches
+_CACHED_*
+
+# Vite cache
+.vite
+
+# Tailwind JIT cache
+.tailwind

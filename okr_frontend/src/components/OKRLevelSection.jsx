@@ -12,11 +12,6 @@ const OKRLevelSection = ({ level, employeeCode, employeeName, okrDescription, ok
       <input type="text" value={employeeName} onChange={e => onChange('employeeName', e.target.value)} className="w-64 border border-gray-400 rounded px-3 py-2 text-lg text-gray-900 bg-white" />
       <label className="text-xl font-bold text-gray-900 min-w-[140px]">OKR Description</label>
       <input type="text" value={okrDescription} onChange={e => onChange('okrDescription', e.target.value)} className="w-full border border-gray-400 rounded px-3 py-2 text-lg text-gray-900 bg-white" />
-      <select className="w-40 p-2 border border-gray-300 rounded text-lg" value={okrValue} onChange={e => onChange('okrValue', e.target.value)}>
-        {["new value 1", "new value 2", "new value 3"].map((opt, idx) => (
-          <option key={idx} value={opt}>{opt}</option>
-        ))}
-      </select>
     </div>
   </div>
 );

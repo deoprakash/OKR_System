@@ -30,11 +30,7 @@ const OKRWorkspaceLevel3 = () => {
     level2EmployeeName: '',
     level2OKRDescription: '',
     level2OKRValue: EMPLOYEE_LEVELS[0],
-    level3OKRValue: EMPLOYEE_LEVELS[0],
   });
-
-  // ...handlers similar to Level 2, plus for new fields...
-
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 relative">
       <div className="absolute top-8 left-8">
@@ -53,7 +49,7 @@ const OKRWorkspaceLevel3 = () => {
           employeeCode={fields.level2EmployeeCode}
           employeeName={fields.level2EmployeeName}
           okrDescription={fields.level2OKRDescription}
-          okrValue={fields.level2OKRValue}
+          // okrValue and dropdown removed for input-only
           onChange={(field, value) => setFields(f => ({ ...f, [`level2${field.charAt(0).toUpperCase() + field.slice(1)}`]: value }))}
         />
         <div className="border border-black rounded bg-white p-6 mb-8">
@@ -61,104 +57,99 @@ const OKRWorkspaceLevel3 = () => {
             <span className="bg-black text-white px-6 py-1 rounded text-lg font-bold shadow">Level - 3</span>
           </div>
           <FormRow>
-            <LabeledInput label="OKR Date" value={fields.okrDate} onChange={e => setFields(f => ({ ...f, okrDate: e.target.value }))} className="w-32" />
-            <LabeledInput label="OKR Description" value={fields.okrDescription} onChange={e => setFields(f => ({ ...f, okrDescription: e.target.value }))} className="w-full" />
-            <select className="w-40 p-2 border border-gray-300 rounded text-lg" value={fields.level3OKRValue} onChange={e => setFields(f => ({ ...f, level3OKRValue: e.target.value }))}>
-              {EMPLOYEE_LEVELS.map((opt, idx) => (
-                <option key={idx} value={opt}>{opt}</option>
-              ))}
-            </select>
-          </FormRow>
-          <div className="mt-8 mb-8">
-            {fields.keyResults.map((kr, idx) => (
-              <KeyResultInput
-                key={idx}
-                label={`Key Results ${idx + 1}`}
-                value={kr}
-                onChange={e => setFields(f => {
-                  const keyResults = [...f.keyResults];
-                  keyResults[idx] = e.target.value;
-                  return { ...f, keyResults };
-                })}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="flex gap-16 mt-8 mb-8">
-          <div className="flex-1">
-            <div className="font-bold text-lg mb-2">Comments</div>
-            <QuarterInput
-              label="Q1 % Completion"
-              value={fields.quarters[0].percent}
-              onChange={e => setFields(f => {
-                const quarters = [...f.quarters];
-                quarters[0].percent = e.target.value;
-                return { ...f, quarters };
-              })}
-              comment={fields.quarters[0].comment}
-              onCommentChange={e => setFields(f => {
-                const quarters = [...f.quarters];
-                quarters[0].comment = e.target.value;
-                return { ...f, quarters };
-              })}
-            />
-            <QuarterInput
-              label="Q2 % Completion"
-              value={fields.quarters[1].percent}
-              onChange={e => setFields(f => {
-                const quarters = [...f.quarters];
-                quarters[1].percent = e.target.value;
-                return { ...f, quarters };
-              })}
-              comment={fields.quarters[1].comment}
-              onCommentChange={e => setFields(f => {
-                const quarters = [...f.quarters];
-                quarters[1].comment = e.target.value;
-                return { ...f, quarters };
-              })}
-            />
-          </div>
-          <div className="flex-1">
-            <div className="font-bold text-lg mb-2">Comments</div>
-            <QuarterInput
-              label="Q3 % Completion"
-              value={fields.quarters[2].percent}
-              onChange={e => setFields(f => {
-                const quarters = [...f.quarters];
-                quarters[2].percent = e.target.value;
-                return { ...f, quarters };
-              })}
-              comment={fields.quarters[2].comment}
-              onCommentChange={e => setFields(f => {
-                const quarters = [...f.quarters];
-                quarters[2].comment = e.target.value;
-                return { ...f, quarters };
-              })}
-            />
-            <QuarterInput
-              label="Q4 % Completion"
-              value={fields.quarters[3].percent}
-              onChange={e => setFields(f => {
-                const quarters = [...f.quarters];
-                quarters[3].percent = e.target.value;
-                return { ...f, quarters };
-              })}
-              comment={fields.quarters[3].comment}
-              onCommentChange={e => setFields(f => {
-                const quarters = [...f.quarters];
-                quarters[3].comment = e.target.value;
-                return { ...f, quarters };
-              })}
-            />
-          </div>
-        </div>
-        <div className="flex flex-row gap-8 justify-center mt-8">
-          <OKRActionButton>Update OKR</OKRActionButton>
-          <OKRActionButton>Cancel OKR</OKRActionButton>
-        </div>
-      </form>
-    </div>
+                  <LabeledInput label="OKR Date" value={fields.okrDate} onChange={e => setFields(f => ({ ...f, okrDate: e.target.value }))} className="w-32" />
+                  <LabeledInput label="OKR Description" value={fields.okrDescription} onChange={e => setFields(f => ({ ...f, okrDescription: e.target.value }))} className="w-full" />
+                </FormRow>
+                <div className="mt-8 mb-8">
+                  {fields.keyResults.map((kr, idx) => (
+                    <KeyResultInput
+                      key={idx}
+                      label={`Key Results ${idx + 1}`}
+                      value={kr}
+                      onChange={e => setFields(f => {
+                        const keyResults = [...f.keyResults];
+                        keyResults[idx] = e.target.value;
+                        return { ...f, keyResults };
+                      })}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-16 mt-8 mb-8">
+                <div className="flex-1">
+                  <div className="font-bold text-lg mb-2">Comments</div>
+                  <QuarterInput
+                    label="Q1 % Completion"
+                    value={fields.quarters[0].percent}
+                    onChange={e => setFields(f => {
+                      const quarters = [...f.quarters];
+                      quarters[0].percent = e.target.value;
+                      return { ...f, quarters };
+                    })}
+                    comment={fields.quarters[0].comment}
+                    onCommentChange={e => setFields(f => {
+                      const quarters = [...f.quarters];
+                      quarters[0].comment = e.target.value;
+                      return { ...f, quarters };
+                    })}
+                  />
+                  <QuarterInput
+                    label="Q2 % Completion"
+                    value={fields.quarters[1].percent}
+                    onChange={e => setFields(f => {
+                      const quarters = [...f.quarters];
+                      quarters[1].percent = e.target.value;
+                      return { ...f, quarters };
+                    })}
+                    comment={fields.quarters[1].comment}
+                    onCommentChange={e => setFields(f => {
+                      const quarters = [...f.quarters];
+                      quarters[1].comment = e.target.value;
+                      return { ...f, quarters };
+                    })}
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="font-bold text-lg mb-2">Comments</div>
+                  <QuarterInput
+                    label="Q3 % Completion"
+                    value={fields.quarters[2].percent}
+                    onChange={e => setFields(f => {
+                      const quarters = [...f.quarters];
+                      quarters[2].percent = e.target.value;
+                      return { ...f, quarters };
+                    })}
+                    comment={fields.quarters[2].comment}
+                    onCommentChange={e => setFields(f => {
+                      const quarters = [...f.quarters];
+                      quarters[2].comment = e.target.value;
+                      return { ...f, quarters };
+                    })}
+                  />
+                  <QuarterInput
+                    label="Q4 % Completion"
+                    value={fields.quarters[3].percent}
+                    onChange={e => setFields(f => {
+                      const quarters = [...f.quarters];
+                      quarters[3].percent = e.target.value;
+                      return { ...f, quarters };
+                    })}
+                    comment={fields.quarters[3].comment}
+                    onCommentChange={e => setFields(f => {
+                      const quarters = [...f.quarters];
+                      quarters[3].comment = e.target.value;
+                      return { ...f, quarters };
+                    })}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-row gap-8 justify-center mt-8">
+                <OKRActionButton>Update OKR</OKRActionButton>
+                <OKRActionButton>Cancel OKR</OKRActionButton>
+              </div>
+            </form>
+      </div>
   );
-};
+}
 
 export default OKRWorkspaceLevel3;

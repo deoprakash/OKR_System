@@ -15,11 +15,13 @@ const createWindow = () => {
     // Load Vite dev server
     win.loadURL('http://localhost:5173')
   } else {
-    // Load built index.html
-    win.loadFile(path.join(app.getAppPath(), 'index.html'))
+    // Load built index.html from dist
+    win.loadFile(path.join(app.getAppPath(), 'dist', 'index.html'))
   }
 }
 
 app.whenReady().then(() => {
-  Menu.setApplicationMenu(null);
+  // Remove this line to restore the default menu bar
+  // Menu.setApplicationMenu(null);
+  createWindow();
 })

@@ -50,10 +50,6 @@ const OKRWorkspaceLevel5 = () => {
         </FormRow>
         <OKRLevelSection
           level={4}
-          employeeCode={fields.level4EmployeeCode}
-          employeeName={fields.level4EmployeeName}
-          okrDescription={fields.level4OKRDescription}
-          okrValue={fields.level4OKRValue}
           onChange={(field, value) => setFields(f => ({ ...f, [`level4${field.charAt(0).toUpperCase() + field.slice(1)}`]: value }))}
         />
         <div className="border border-black rounded bg-white p-6 mb-8">
@@ -63,11 +59,7 @@ const OKRWorkspaceLevel5 = () => {
           <FormRow>
             <LabeledInput label="OKR Date" value={fields.okrDate} onChange={e => setFields(f => ({ ...f, okrDate: e.target.value }))} className="w-32" />
             <LabeledInput label="OKR Description" value={fields.okrDescription} onChange={e => setFields(f => ({ ...f, okrDescription: e.target.value }))} className="w-full" />
-            <select className="w-40 p-2 border border-gray-300 rounded text-lg" value={fields.level5OKRValue} onChange={e => setFields(f => ({ ...f, level5OKRValue: e.target.value }))}>
-              {EMPLOYEE_LEVELS.map((opt, idx) => (
-                <option key={idx} value={opt}>{opt}</option>
-              ))}
-            </select>
+            
           </FormRow>
           <div className="mt-8 mb-8">
             {fields.keyResults.map((kr, idx) => (

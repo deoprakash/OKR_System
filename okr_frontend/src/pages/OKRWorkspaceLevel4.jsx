@@ -63,11 +63,6 @@ const OKRWorkspaceLevel4 = () => {
           <FormRow>
             <LabeledInput label="OKR Date" value={fields.okrDate} onChange={e => setFields(f => ({ ...f, okrDate: e.target.value }))} className="w-32" />
             <LabeledInput label="OKR Description" value={fields.okrDescription} onChange={e => setFields(f => ({ ...f, okrDescription: e.target.value }))} className="w-full" />
-            <select className="w-40 p-2 border border-gray-300 rounded text-lg" value={fields.level4OKRValue} onChange={e => setFields(f => ({ ...f, level4OKRValue: e.target.value }))}>
-              {EMPLOYEE_LEVELS.map((opt, idx) => (
-                <option key={idx} value={opt}>{opt}</option>
-              ))}
-            </select>
           </FormRow>
           <div className="mt-8 mb-8">
             {fields.keyResults.map((kr, idx) => (

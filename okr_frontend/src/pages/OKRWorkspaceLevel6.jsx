@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
 import FormRow from '../components/FormRow';
 import LabeledInput from '../components/LabeledInput';
 import KeyResultInput from '../components/KeyResultInput';
 import QuarterInput from '../components/QuarterInput';
 import OKRActionButton from '../components/OKRActionButton';
-import SectionTitle from '../components/SectionTitle';
-import Box from '../components/Box';
+import OKRLevelSection from '../components/OKRLevelSection';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const EMPLOYEE_LEVELS = ['new value 1', 'new value 2', 'new value 3'];
 
-const OKRWorkspaceLevel2 = () => {
+const OKRWorkspaceLevel6 = () => {
   const navigate = useNavigate();
   const [fields, setFields] = useState({
     employeeCode: '',
@@ -27,21 +26,19 @@ const OKRWorkspaceLevel2 = () => {
       { percent: '', comment: '' },
       { percent: '', comment: '' },
     ],
-    level1EmployeeCode: '',
-    level1EmployeeName: '',
-    level1OKRDescription: '',
-    level1OKRValue: EMPLOYEE_LEVELS[0],
-    level2OKRValue: EMPLOYEE_LEVELS[0],
+    level5EmployeeCode: '',
+    level5EmployeeName: '',
+    level5OKRDescription: '',
+    level5OKRValue: EMPLOYEE_LEVELS[0],
+    level6OKRValue: EMPLOYEE_LEVELS[0],
   });
-
-  // ...handlers similar to Level 1, plus for new fields...
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 relative">
       <div className="absolute top-8 left-8">
         <BackButton onClick={() => navigate('/')} />
       </div>
-      <h1 className="text-4xl font-bold mb-8 mt-4 text-center">OKR Workspace - Level 2</h1>
+      <h1 className="text-4xl font-bold mb-8 mt-4 text-center">OKR Workspace - Level 6</h1>
       <form className="w-full max-w-6xl mx-auto">
         <FormRow>
           <LabeledInput label="Employee Code" value={fields.employeeCode} onChange={e => setFields(f => ({ ...f, employeeCode: e.target.value }))} className="w-32" />
@@ -49,16 +46,18 @@ const OKRWorkspaceLevel2 = () => {
           <LabeledInput label="Employee Level" value={fields.employeeLevel} onChange={e => setFields(f => ({ ...f, employeeLevel: e.target.value }))} className="w-32" />
           <LabeledInput label="OKR Code" value={fields.okrCode} onChange={e => setFields(f => ({ ...f, okrCode: e.target.value }))} className="w-32" />
         </FormRow>
-        <Box>
-          <SectionTitle>Level - 1</SectionTitle>
-          <FormRow>
-            <LabeledInput label="Employee Code" value={fields.level1EmployeeCode} onChange={e => setFields(f => ({ ...f, level1EmployeeCode: e.target.value }))} className="w-32" />
-            <LabeledInput label="Employee Name" value={fields.level1EmployeeName} onChange={e => setFields(f => ({ ...f, level1EmployeeName: e.target.value }))} className="w-64" />
-            <LabeledInput label="OKR Description" value={fields.level1OKRDescription} onChange={e => setFields(f => ({ ...f, level1OKRDescription: e.target.value }))} className="w-full" />
-          </FormRow>
-        </Box>
-        <Box>
-          <SectionTitle>Level - 2</SectionTitle>
+        <OKRLevelSection
+          level={5}
+          employeeCode={fields.level5EmployeeCode}
+          employeeName={fields.level5EmployeeName}
+          okrDescription={fields.level5OKRDescription}
+          okrValue={fields.level5OKRValue}
+          onChange={(field, value) => setFields(f => ({ ...f, [`level5${field.charAt(0).toUpperCase() + field.slice(1)}`]: value }))}
+        />
+        <div className="border border-black rounded bg-white p-6 mb-8">
+          <div className="w-fit mx-auto -mt-6 mb-4">
+            <span className="bg-black text-white px-6 py-1 rounded text-lg font-bold shadow">Level - 6</span>
+          </div>
           <FormRow>
             <LabeledInput label="OKR Date" value={fields.okrDate} onChange={e => setFields(f => ({ ...f, okrDate: e.target.value }))} className="w-32" />
             <LabeledInput label="OKR Description" value={fields.okrDescription} onChange={e => setFields(f => ({ ...f, okrDescription: e.target.value }))} className="w-full" />
@@ -78,7 +77,7 @@ const OKRWorkspaceLevel2 = () => {
               />
             ))}
           </div>
-        </Box>
+        </div>
         <div className="flex gap-16 mt-8 mb-8">
           <div className="flex-1">
             <div className="font-bold text-lg mb-2">Comments</div>
@@ -156,4 +155,4 @@ const OKRWorkspaceLevel2 = () => {
   );
 };
 
-export default OKRWorkspaceLevel2;
+export default OKRWorkspaceLevel6;

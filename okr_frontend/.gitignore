@@ -56,3 +56,19 @@ _CACHED_*
 
 # Tailwind JIT cache
 .tailwind
+
+# Additional ignores
+/.env
+coverage/
+coverage-final.json
+.cache/
+.parcel-cache/
+*.tgz
+*.seed
+*.pid
+*.pid.lock
+*.tsbuildinfo
+release/
+*.asar
+app/build/
+app/dist/

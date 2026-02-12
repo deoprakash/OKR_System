@@ -58,4 +58,8 @@ export const listLevel7OKRs = () => request(`/api/level7`);
 export const createLevel7OKR = (payload) => request(`/api/level7`, { method: 'POST', body: JSON.stringify(payload) });
 export const updateLevel7OKR = (id, payload) => request(`/api/level7/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(payload) });
 
+// Performance
+export const getEmployeeOKRs = (empCode) => request(`/api/performance/okrs/${encodeURIComponent(empCode)}`);
+export const getOKRHierarchy = (level, okrCode) => request(`/api/performance/${encodeURIComponent(level)}/${encodeURIComponent(okrCode)}`);
+
 export default { getEmployee, createEmployee, updateEmployee, deleteEmployee };

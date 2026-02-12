@@ -8,4 +8,3 @@ const LabeledInput = ({ label, ...props }) => (
 );
 
 export default LabeledInput;
-git

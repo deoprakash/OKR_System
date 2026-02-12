@@ -2,6 +2,7 @@
 
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import Home from './pages/Home';
 import EmployeeMaster from './pages/EmployeeMaster';
 import OKRWorkspaceLevel1 from './pages/OKRWorkspaceLevel1';
@@ -11,8 +12,31 @@ import OKRWorkspaceLevel4 from './pages/OKRWorkspaceLevel4';
 import OKRWorkspaceLevel5 from './pages/OKRWorkspaceLevel5';
 import OKRWorkspaceLevel6 from './pages/OKRWorkspaceLevel6';
 import OKRWorkspaceLevel7 from './pages/OKRWorkspaceLevel7';
+import OKRPerformance from './pages/OKRPerformance';
 
 function App() {
+  // Ensure clicks on inputs re-focus the window (helps Electron when window loses focus)
+  useEffect(() => {
+    function onMouseDown(e) {
+      try {
+        const t = e.target;
+        const isInput = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT');
+        if (isInput && !document.hasFocus && typeof window.focus === 'function') {
+          try { window.focus(); } catch {}
+        }
+        // If the element didn't receive focus, force it after a tiny delay
+        if (isInput) {
+          setTimeout(() => {
+            try {
+              if (t && typeof t.focus === 'function') t.focus();
+            } catch {}
+          }, 10);
+        }
+      } catch {}
+    }
+    document.addEventListener('mousedown', onMouseDown, true);
+    return () => document.removeEventListener('mousedown', onMouseDown, true);
+  }, []);
   return (
     <Router>
       <Routes>
@@ -25,6 +49,7 @@ function App() {
         <Route path="/okr-workspace-level-5" element={<OKRWorkspaceLevel5 />} />
         <Route path="/okr-workspace-level-6" element={<OKRWorkspaceLevel6 />} />
         <Route path="/okr-workspace-level-7" element={<OKRWorkspaceLevel7 />} />
+        <Route path="/okr-performance" element={<OKRPerformance />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

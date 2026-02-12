@@ -16,12 +16,20 @@ export default function Home() {
             This is your modern OKR management app.<br />
             Start organizing your objectives and key results with a clean, white & dark blue theme.
           </p>
-          <button
-            className="mt-4 px-6 py-2 rounded-xl bg-blue-500 text-white font-semibold shadow-blue-glow hover:bg-blue-600 transition"
-            onClick={() => navigate("/okr-menu")}
-          >
-            Smart OKR Designer
-          </button>
+          <div className="flex gap-4 justify-center">
+            <button
+              className="mt-4 px-6 py-2 rounded-xl bg-blue-500 text-white font-semibold shadow-blue-glow hover:bg-blue-600 transition"
+              onClick={() => navigate("/okr-menu")}
+            >
+              Smart OKR Designer
+            </button>
+            <button
+              className="mt-4 px-6 py-2 rounded-xl bg-green-500 text-white font-semibold shadow-blue-glow hover:bg-green-600 transition"
+              onClick={() => navigate("/okr-performance")}
+            >
+              View OKR Performance
+            </button>
+          </div>
         </div>
       </div>
       <Footer />

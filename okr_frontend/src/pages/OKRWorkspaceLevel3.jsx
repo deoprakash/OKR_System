@@ -10,11 +10,13 @@ import OKRLevelSection from '../components/OKRLevelSection';
 import SectionTitle from '../components/SectionTitle';
 import Box from '../components/Box';
 import { listEmployees, listLevel2OKRs, listLevel3OKRs, createLevel3OKR, updateLevel3OKR } from '../lib/api';
+import { useToast } from '../components/ToastProvider';
 
 const EMPLOYEE_LEVELS = ['new value 1', 'new value 2', 'new value 3'];
 
 const OKRWorkspaceLevel3 = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [fields, setFields] = useState({
     employeeCode: '',
     employeeName: '',
@@ -90,7 +92,7 @@ const OKRWorkspaceLevel3 = () => {
     setLevel3All([]);
   };
   const firstInputRef = useRef(null);
-  useEffect(() => { try { firstInputRef.current && firstInputRef.current.focus(); window.focus && window.focus(); } catch {} }, []);
+  useEffect(() => { try { firstInputRef.current && firstInputRef.current.focus(); } catch {} }, []);
 
   const handleSelectEmployee = (e) => {
     const code = Number(e.target.value) || '';
@@ -133,8 +135,8 @@ const OKRWorkspaceLevel3 = () => {
   };
 
   const handleUpdateOKR = async () => {
-    if (percentSum > 100) { alert('Sum of percentages cannot exceed 100%'); return; }
-    if (!fields.level2OkrCode) { alert('Please select a Level-2 OKR to link before saving.'); return; }
+    // if (percentSum > 100) { alert('Sum of percentages cannot exceed 100%'); return; }
+    if (!fields.level2OkrCode) { toast.send('Please select a Level-2 OKR to link before saving.', 'error'); return; }
     try {
       const payload = {
         empCode: Number(fields.employeeCode),
@@ -161,15 +163,15 @@ const OKRWorkspaceLevel3 = () => {
       if (fields.okrCode === 'NEW' || fields.okrCode === '' || fields.okrCode == null) {
         const res = await createLevel3OKR(payload);
         const created = res.data;
-        alert('Created OKR with code: ' + (created.level3OkrCode || created._id));
+        toast.send('Created OKR with code: ' + (created.level3OkrCode || created._id), 'success');
         const l3 = await listLevel3OKRs(); setLevel3All(l3.data || []);
         resetForm();
       } else {
         await updateLevel3OKR(fields.okrCode, payload);
-        alert('OKR updated');
+        toast.send('OKR updated', 'success');
         const l3 = await listLevel3OKRs(); setLevel3All(l3.data || []);
       }
-    } catch (err) { console.error(err); alert('Save failed: ' + (err.message || err)); }
+    } catch (err) { console.error(err); toast.send('Save failed: ' + (err.message || err), 'error'); }
   };
 
   const handleCancel = () => { if (confirm('Cancel OKR Entry and Exit?')) { resetForm(); navigate('/'); } };
@@ -332,11 +334,11 @@ const OKRWorkspaceLevel3 = () => {
                   />
                 </div>
               </div>
-              {percentSum > 100 && (
+              {/* {percentSum > 100 && (
                 <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
-              )}
+              )} */}
               <div className="flex flex-row gap-8 justify-center mt-8">
-                <OKRActionButton disabled={percentSum > 100} onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>Update OKR</OKRActionButton>
+                <OKRActionButton onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>Update OKR</OKRActionButton>
                 <OKRActionButton onClick={(e) => { e.preventDefault(); handleCancel(); }}>Cancel OKR</OKRActionButton>
               </div>
         </form>

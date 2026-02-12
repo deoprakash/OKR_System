@@ -8,9 +8,11 @@ import HelpText from '../components/HelpText';
 const EMPLOYEE_LEVELS = ['1', '2', '3', '4', '5', '6', '7'];
 
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ToastProvider';
 
 const EmployeeMaster = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [designation, setDesignation] = useState('');
@@ -21,9 +23,9 @@ const EmployeeMaster = () => {
     e.preventDefault();
     try {
       const trimmed = String(code || '').trim();
-      if (!trimmed) return alert('Employee Code is required');
+      if (!trimmed) return toast.send('Employee Code is required', 'error');
       const parsedCode = Number(trimmed);
-      if (!Number.isFinite(parsedCode)) return alert('Employee Code must be a valid number');
+      if (!Number.isFinite(parsedCode)) return toast.send('Employee Code must be a valid number', 'error');
 
       const payload = {
         empCode: parsedCode,
@@ -34,42 +36,42 @@ const EmployeeMaster = () => {
 
       // update existing or create new with the provided empCode
       await (await import('../lib/api')).updateEmployee(parsedCode, payload);
-      alert('Employee updated');
+      toast.send('Employee updated', 'success');
     } catch (err) {
       console.error(err);
-      alert('Failed to update: ' + (err.message || err));
+      toast.send('Failed to update: ' + (err.message || err), 'error');
     }
   };
 
   const handleFetch = async (e) => {
     e && e.preventDefault();
     const trimmed = String(code || '').trim();
-    if (!trimmed) return alert('Enter Employee Code to fetch');
+    if (!trimmed) return toast.send('Enter Employee Code to fetch', 'error');
     try {
       const res = await (await import('../lib/api')).getEmployee(trimmed);
       const emp = res.data;
       setName(emp.empName || '');
       setDesignation(emp.empDesignation || '');
       setLevel(emp.empLevel ? String(emp.empLevel) : '');
-      alert('Employee loaded');
+      toast.send('Employee loaded', 'success');
     } catch (err) {
       console.error(err);
-      alert('Failed to fetch: ' + (err.message || err));
+      toast.send('Failed to fetch: ' + (err.message || err), 'error');
     }
   };
 
   const handleDelete = async (e) => {
     e.preventDefault();
     const trimmed = String(code || '').trim();
-    if (!trimmed) return alert('Enter Employee Code to delete');
+    if (!trimmed) return toast.send('Enter Employee Code to delete', 'error');
     if (!confirm('Delete employee ' + trimmed + '?')) return;
     try {
       await (await import('../lib/api')).deleteEmployee(trimmed);
-      alert('Employee deleted');
+      toast.send('Employee deleted', 'success');
       handleCancel();
     } catch (err) {
       console.error(err);
-      alert('Failed to delete: ' + (err.message || err));
+      toast.send('Failed to delete: ' + (err.message || err), 'error');
     }
   };
   const handleCancel = () => {

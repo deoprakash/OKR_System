@@ -10,9 +10,11 @@ import OKRLevelSection from '../components/OKRLevelSection';
 import SectionTitle from '../components/SectionTitle';
 import Box from '../components/Box';
 import { listEmployees, listLevel3OKRs, listLevel4OKRs, createLevel4OKR, updateLevel4OKR } from '../lib/api';
+import { useToast } from '../components/ToastProvider';
 
 const OKRWorkspaceLevel4 = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [fields, setFields] = useState({
     employeeCode: '',
     employeeName: '',
@@ -93,7 +95,6 @@ const OKRWorkspaceLevel4 = () => {
         el.focus();
         if (typeof el.select === 'function') el.select();
       }
-      window.focus && window.focus();
     } catch {}
   };
 
@@ -101,8 +102,7 @@ const OKRWorkspaceLevel4 = () => {
     tryFocus();
     const t1 = setTimeout(tryFocus, 50);
     const t2 = setTimeout(tryFocus, 200);
-    document.addEventListener('visibilitychange', tryFocus);
-    return () => { clearTimeout(t1); clearTimeout(t2); document.removeEventListener('visibilitychange', tryFocus); };
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   const handleSelectEmployee = (e) => {
@@ -146,18 +146,18 @@ const OKRWorkspaceLevel4 = () => {
   };
 
   const handleUpdateOKR = async () => {
-    if (percentSum > 100) { alert('Sum of percentages cannot exceed 100%'); return; }
+    // if (percentSum > 100) { alert('Sum of percentages cannot exceed 100%'); return; }
     // OKR date must not be in the future
     try {
       const okrDate = new Date(fields.okrDate);
       const today = new Date();
       today.setHours(0,0,0,0);
-      if (okrDate > today) { alert('OKR Date must not be in the future'); return; }
+      if (okrDate > today) { toast.send('OKR Date must not be in the future', 'error'); return; }
     } catch (e) {
       // if parsing fails, block save
-      alert('Invalid OKR Date'); return;
+      toast.send('Invalid OKR Date', 'error'); return;
     }
-    if (!fields.level3OkrCode) { alert('Please select a Level-3 OKR to link before saving.'); return; }
+    if (!fields.level3OkrCode) { toast.send('Please select a Level-3 OKR to link before saving.', 'error'); return; }
     try {
       const payload = {
         empCode: Number(fields.employeeCode),
@@ -184,15 +184,15 @@ const OKRWorkspaceLevel4 = () => {
       if (fields.okrCode === 'NEW' || fields.okrCode === '' || fields.okrCode == null) {
         const res = await createLevel4OKR(payload);
         const created = res.data;
-        alert('Created OKR with code: ' + (created.level4OkrCode || created._id));
+        toast.send('Created OKR with code: ' + (created.level4OkrCode || created._id), 'success');
         const l4 = await listLevel4OKRs(); setLevel4All(l4.data || []);
         resetForm();
       } else {
         await updateLevel4OKR(fields.okrCode, payload);
-        alert('OKR updated');
+        toast.send('OKR updated', 'success');
         const l4 = await listLevel4OKRs(); setLevel4All(l4.data || []);
       }
-    } catch (err) { console.error(err); alert('Save failed: ' + (err.message || err)); }
+    } catch (err) { console.error(err); toast.send('Save failed: ' + (err.message || err), 'error'); }
   };
 
   const handleCancel = () => { if (confirm('Cancel OKR Entry and Exit?')) { resetForm(); navigate('/'); } };
@@ -202,7 +202,7 @@ const OKRWorkspaceLevel4 = () => {
       <div className="absolute top-6 left-6">
         <BackButton onClick={() => navigate('/')} />
       </div>
-      <div onClick={() => tryFocus()} className="bg-white rounded-lg shadow-2xl w-[95%] max-w-6xl p-8 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-6xl p-8 overflow-hidden">
         <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 4</h1>
         <form>
           <div className="flex flex-wrap items-center gap-4 mb-4">
@@ -356,11 +356,11 @@ const OKRWorkspaceLevel4 = () => {
                   />
                 </div>
               </div>
-              {percentSum > 100 && (
+              {/* {percentSum > 100 && (
                 <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
-              )}
+              )} */}
               <div className="flex flex-row gap-8 justify-center mt-8">
-                <OKRActionButton disabled={percentSum > 100} onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>Update OKR</OKRActionButton>
+                <OKRActionButton onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>Update OKR</OKRActionButton>
                 <OKRActionButton onClick={(e) => { e.preventDefault(); handleCancel(); }}>Cancel OKR</OKRActionButton>
               </div>
         </form>

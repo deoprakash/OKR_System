@@ -7,10 +7,12 @@ import QuarterInput from '../components/QuarterInput';
 import OKRActionButton from '../components/OKRActionButton';
 import BackButton from '../components/BackButton';
 import { listEmployees, listLevel1OKRs, createLevel1OKR, updateLevel1OKR } from '../lib/api';
+import { useToast } from '../components/ToastProvider';
 
 const OKRWorkspaceLevel1 = () => {
     const navigate = useNavigate();
     const today = new Date().toISOString().slice(0, 10);
+    const toast = useToast();
 
     const [fields, setFields] = useState({
     employeeCode: '',
@@ -99,7 +101,7 @@ const OKRWorkspaceLevel1 = () => {
     setOkrs([]);
   };
   const firstInputRef = useRef(null);
-  useEffect(() => { try { firstInputRef.current && firstInputRef.current.focus(); window.focus && window.focus(); } catch {} }, []);
+  useEffect(() => { try { firstInputRef.current && firstInputRef.current.focus(); } catch {} }, []);
 
   const populateFromOkr = (okr) => {
     setSelectedOkrId(okr._id);
@@ -139,9 +141,9 @@ const OKRWorkspaceLevel1 = () => {
 
   const handleSave = async () => {
     // Validation
-    if (!fields.employeeCode) return alert('Please select an employee.');
+    if (!fields.employeeCode) return toast.send('Please select an employee.', 'error');
     const sum = sumPercents();
-    if (sum > 100) return alert('Sum of quarter percentages must not exceed 100%.');
+    // if (sum > 100) return alert('Sum of quarter percentages must not exceed 100%.');
 
     const payload = {
       empLevel: Number(fields.employeeLevel) || 1,
@@ -168,12 +170,12 @@ const OKRWorkspaceLevel1 = () => {
     try {
       if (selectedOkrCode && selectedOkrCode !== 'NEW') {
         await updateLevel1OKR(selectedOkrCode, payload);
-        alert('OKR updated successfully.');
+        toast.send('OKR updated successfully.', 'success');
         await fetchOkrsForEmployee();
       } else {
         const res = await createLevel1OKR(payload);
         const created = res && res.data ? res.data : null;
-        alert(`OKR created. New OKR Code: ${created ? created.level1OkrCode : 'unknown'}`);
+        toast.send(`OKR created. New OKR Code: ${created ? created.level1OkrCode : 'unknown'}`, 'success');
         await fetchOkrsForEmployee();
         if (created) {
           // clear form after create
@@ -181,7 +183,7 @@ const OKRWorkspaceLevel1 = () => {
         }
       }
     } catch (err) {
-      alert('Network error while saving OKR');
+      toast.send('Network error while saving OKR', 'error');
     }
   };
 
@@ -335,11 +337,11 @@ const OKRWorkspaceLevel1 = () => {
 
           {/* Action buttons */}
 
-          {percentSum > 100 && (
+          {/* {percentSum > 100 && (
             <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
-          )}
+          )} */}
           <div className="flex justify-center gap-6 mt-6">
-            <OKRActionButton type="button" onClick={handleSave} disabled={percentSum > 100}>Update OKR</OKRActionButton>
+            <OKRActionButton type="button" onClick={handleSave}>Update OKR</OKRActionButton>
             <OKRActionButton type="button" onClick={handleCancel}>Cancel OKR</OKRActionButton>
           </div>
         </form>

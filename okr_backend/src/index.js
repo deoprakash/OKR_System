@@ -12,6 +12,7 @@ import level4Routes from "./routes/level4.js";
 import level5Routes from "./routes/level5.js";
 import level6Routes from "./routes/level6.js";
 import level7Routes from "./routes/level7.js";
+import performanceRoutes from "./routes/performance.js";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use("/api/level4", level4Routes);
 app.use("/api/level5", level5Routes);
 app.use("/api/level6", level6Routes);
 app.use("/api/level7", level7Routes);
+app.use("/api/performance", performanceRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not Found" });

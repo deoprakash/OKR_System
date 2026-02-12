@@ -60,6 +60,8 @@ export default function NavBar() {
                       navigate("/okr-workspace-level-6");
                     } else if (item === "Level 7 OKR Designer") {
                       navigate("/okr-workspace-level-7");
+                    } else if (item === "View Your OKRs") {
+                      navigate("/okr-performance");
                     }
                   }}
                 >

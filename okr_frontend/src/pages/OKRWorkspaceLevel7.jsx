@@ -154,7 +154,6 @@ const OKRWorkspaceLevel7 = () => {
       today.setHours(0,0,0,0);
       if (okrDate > today) { toast.send('OKR Date must not be in the future', 'error'); return; }
     } catch (e) { toast.send('Invalid OKR Date', 'error'); return; }
-    } catch (e) { toast.send('Invalid OKR Date', 'error'); return; }
 
     if (!fields.level6OkrCode) { toast.send('Please select a Level-6 OKR to link before saving.', 'error'); return; }
 

@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: okr-backend
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: Dockerfile
+
+# Note: Do NOT commit secrets to this file. Set `MONGODB_URI`, `PORT`, and `CLIENT_ORIGIN`
+# in the Render dashboard (Environment > Environment Vars) after connecting your Git repo.

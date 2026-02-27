@@ -1,0 +1,53 @@
+# Root .gitignore for OKRSystem workspace
+
+# Node modules (for all subprojects)
+**/node_modules/
+
+# Build outputs
+**/dist/
+**/build/
+dist_electron/
+dist-*
+
+# Electron/packager artifacts
+*.asar
+*.exe
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Environment files / secrets
+.env
+.env.*
+/.env
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Cache and temp
+.cache/
+.parcel-cache/
+.vite/
+node_modules_cache/
+
+# Platform artifacts
+*.db
+*.sqlite
+
+# Misc
+*.tgz
+*.bak
+*.tmp
+*.orig
+*.rej
+
+# Ignore npm/yarn lock if you prefer (uncomment to enable)
+# package-lock.json
+# yarn.lock

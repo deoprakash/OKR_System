@@ -6,7 +6,7 @@ services:
     region: oregon
     branch: main
     # Build and start commands for a Node service (no Docker)
-    buildCommand: "npm ci"
+    buildCommand: "npm install --production"
     startCommand: "npm start"
 
 # Note: Do NOT commit secrets to this file. Set `MONGODB_URI`, `PORT`, and `CLIENT_ORIGIN`

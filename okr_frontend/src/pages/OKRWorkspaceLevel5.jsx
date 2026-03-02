@@ -15,6 +15,14 @@ import { useToast } from '../components/ToastProvider';
 const OKRWorkspaceLevel5 = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const getLocalDateString = (value) => {
+    const d = value ? new Date(value) : new Date();
+    if (Number.isNaN(d.getTime())) return '';
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
   const [fields, setFields] = useState({
     employeeCode: '',
     employeeName: '',
@@ -65,7 +73,7 @@ const OKRWorkspaceLevel5 = () => {
       } catch (err) {
         console.error(err);
       }
-      setFields(f => ({ ...f, okrDate: new Date().toISOString().slice(0,10) }));
+      setFields(f => ({ ...f, okrDate: getLocalDateString() }));
     }
     load();
   }, []);
@@ -76,7 +84,7 @@ const OKRWorkspaceLevel5 = () => {
       employeeName: '',
       employeeLevel: '',
       okrCode: '',
-      okrDate: new Date().toISOString().slice(0,10),
+      okrDate: getLocalDateString(),
       okrDescription: '',
       keyResults: Array(5).fill(''),
       quarters: [ { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' } ],
@@ -114,7 +122,7 @@ const OKRWorkspaceLevel5 = () => {
   const handleSelectOKRCode = (e) => {
     const val = e.target.value;
     if (val === 'NEW') {
-      setFields(f => ({ ...f, okrCode: 'NEW', okrDescription: '', keyResults: Array(5).fill(''), quarters: [ { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' } ], okrDate: new Date().toISOString().slice(0,10) }));
+      setFields(f => ({ ...f, okrCode: 'NEW', okrDescription: '', keyResults: Array(5).fill(''), quarters: [ { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' } ], okrDate: getLocalDateString() }));
       return;
     }
     const num = Number(val);
@@ -123,7 +131,7 @@ const OKRWorkspaceLevel5 = () => {
     setFields(f => ({
       ...f,
       okrCode: okr.level5OkrCode,
-      okrDate: okr.okrDate ? new Date(okr.okrDate).toISOString().slice(0,10) : f.okrDate,
+      okrDate: okr.okrDate ? getLocalDateString(okr.okrDate) : f.okrDate,
       okrDescription: okr.okrDesc || '',
       keyResults: [okr.kr1 || '', okr.kr2 || '', okr.kr3 || '', okr.kr4 || '', okr.kr5 || ''],
       quarters: [
@@ -149,10 +157,10 @@ const OKRWorkspaceLevel5 = () => {
     // if (percentSum > 100) { alert('Sum of percentages cannot exceed 100%'); return; }
     // OKR date must not be in the future
     try {
-      const okrDate = new Date(fields.okrDate);
+      const okrDate = new Date(`${fields.okrDate}T00:00:00`);
       const today = new Date();
       today.setHours(0,0,0,0);
-      if (okrDate >= today) { toast.send('OKR Date must not be in the future', 'error'); return; }
+      if (okrDate > today) { toast.send('OKR Date must not be in the future', 'error'); return; }
     } catch (e) { toast.send('Invalid OKR Date', 'error'); return; }
 
     if (!fields.level4OkrCode) { toast.send('Please select a Level-4 OKR to link before saving.', 'error'); return; }
@@ -203,32 +211,32 @@ const OKRWorkspaceLevel5 = () => {
       <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-6xl p-8 overflow-hidden">
         <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 5</h1>
         <form>
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            <div className="flex items-center gap-1">
+          <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Code</label>
-              <select value={fields.employeeCode} onChange={handleSelectEmployee} className="border px-2 py-1 w-40">
+              <select value={fields.employeeCode} onChange={handleSelectEmployee} className="border px-2 py-2 w-full bg-white">
                 <option value="">-- Select --</option>
                 {employeeOptions.map(emp => (
                   <option key={emp.empCode} value={emp.empCode}>{emp.empCode} - {emp.empName}</option>
                 ))}
               </select>
             </div>
-            <div className="flex-1 flex items-center gap-1 min-w-0">
-              <label className="font-semibold min-w-25">Employee Name</label>
-              <input value={fields.employeeName} readOnly className="border px-2 py-1 w-full bg-gray-100" />
+            <div className="flex flex-col gap-2 min-w-0">
+              <label className="font-semibold">Employee Name</label>
+              <input value={fields.employeeName} readOnly className="border px-2 py-2 w-full bg-gray-100" />
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Level</label>
-              <input value={fields.employeeLevel} readOnly className="border px-2 py-1 w-20 bg-gray-100" />
+              <input value={fields.employeeLevel} readOnly className="border px-2 py-2 w-full bg-gray-100" />
             </div>
-            <div className="flex items-center gap-1 ml-4">
+            <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">OKR Code</label>
-              <select value={fields.okrCode} onChange={handleSelectOKRCode} className="border px-2 py-1 w-48">
+              <select value={fields.okrCode} onChange={handleSelectOKRCode} className="border px-2 py-2 w-full">
                 <option value="">-- Select --</option>
+                <option value="NEW">New</option>
                 {level5All.filter(o => Number(o.empCode) === Number(fields.employeeCode)).map(o => (
                   <option key={o.level5OkrCode} value={o.level5OkrCode}>{o.level5OkrCode} - {o.okrDesc?.slice(0,50)}</option>
                 ))}
-                <option value="NEW">New</option>
               </select>
             </div>
           </div>

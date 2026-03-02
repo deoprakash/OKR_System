@@ -1,7 +1,7 @@
 
 
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import Home from './pages/Home';
 import EmployeeMaster from './pages/EmployeeMaster';
@@ -15,27 +15,43 @@ import OKRWorkspaceLevel7 from './pages/OKRWorkspaceLevel7';
 import OKRPerformance from './pages/OKRPerformance';
 
 function App() {
+  const Router = window && window.location && window.location.protocol === 'file:'
+    ? HashRouter
+    : BrowserRouter;
   // Ensure clicks on inputs re-focus the window (helps Electron when window loses focus)
   useEffect(() => {
+    function ensureFocusForTarget(t) {
+      try {
+        const isInput = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT');
+        if (!isInput) return;
+        if (typeof document.hasFocus === 'function' && !document.hasFocus() && typeof window.focus === 'function') {
+          try { window.focus(); } catch {}
+        }
+        setTimeout(() => {
+          try {
+            if (t && typeof t.focus === 'function') t.focus();
+          } catch {}
+        }, 10);
+      } catch {}
+    }
     function onMouseDown(e) {
       try {
         const t = e.target;
-        const isInput = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT');
-        if (isInput && !document.hasFocus && typeof window.focus === 'function') {
-          try { window.focus(); } catch {}
-        }
-        // If the element didn't receive focus, force it after a tiny delay
-        if (isInput) {
-          setTimeout(() => {
-            try {
-              if (t && typeof t.focus === 'function') t.focus();
-            } catch {}
-          }, 10);
-        }
+        ensureFocusForTarget(t);
+      } catch {}
+    }
+    function onFocusIn(e) {
+      try {
+        const t = e.target;
+        ensureFocusForTarget(t);
       } catch {}
     }
     document.addEventListener('mousedown', onMouseDown, true);
-    return () => document.removeEventListener('mousedown', onMouseDown, true);
+    document.addEventListener('focusin', onFocusIn, true);
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown, true);
+      document.removeEventListener('focusin', onFocusIn, true);
+    };
   }, []);
   return (
     <Router>

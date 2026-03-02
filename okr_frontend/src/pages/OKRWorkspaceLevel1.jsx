@@ -34,6 +34,7 @@ const OKRWorkspaceLevel1 = () => {
   const [okrs, setOkrs] = useState([]);
   const [selectedOkrId, setSelectedOkrId] = useState(null);
   const [selectedOkrCode, setSelectedOkrCode] = useState('');
+  const [canClose, setCanClose] = useState(false);
 
   useEffect(() => {
     listEmployees().then(resp => {
@@ -65,6 +66,7 @@ const OKRWorkspaceLevel1 = () => {
   const resetForNew = () => {
     setSelectedOkrId(null);
     setSelectedOkrCode('NEW');
+    setCanClose(false);
     setFields(prev => ({
       ...prev,
       okrCode: 'NEW',
@@ -83,6 +85,7 @@ const OKRWorkspaceLevel1 = () => {
   const resetForm = () => {
     setSelectedOkrId(null);
     setSelectedOkrCode('');
+    setCanClose(false);
     setFields({
       employeeCode: '',
       employeeName: '',
@@ -172,14 +175,17 @@ const OKRWorkspaceLevel1 = () => {
         await updateLevel1OKR(selectedOkrCode, payload);
         toast.send('OKR updated successfully.', 'success');
         await fetchOkrsForEmployee();
+        setCanClose(true);
       } else {
         const res = await createLevel1OKR(payload);
         const created = res && res.data ? res.data : null;
         toast.send(`OKR created. New OKR Code: ${created ? created.level1OkrCode : 'unknown'}`, 'success');
         await fetchOkrsForEmployee();
+        setCanClose(true);
         if (created) {
           // clear form after create
           resetForm();
+          setCanClose(true);
         }
       }
     } catch (err) {
@@ -188,6 +194,11 @@ const OKRWorkspaceLevel1 = () => {
   };
 
   const handleCancel = () => {
+    if (canClose) {
+      resetForm();
+      navigate('/');
+      return;
+    }
     if (window.confirm('Cancel OKR entry and return to main menu?')) {
       resetForm();
       navigate('/');
@@ -230,19 +241,20 @@ const OKRWorkspaceLevel1 = () => {
       <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-5xl p-8 overflow-hidden">
         <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 1</h1>
         <form>
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            <div className="flex items-center gap-2 min-w-0">
+          <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee</label>
-                <select
+              <select
                 value={String(fields.employeeCode)}
-                  ref={firstInputRef}
+                ref={firstInputRef}
                 onChange={e => {
                   const val = e.target.value;
                   const emp = employees.find(x => String(x.empCode) === val || String(x._id) === val);
+                  setCanClose(false);
                   if (emp) setFields(prev => ({ ...prev, employeeCode: emp.empCode, employeeName: emp.empName, employeeLevel: emp.empLevel }));
                   else setFields(prev => ({ ...prev, employeeCode: '', employeeName: '', employeeLevel: '' }));
                 }}
-                className="border px-2 py-1 w-48 bg-white"
+                className="border px-2 py-2 w-full bg-white"
               >
                 <option value="">Select Employee</option>
                 {employees.map(emp => (
@@ -250,17 +262,28 @@ const OKRWorkspaceLevel1 = () => {
                 ))}
               </select>
             </div>
-            <div className="flex-1 flex items-center gap-2 min-w-0">
-              <label className="font-semibold min-w-30">Employee Name</label>
-              <input value={fields.employeeName} readOnly className="border px-2 py-1 w-full bg-gray-100" />
+            <div className="flex flex-col gap-2 min-w-0">
+              <label className="font-semibold">Employee Name</label>
+              <input value={fields.employeeName} readOnly className="border px-2 py-2 w-full bg-gray-100" />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Level</label>
-              <input value={fields.employeeLevel} readOnly className="border px-2 py-1 w-20 bg-gray-100" />
+              <input value={fields.employeeLevel} readOnly className="border px-2 py-2 w-full bg-gray-100" />
             </div>
-            <div className="flex items-center gap-2 ml-4">
+            <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">OKR Code</label>
-              <input value={fields.okrCode} onChange={e => handleFieldChange('okrCode', e.target.value)} className="border px-2 py-1 w-28" />
+              <select value={selectedOkrCode || ''} onChange={e => {
+                const v = e.target.value;
+                if (v === 'NEW') { resetForNew(); return; }
+                const found = okrs.find(o => String(o.level1OkrCode) === String(v));
+                if (found) populateFromOkr(found);
+              }} className="border px-2 py-2 w-full">
+                <option value="">Select OKR</option>
+                <option value="NEW">New</option>
+                {okrs.map(o => (
+                  <option key={o._id} value={String(o.level1OkrCode)}>{String(o.level1OkrCode)}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -316,25 +339,6 @@ const OKRWorkspaceLevel1 = () => {
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="font-semibold">OKR Code</label>
-            <div className="mt-2">
-              <select value={selectedOkrCode || ''} onChange={e => {
-                const v = e.target.value;
-                if (v === 'NEW') { resetForNew(); return; }
-                // find okr by code
-                const found = okrs.find(o => String(o.level1OkrCode) === String(v));
-                if (found) populateFromOkr(found);
-              }} className="border px-2 py-1 w-56">
-                <option value="">Select OKR</option>
-                {okrs.map(o => (
-                  <option key={o._id} value={String(o.level1OkrCode)}>{String(o.level1OkrCode)}</option>
-                ))}
-                <option value="NEW">New</option>
-              </select>
-            </div>
-          </div>
-
           {/* Action buttons */}
 
           {/* {percentSum > 100 && (
@@ -342,7 +346,7 @@ const OKRWorkspaceLevel1 = () => {
           )} */}
           <div className="flex justify-center gap-6 mt-6">
             <OKRActionButton type="button" onClick={handleSave}>Update OKR</OKRActionButton>
-            <OKRActionButton type="button" onClick={handleCancel}>Cancel OKR</OKRActionButton>
+            <OKRActionButton type="button" onClick={handleCancel}>{canClose ? 'Close' : 'Cancel OKR'}</OKRActionButton>
           </div>
         </form>
       </div>

@@ -44,12 +44,10 @@ export async function update(req, res) {
     if (mongoose.isValidObjectId(id)) {
       doc = await Employee.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
     } else {
-      // if updating by empCode, allow upsert so clients that PUT with empCode
-      // can create the employee if it doesn't exist instead of returning 404
       doc = await Employee.findOneAndUpdate(
         { empCode: Number(id) },
         req.body,
-        { new: true, runValidators: true, upsert: true }
+        { new: true, runValidators: true }
       );
     }
     if (!doc) return res.status(404).json({ error: "Not found" });

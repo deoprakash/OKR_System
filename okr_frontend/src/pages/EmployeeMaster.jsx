@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import LabelInput from '../components/LabelInput';
-import BackButton from '../components/BackButton';
 import EmployeeLevelSelect from '../components/EmployeeLevelSelect';
 import ActionButton from '../components/ActionButton';
 import HelpText from '../components/HelpText';
@@ -9,6 +8,7 @@ const EMPLOYEE_LEVELS = ['1', '2', '3', '4', '5', '6', '7'];
 
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ToastProvider';
+import { createEmployee, listEmployees } from '../lib/api';
 
 const EmployeeMaster = () => {
   const navigate = useNavigate();
@@ -18,13 +18,31 @@ const EmployeeMaster = () => {
   const [designation, setDesignation] = useState('');
   const [level, setLevel] = useState('');
 
+  const computeNextCode = (items) => {
+    const maxCode = (items || []).reduce((max, emp) => Math.max(max, Number(emp.empCode) || 0), 0);
+    return String(maxCode + 1);
+  };
+
+  const refreshNextCode = async () => {
+    try {
+      const res = await listEmployees();
+      setCode(computeNextCode(res?.data || []));
+    } catch (err) {
+      setCode('');
+    }
+  };
+
   // Handlers
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
       const trimmed = String(code || '').trim();
-      if (!trimmed) return toast.send('Employee Code is required', 'error');
-      const parsedCode = Number(trimmed);
+      if (!trimmed) {
+        await refreshNextCode();
+      }
+      const finalCode = String(code || '').trim();
+      if (!finalCode) return toast.send('Employee Code is required', 'error');
+      const parsedCode = Number(finalCode);
       if (!Number.isFinite(parsedCode)) return toast.send('Employee Code must be a valid number', 'error');
 
       const payload = {
@@ -34,62 +52,35 @@ const EmployeeMaster = () => {
         empLevel: Number(level || 0)
       };
 
-      // update existing or create new with the provided empCode
-      await (await import('../lib/api')).updateEmployee(parsedCode, payload);
-      toast.send('Employee updated', 'success');
+      const res = await createEmployee(payload);
+      const created = res?.data;
+      if (created?.empCode != null) {
+        setCode(String(created.empCode));
+      }
+      const message = { type: 'info', title: 'Employee Master', message: 'Record has been updated successfully' };
+      if (window.__electron && typeof window.__electron.showMessage === 'function') {
+        await window.__electron.showMessage(message);
+      } else {
+        window.alert(message.message);
+      }
+      try { window.focus && window.focus(); } catch {}
+      handleCancel();
+      await refreshNextCode();
     } catch (err) {
       console.error(err);
       toast.send('Failed to update: ' + (err.message || err), 'error');
     }
   };
-
-  const handleFetch = async (e) => {
-    e && e.preventDefault();
-    const trimmed = String(code || '').trim();
-    if (!trimmed) return toast.send('Enter Employee Code to fetch', 'error');
-    try {
-      const res = await (await import('../lib/api')).getEmployee(trimmed);
-      const emp = res.data;
-      setName(emp.empName || '');
-      setDesignation(emp.empDesignation || '');
-      setLevel(emp.empLevel ? String(emp.empLevel) : '');
-      toast.send('Employee loaded', 'success');
-    } catch (err) {
-      console.error(err);
-      toast.send('Failed to fetch: ' + (err.message || err), 'error');
-    }
-  };
-
-  const handleDelete = async (e) => {
-    e.preventDefault();
-    const trimmed = String(code || '').trim();
-    if (!trimmed) return toast.send('Enter Employee Code to delete', 'error');
-    if (!confirm('Delete employee ' + trimmed + '?')) return;
-    try {
-      await (await import('../lib/api')).deleteEmployee(trimmed);
-      toast.send('Employee deleted', 'success');
-      handleCancel();
-    } catch (err) {
-      console.error(err);
-      toast.send('Failed to delete: ' + (err.message || err), 'error');
-    }
-  };
   const handleCancel = () => {
-    setCode(''); setName(''); setDesignation(''); setLevel('');
-    // restore focus to employee code input
-    setTimeout(() => {
-      try { firstInputRef.current && firstInputRef.current.focus(); window.focus && window.focus(); } catch {};
-    }, 50);
+    setName(''); setDesignation(''); setLevel('');
   };
 
-  const firstInputRef = useRef(null);
-  useEffect(() => { try { firstInputRef.current && firstInputRef.current.focus(); } catch {} }, []);
+  useEffect(() => {
+    refreshNextCode();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0f1724] flex items-center justify-center py-12">
-      <div className="absolute top-6 left-6">
-        <BackButton onClick={() => navigate('/')} />
-      </div>
       <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-5xl p-8 overflow-hidden">
         <h1 className="text-3xl font-bold mb-6 text-center">Employee Master</h1>
 
@@ -98,10 +89,9 @@ const EmployeeMaster = () => {
             <LabelInput label="Employee Code:">
               <input
                 id="employeecode"
-                className="w-40 p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400"
-                ref={firstInputRef}
+                className="w-40 p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400 bg-gray-100"
                 value={code}
-                onChange={e => setCode(e.target.value)}
+                readOnly
               />
             </LabelInput>
 
@@ -133,7 +123,7 @@ const EmployeeMaster = () => {
 
             <div className="flex flex-row gap-6 mt-8 justify-start">
               <ActionButton className="bg-blue-700 hover:bg-blue-900 shadow-lg shadow-blue-200 border-2 border-blue-800" onClick={handleUpdate}>Update Record</ActionButton>
-              <ActionButton className="bg-gray-500 hover:bg-gray-700 shadow-lg shadow-gray-200 border-2 border-gray-600" onClick={handleCancel}>Cancel</ActionButton>
+              <ActionButton className="bg-gray-500 hover:bg-gray-700 shadow-lg shadow-gray-200 border-2 border-gray-600" onClick={() => navigate('/')}>Close</ActionButton>
             </div>
           </form>
 

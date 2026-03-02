@@ -51,7 +51,7 @@ const createWindow = async () => {
       console.log('Dev server reachable, statusCode=', res && res.statusCode);
       await win.loadURL(devUrl);
       win.show();
-      try { win.webContents.openDevTools({ mode: 'detach' }); } catch (e) { console.error('openDevTools failed', e); }
+      // DevTools disabled on startup
     } catch (err) {
       console.error('Failed to reach dev server:', err && err.message ? err.message : err);
       const errHtml = `
@@ -90,8 +90,7 @@ const createWindow = async () => {
     win.webContents.on('console-message', (event, level, message, line, sourceId) => {
       console.log(`Renderer console (${level}) ${sourceId}:${line} -> ${message}`);
     });
-    // Open DevTools to inspect renderer even in production for debugging
-    try { win.webContents.openDevTools({ mode: 'detach' }); } catch (e) { console.error('openDevTools failed', e); }
+    // DevTools disabled on startup
     win.webContents.on('crashed', () => console.error('Renderer crashed'));
   }
 }

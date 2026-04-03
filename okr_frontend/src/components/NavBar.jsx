@@ -23,11 +23,10 @@ export default function NavBar() {
   }, []);
 
   return (
-    <nav className="w-full bg-blue-700 text-white shadow-blue-glow flex items-center justify-between px-8 py-4 relative">
+    <nav className="w-full mb-2 text-white bg-blue-700/95 backdrop-blur-sm border-b border-blue-300/30 shadow-lg flex items-center justify-between px-8 py-4 relative">
       <div className="font-bold text-2xl tracking-wide cursor-pointer" onClick={() => navigate("/")}>OKR System</div>
       <ul className="flex gap-6 text-lg items-center">
         <li className="hover:text-blue-200 transition cursor-pointer" onClick={() => navigate("/")}>Home</li>
-        <li className="hover:text-blue-200 transition cursor-pointer">Objectives</li>
         <li className="relative" ref={dropdownRef}>
           <span
             className="hover:text-blue-200 transition cursor-pointer select-none"
@@ -37,7 +36,7 @@ export default function NavBar() {
             <svg className="inline ml-1 w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
           </span>
           {dropdownOpen && (
-            <div className="absolute left-0 mt-2 z-20 bg-white text-blue-800 rounded-xl shadow-lg py-3 px-4 min-w-[260px] border border-blue-100 flex flex-col gap-2">
+            <div className="absolute left-0 mt-2 z-20 bg-white text-blue-800 rounded-xl shadow-lg py-3 px-4 min-w-65 border border-blue-100 flex flex-col gap-2">
               {menuItems.flat().map((item, idx) => (
                 <button
                   key={idx}
@@ -71,9 +70,10 @@ export default function NavBar() {
             </div>
           )}
         </li>
+        <li className="hover:text-blue-200 transition cursor-pointer" onClick={() => navigate('/okr-performance')}>OKR Performance</li>
         <li className="hover:text-blue-200 transition cursor-pointer">About</li>
       </ul>
-      <button className="bg-white text-blue-700 font-semibold px-4 py-2 rounded-xl shadow-blue-glow hover:bg-blue-100 transition">
+      <button className="bg-white text-blue-700 font-semibold px-5 py-2 rounded-xl shadow hover:bg-blue-50 transition">
         Login
       </button>
     </nav>

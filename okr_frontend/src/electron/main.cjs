@@ -33,12 +33,17 @@ const createWindow = async () => {
     width: 1200,
     height: 800,
     show: false,
+    autoHideMenuBar: true,
+    menuBarVisible: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.cjs')
     }
   })
+
+  // Extra safeguard: remove menu from this window instance.
+  win.removeMenu();
 
   const env = process.env.NODE_ENV || 'production';
   console.log('Electron starting, NODE_ENV=', env, 'VITE_DEV_SERVER_URL=', process.env.VITE_DEV_SERVER_URL);
@@ -96,8 +101,8 @@ const createWindow = async () => {
 }
 
 app.whenReady().then(() => {
-  // Remove this line to restore the default menu bar
-  // Menu.setApplicationMenu(null);
+  // Hide the native application menu (File/Edit/View/Window/Help)
+  Menu.setApplicationMenu(null);
   createWindow();
 })
 

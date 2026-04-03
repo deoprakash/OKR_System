@@ -13,7 +13,7 @@ if (!uri) {
 async function test() {
   try {
     await mongoose.connect(uri);
-    console.log('Connected to MongoDB (test)');
+    console.log('Connected to MongoDB (OKRSystem)');
     await mongoose.disconnect();
     process.exit(0);
   } catch (err) {

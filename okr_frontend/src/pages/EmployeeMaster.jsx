@@ -3,6 +3,7 @@ import LabelInput from '../components/LabelInput';
 import EmployeeLevelSelect from '../components/EmployeeLevelSelect';
 import ActionButton from '../components/ActionButton';
 import HelpText from '../components/HelpText';
+import BackButton from '../components/BackButton';
 
 const EMPLOYEE_LEVELS = ['1', '2', '3', '4', '5', '6', '7'];
 
@@ -17,6 +18,7 @@ const EmployeeMaster = () => {
   const [name, setName] = useState('');
   const [designation, setDesignation] = useState('');
   const [level, setLevel] = useState('');
+  const [isRecordAdded, setIsRecordAdded] = useState(false);
 
   const computeNextCode = (items) => {
     const maxCode = (items || []).reduce((max, emp) => Math.max(max, Number(emp.empCode) || 0), 0);
@@ -28,6 +30,7 @@ const EmployeeMaster = () => {
       const res = await listEmployees();
       setCode(computeNextCode(res?.data || []));
     } catch (err) {
+      console.error(err);
       setCode('');
     }
   };
@@ -56,6 +59,8 @@ const EmployeeMaster = () => {
       const created = res?.data;
       if (created?.empCode != null) {
         setCode(String(created.empCode));
+        // mark record as added and lock the form; user must Close or Back to modify again
+        setIsRecordAdded(true);
       }
       const message = { type: 'info', title: 'Employee Master', message: 'Record has been updated successfully' };
       if (window.__electron && typeof window.__electron.showMessage === 'function') {
@@ -64,8 +69,7 @@ const EmployeeMaster = () => {
         window.alert(message.message);
       }
       try { window.focus && window.focus(); } catch {}
-      handleCancel();
-      await refreshNextCode();
+      // keep the created record visible and locked on screen; do not auto-clear
     } catch (err) {
       console.error(err);
       toast.send('Failed to update: ' + (err.message || err), 'error');
@@ -76,12 +80,22 @@ const EmployeeMaster = () => {
   };
 
   useEffect(() => {
-    refreshNextCode();
+    let mounted = true;
+    (async () => {
+      // defer to next microtask to avoid calling setState synchronously during render
+      await Promise.resolve();
+      if (!mounted) return;
+      await refreshNextCode();
+    })();
+    return () => { mounted = false; };
   }, []);
 
   return (
     <div className="min-h-screen bg-[#0f1724] flex items-center justify-center py-12">
-      <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-5xl p-8 overflow-hidden">
+      <div className="absolute top-6 left-6">
+        <BackButton onClick={() => navigate('/')} />
+      </div>
+      <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-5xl p-8 overflow-hidden professional-panel">
         <h1 className="text-3xl font-bold mb-6 text-center">Employee Master</h1>
 
         <div className="flex w-full gap-8">
@@ -101,6 +115,7 @@ const EmployeeMaster = () => {
                 className="w-full p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400"
                 value={name}
                 onChange={e => setName(e.target.value)}
+                disabled={isRecordAdded}
               />
             </LabelInput>
 
@@ -110,6 +125,7 @@ const EmployeeMaster = () => {
                 className="w-full p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400"
                 value={designation}
                 onChange={e => setDesignation(e.target.value)}
+                disabled={isRecordAdded}
               />
             </LabelInput>
 
@@ -118,26 +134,27 @@ const EmployeeMaster = () => {
                 value={level}
                 onChange={e => setLevel(e.target.value)}
                 options={EMPLOYEE_LEVELS}
+                disabled={isRecordAdded}
               />
             </LabelInput>
 
             <div className="flex flex-row gap-6 mt-8 justify-start">
-              <ActionButton className="bg-blue-700 hover:bg-blue-900 shadow-lg shadow-blue-200 border-2 border-blue-800" onClick={handleUpdate}>Update Record</ActionButton>
-              <ActionButton className="bg-gray-500 hover:bg-gray-700 shadow-lg shadow-gray-200 border-2 border-gray-600" onClick={() => navigate('/')}>Close</ActionButton>
+              <ActionButton
+                className="bg-blue-700 hover:bg-blue-900 shadow-lg shadow-blue-200 border-2 border-blue-800"
+                onClick={handleUpdate}
+                disabled={isRecordAdded}
+              >
+                Update Record
+              </ActionButton>
+
+              <ActionButton
+                className="bg-gray-400 shadow-lg shadow-gray-200 border-2 border-gray-500"
+                onClick={isRecordAdded ? () => {} : handleCancel}
+              >
+                {isRecordAdded ? 'Close' : 'Cancel'}
+              </ActionButton>
             </div>
           </form>
-
-          <div className="flex-1 flex flex-col justify-center pl-8">
-            <HelpText title="Update Record">
-              Update Record will insert new record or update exisiting record.
-            </HelpText>
-            <HelpText title="Fetch Record">
-              Fetch record will retrieve record based on the given Employee Code and then user can modify it
-            </HelpText>
-            <HelpText title="Delete Record">
-              Delete record will allow user to delete the record once he or she fetches the record post clicking the Fetch Record button.
-            </HelpText>
-          </div>
         </div>
       </div>
     </div>

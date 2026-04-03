@@ -1,0 +1,479 @@
+OKRSystem — Technical Documentation
+Date: 2026-03-13
+
+1. Introduction
+
+Application name
+- OKRSystem (desktop Electron client + Node.js backend)
+
+Purpose
+- OKRSystem is a lightweight Objectives & Key Results (OKR) management application that provides a desktop Electron-based UI for managing employees and their hierarchical OKRs across levels (1..7) and a Node.js + Express backend with MongoDB for data storage.
+- The application exists to let organizations record employee OKRs by level, track quarterly progress and performance, and operate as a packaged desktop application or run a separated backend server.
+
+Technology overview
+- Backend: Node.js (ESM) + Express + Mongoose (MongoDB).
+- Frontend: React (Vite) packaged in Electron with TailwindCSS for UI styling.
+- Packaging: electron-builder produces distributable artifacts (Windows NSIS/portable targets included).
+- Data store: MongoDB (document database). Backend is deployed on Render (managed web service); the repository includes `render.yaml` to describe Render services.
+
+2. System Architecture
+
+Architecture pattern
+- Layered web application / MVC-like pattern on the backend: Routes (controllers) → Controllers (route handlers) → Models (Mongoose schemas). The frontend is a component-based SPA (React) presented in an Electron shell for desktop distribution.
+
+Modules of the application
+- Backend modules
+  - `src/index.js`: App entrypoint, middleware registration, route mounting, DB connection.
+  - `src/routes/*`: Express route definitions grouped by resource (`employees.js`, `level1.js`..`level7.js`, `performance.js`).
+  - `src/controllers/*`: Controller functions implementing route logic for each resource (`employeeController.js`, `level1Controller.js`, etc.).
+  - `src/models/*`: Mongoose schemas and models (`employee.js`, `level1Okr.js`, .., `counter.js`).
+  - `src/scripts/testConnection.js`: Test utility for DB connection
+  - `render.yaml` (optional): Render service specification for deploying the backend on Render.
+
+- Frontend modules
+  - `src/main.jsx` / `src/App.jsx`: React app bootstrap and router.
+  - `src/pages/*`: Page-level components (`EmployeeMaster.jsx`, `OKRWorkspaceLevel1.jsx`, ..., `OKRPerformance.jsx`).
+  - `src/components/*`: Reusable UI components (form inputs, buttons, layout, `ToastProvider`, etc.).
+  - `src/lib/api.js`: Client API helpers used to call backend endpoints.
+  - `src/electron/main.cjs` and `preload.cjs`: Electron main and preload scripts that initialize the desktop app and provide any IPC/proxying into the renderer.
+
+Interaction between layers
+- Frontend calls backend REST endpoints under `/api/*` (e.g., `/api/employees`, `/api/level1`) via HTTP (during development the Vite dev server is proxied to the Electron renderer; production uses packaged `dist` files). The backend handles requests through the Express middleware chain: logging → CORS → JSON parsing → route handlers → Mongoose models → MongoDB.
+- Mongoose models encapsulate schema validations and pre-save hooks (e.g., auto-increment counters using `counter.js`). Controllers orchestrate model operations and translate DB results to JSON responses. The Electron main process embeds the frontend UI and handles packaging distribution responsibilities.
+
+3. Technology Stack
+
+Component	Technology
+Programming language	JavaScript (ES modules)
+OKRSystem — Technical Documentation
+Date: 2026-03-13
+OKRSystem — Technical Documentation
+Date: 2026-03-13
+
+Executive summary
+OKRSystem is a desktop-first Objectives & Key Results (OKR) management application composed of a React + Electron frontend and a Node.js + Express backend using MongoDB for persistence. The backend is deployed on Render (managed service). This document provides an in-depth architecture overview, module descriptions, complete database design (ER diagrams and attribute lists), full API documentation, build and deployment instructions, and operational recommendations for production readiness.
+
+2. System Architecture
+
+2.1 High-level diagram
+
+```mermaid
+flowchart LR
+  subgraph Desktop
+    A[Electron Renderer (React + Vite)]
+    D[Electron Main Process]
+    A --> D
+  end
+  A -->|HTTPS / HTTP| B[Render-hosted Express API]
+  B --> C[(MongoDB Atlas / Managed MongoDB)]
+  B --> E[Auth Gateway (optional)]
+  B --> F[Monitoring / Logging]
+```
+
+2.2 Component responsibilities
+- Electron Renderer: UI, routing, API calls via `src/lib/api.js`.
+- Electron Main Process: application lifecycle, IPC, native integrations and packaging entrypoint.
+- Express API (Render): handles REST endpoints, controllers, model operations and validation.
+- MongoDB: persistence layer; logical relations modeled by application (no DB-level FKs).
+- Optional services: Auth provider, monitoring, backups.
+
+2.3 Architectural pattern
+- Layered (Presentation → API/Controllers → Data/Models).
+- Backend follows an MVC-like separation: routes (router) → controllers (use-case logic) → models (Mongoose schemas + hooks).
+
+3. Technology Stack
+
+Component	Technology / Version (observed)
+Programming language	JavaScript (ESM)
+Backend runtime	Node.js 18+ (package.json uses modern ESM imports)
+Backend framework	Express
+Database	MongoDB (Mongoose ODM)
+Frontend framework	React (Vite)
+Desktop shell	Electron (main.cjs / preload.cjs)
+Styling	Tailwind CSS
+Packaging	Electron Builder (configured in `okr_frontend/package.json`)
+Logging middleware	morgan
+Env management	dotenv
+Hosting	Render (web services)
+Build tools	npm, Vite
+Version control	Git
+
+4. Project Structure
+
+Top-level layout
+
+okr_backend/
+ ├── package.json
+ ├── render.yaml (optional Render spec)
+ └── src/
+     ├── index.js                  # app bootstrap
+     ├── routes/                   # express routers
+     ├── controllers/              # route handlers (business logic)
+     ├── models/                   # mongoose schemas
+     └── scripts/                  # utilities (testConnection.js)
+
+okr_frontend/
+ ├── package.json
+ ├── vite.config.js
+ └── src/
+     ├── main.jsx                 # react bootstrap
+     ├── App.jsx
+     ├── pages/                   # EmployeeMaster, OKRWorkspaceLevel1..7, OKRPerformance
+     ├── components/              # UI components
+     ├── lib/api.js               # API client
+     └── electron/                # main.cjs, preload.cjs
+
+5. Module Description
+
+5.1 Backend modules
+
+- `src/index.js`
+  - Purpose: Configure middleware, set up routes, connect to MongoDB, start server. Exposes `/health`.
+
+- Routers (`src/routes`)
+  - `employees.js`: `/api/employees` CRUD
+  - `level1.js` .. `level7.js`: `/api/level{n}` CRUD for each OKR level
+  - `performance.js`: `/api/performance` endpoints
+
+- Controllers (`src/controllers`)
+  - Responsibility: validate inputs, call models, shape responses, handle errors. Implemented per resource (employeeController, levelXController, performanceController).
+
+- Models (`src/models`)
+  - `employee.js`: Employee schema with `pre('validate')` hook to auto-assign `empCode`.
+  - `level1Okr.js` .. `level7Okr.js`: Per-level OKR schemas with fields for KRs and quarterly progress; `pre('save')` hooks auto-generate per-level codes using `Counter`.
+  - `counter.js`: sequence store used by models to increment codes.
+
+5.2 Frontend modules
+
+- `src/lib/api.js`
+  - Central API client. Default `baseUrl` uses `VITE_API_URL` or `https://okr-system-backend.onrender.com` hardcoded fallback.
+  - Exposes functions: `listEmployees`, `getEmployee`, `createEmployee`, `updateEmployee`, `deleteEmployee`, list/create/update for level OKRs, `getEmployeeOKRs`, `getOKRHierarchy`.
+
+- Pages and Components
+  - Pages: Employee master, OKR workspaces (Level 1..7), OKR performance.
+  - Components: LabeledInput, KeyResultInput, QuarterInput, Toasts, NavBar, etc.
+
+6. Database Design (full)
+
+6.1 Collections and fields (complete listing)
+
+Employees collection (`employees`)
+- `_id` : ObjectId (generated by MongoDB)
+- `empCode` : Number (unique, application primary key; auto-generated by `Counter` if omitted)
+- `empName` : String (max 40)
+- `empDesignation` : String (max 40)
+- `empLevel` : Number
+- `createdAt`, `updatedAt` : Date (timestamps)
+
+Level1OKR collection (`level1okrs`)
+- `_id` : ObjectId
+- `empLevel` : Number (default 1)
+- `level1OkrCode` : Number (unique, indexed)
+- `empCode` : Number (required)
+- `empName` : String (max 40)
+- `okrDate` : Date
+- `okrDesc` : String (max 100)
+- `kr1`..`kr5` : String (each max 100)
+- `q1_percentage`..`q4_percentage` : Number (0..100)
+- `q1_comment`..`q4_comment` : String (max 100)
+- `createdAt`, `updatedAt` : Date
+
+Level2OKR (`level2okrs`)
+- `_id`, `level1OkrCode` (Number, required, index), `level2OkrCode` (unique), `empLevel` (2), `empCode`, `empName`, `okrDate`, `okrDesc`, `kr1`..`kr5`, `q1_percentage`..`q4_percentage`, `q1_comment`..`q4_comment`, timestamps.
+
+Level3OKR .. Level7OKR follow the same pattern:
+- Each includes a reference code to its parent level (e.g., `level3` includes `level2OkrCode`), a unique level-specific code (e.g., `level3OkrCode`), `empLevel`, `empCode`, `empName`, KRs, quarterly percentages and comments, timestamps.
+
+Counters collection (`counters`)
+- `_id` : String (identifier for sequence, e.g., `employee`, `level1okr`)
+- `seq` : Number (current sequence)
+
+6.2 ER diagram (comprehensive)
+
+```mermaid
+erDiagram
+    EMPLOYEE {
+      ObjectId _id
+      Number empCode PK
+      String empName
+      String empDesignation
+      Number empLevel
+    }
+    LEVEL1OKR {
+      ObjectId _id
+      Number level1OkrCode PK
+      Number empCode FK
+      String okrDesc
+      String kr1
+      String kr2
+      String kr3
+      String kr4
+      String kr5
+    }
+    LEVEL2OKR {
+      ObjectId _id
+      Number level2OkrCode PK
+      Number level1OkrCode FK
+      Number empCode FK
+    }
+    EMPLOYEE ||--o{ LEVEL1OKR : "owns"
+    LEVEL1OKR ||--o{ LEVEL2OKR : "parent_of"
+    LEVEL2OKR ||--o{ LEVEL3OKR : "parent_of"
+    LEVEL3OKR ||--o{ LEVEL4OKR : "parent_of"
+    LEVEL4OKR ||--o{ LEVEL5OKR : "parent_of"
+    LEVEL5OKR ||--o{ LEVEL6OKR : "parent_of"
+    LEVEL6OKR ||--o{ LEVEL7OKR : "parent_of"
+```
+
+6.3 Indexes and constraints
+- Unique indexes on per-level code fields (`level{n}OkrCode`) and `empCode` index for Employee. Counters collection uses `_id` as key.
+- All referential links are application-level (no DB-enforced foreign keys).
+
+7. Build Instructions
+
+Prerequisites
+- Node.js v18+ and npm
+- MongoDB instance (connection string in `MONGODB_URI`)
+- For packaging: Windows build environment for electron-builder (if building Windows target)
+
+Local Backend (development)
+
+```powershell
+cd okr_backend
+npm install
+# run with auto-reload
+npm run dev
+```
+
+Local Frontend + Electron (development)
+
+```powershell
+cd okr_frontend
+npm install
+npm run dev
+```
+
+Production build (frontend web assets)
+
+```powershell
+cd okr_frontend
+npm run build
+```
+
+Package desktop app (Windows)
+
+```powershell
+cd okr_frontend
+npm run build:exe
+```
+
+8. Deployment
+
+8.1 Backend — Render (recommended)
+
+Steps
+1. Connect the Git repository to Render and create a Web Service (Node).
+2. Set the service Root (repository root or `okr_backend`).
+3. Set Build command: `npm ci` and Start command: `npm start`.
+4. Provide environment variables in Render dashboard:
+   - `MONGODB_URI` (required)
+   - `PORT` (optional)
+   - `CLIENT_ORIGIN` (optional)
+
+Sample `render.yaml` (place at repo root or `okr_backend` folder):
+
+```yaml
+services:
+  - type: web
+    name: okr-backend
+    env: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    root: okr_backend
+    envVars:
+      - key: MONGODB_URI
+        sync: true
+```
+
+Notes
+- Render will run your build and start commands and expose the service URL; update `VITE_API_URL` in the frontend build or set `CLIENT_ORIGIN` appropriately.
+
+8.2 Frontend packaging and distribution
+- Electron-builder configured in `okr_frontend/package.json` build block.
+- Running `npm run build:exe` produces Windows installer(s) and artifacts under `okr_frontend/dist_electron`.
+
+8.3 Environment and secrets
+- Use Render's environment variable management (secrets) for `MONGODB_URI` and other credentials. Never store secrets in the repo.
+
+9. API Documentation (detailed)
+
+Base URL
+- Production (observed default): `https://okr-system-backend.onrender.com` (overridable with `VITE_API_URL`)
+- Local: `http://localhost:5000` (default `PORT` 5000)
+
+Common response envelope
+- Successful responses typically return `{ data: ... }`.
+- Errors return `{ error: "message" }` with appropriate HTTP status codes.
+
+9.1 Employees
+
+GET /api/employees
+- Description: List employees (most recent first, limited to 200)
+- Query: none
+- Response: 200 `{ data: [ { _id, empCode, empName, empDesignation, empLevel, createdAt, updatedAt } ] }`
+
+GET /api/employees/:id
+- Description: Get employee by MongoDB ObjectId or `empCode` integer.
+- Response: 200 `{ data: { ... } }` or 404
+
+POST /api/employees
+- Description: Create employee. If `empCode` omitted, auto-generated.
+- Body (JSON):
+  {
+    "empName": "Alice",
+    "empDesignation": "Engineer",
+    "empLevel": 2
+  }
+- Response: 201 `{ data: { _id, empCode, empName, empDesignation, empLevel, createdAt } }`
+
+PUT /api/employees/:id
+- Description: Update employee by _id or empCode
+- Body: Partial employee fields
+- Response: 200 `{ data: { ...updated document... } }` or 404
+
+DELETE /api/employees/:id
+- Description: Delete employee by _id or empCode
+- Response: 200 `{ data: { ...deleted document... } }` or 404
+
+9.2 Level OKRs (example: Level1)
+
+GET /api/level1
+- List level 1 OKRs (recent first, limit 200)
+
+GET /api/level1/:id
+- Get by ObjectId or `level1OkrCode`
+
+POST /api/level1
+- Body (JSON): sample
+  {
+    "empCode": 101,
+    "empName": "Alice",
+    "okrDesc": "Improve platform stability",
+    "kr1": "Reduce errors by 20%",
+    "q1_percentage": 40
+  }
+
+PUT /api/level1/:id
+- Update fields; runValidators true
+
+DELETE /api/level1/:id
+
+Note: Level2..Level7 endpoints mirror Level1 structure; Level2 requires `level1OkrCode` in payload, Level3 requires `level2OkrCode`, etc.
+
+9.3 Performance
+
+GET /api/performance/okrs/:empCode
+- Description: Fetch all OKRs across levels for a given employee code.
+- Response: `{ data: [ { ...okr with level info... } ] }`
+
+GET /api/performance/:level/:okrCode
+- Description: Return hierarchical OKR tree for the specified level and code. Traverses parents/children as implemented in `performanceController`.
+
+9.4 Health
+
+GET /health
+- Returns `{ status: 'ok', timestamp: '...' }` when service is healthy.
+
+9.5 Error codes summary
+- 200 OK — success
+- 201 Created — resource created
+- 400 Bad Request — validation errors
+- 404 Not Found — resource not found
+- 500 Internal Server Error — server failure
+
+9.6 API examples (cURL)
+
+Create employee
+
+```bash
+curl -X POST https://okr-system-backend.onrender.com/api/employees \
+  -H "Content-Type: application/json" \
+  -d '{"empName":"Alice","empDesignation":"Engineer","empLevel":2}'
+```
+
+Get employee OKRs (performance)
+
+```bash
+curl https://okr-system-backend.onrender.com/api/performance/okrs/101
+```
+
+10. Operational recommendations
+
+- Add authentication & authorization for production APIs (JWT/OAuth).
+- Introduce structured logging and error-tracking.
+- Add automated tests and a CI pipeline that runs linters and tests on push/PR.
+- Add backup plan for MongoDB and health checks for services.
+
+11. Appendix — references
+
+- Backend entrypoint: [okr_backend/src/index.js](okr_backend/src/index.js#L1)
+- Employee model: [okr_backend/src/models/employee.js](okr_backend/src/models/employee.js#L1)
+- Level1 model: [okr_backend/src/models/level1Okr.js](okr_backend/src/models/level1Okr.js#L1)
+- Level2 model: [okr_backend/src/models/level2Okr.js](okr_backend/src/models/level2Okr.js#L1)
+- Performance controller: [okr_backend/src/controllers/performanceController.js](okr_backend/src/controllers/performanceController.js#L1)
+- Frontend API layer: [okr_frontend/src/lib/api.js](okr_frontend/src/lib/api.js#L1)
+
+Document generated on 2026-03-13 by repository analysis.
+
+- `morgan('dev')` outputs concise dev-friendly request logs, e.g.,
+  - `GET /api/employees 200 12ms - 1.5kb`
+- Manual logs use `console.log`/`console.error` (no level tags are enforced). Consider migrating to a structured logger for production.
+
+Recommended log levels
+- INFO: startup, successful DB connection, endpoints registered
+- WARN: unexpected but recoverable conditions
+- ERROR: failed DB connection, unhandled exceptions in controllers
+
+12. Deployment
+
+Backend
+- Options:
+  - Run directly: `node src/index.js` in an environment with `NODE_ENV=production`.
+  - Docker: build and run using the included `Dockerfile`.
+
+(Docker deployment removed — backend is deployed on Render in this project.)
+
+Frontend / Desktop packaging
+- Use `electron-builder` with the `package.json` build configuration in `okr_frontend`.
+- Windows packaging commands
+```powershell
+cd okr_frontend
+npm install
+npm run build:exe    # build web app and invoke electron-builder
+# or
+npm run dist         # produce distributables according to `package.json` build config
+```
+- Output: `okr_frontend/dist_electron` will contain the packaged app and installers where applicable (NSIS/portable per configuration).
+
+Installer types
+- NSIS installer or portable zip (configured under the `win` target in `package.json` build block).
+
+Dependencies required for deployment
+- Node.js runtime (only for running backend outside Docker), MongoDB accessible by the backend, Windows runtime for packaged Electron apps (packaging uses electron-builder which bundles the necessary runtime).
+
+Appendix: Useful file references
+- Backend entrypoint: `okr_backend/src/index.js`
+-- Render spec (optional): `okr_backend/render.yaml` or top-level `render.yaml`
+- One of the data models: `okr_backend/src/models/employee.js`
+- Frontend build & packaging config: `okr_frontend/package.json`
+
+Contact & Next steps
+- To improve production readiness, consider adding:
+  - Structured logging (winston/pino) and file/remote sink
+  - Health checks and readiness endpoints
+  - Automated tests and CI pipeline
+  - Formal API documentation (OpenAPI / Swagger)
+
+---
+Generated by the project analysis on 2026-03-13.

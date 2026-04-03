@@ -32,9 +32,12 @@ const OKRWorkspaceLevel1 = () => {
 
   const [employees, setEmployees] = useState([]);
   const [okrs, setOkrs] = useState([]);
-  const [selectedOkrId, setSelectedOkrId] = useState(null);
+  const [_selectedOkrId, setSelectedOkrId] = useState(null);
   const [selectedOkrCode, setSelectedOkrCode] = useState('');
   const [canClose, setCanClose] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const pristineRef = useRef(null);
+  const _initRef = useRef(false);
 
   useEffect(() => {
     listEmployees().then(resp => {
@@ -50,25 +53,37 @@ const OKRWorkspaceLevel1 = () => {
 
   // fetch OKRs for selected employee whenever employeeCode changes
   useEffect(() => {
-    if (!fields.employeeCode) {
-      setOkrs([]);
-      setSelectedOkrId(null);
-      setSelectedOkrCode('');
-      return;
-    }
-    listLevel1OKRs().then(resp => {
-      const data = resp && resp.data ? resp.data : [];
-      const list = (data || []).filter(o => String(o.empCode) === String(fields.employeeCode));
-      setOkrs(list);
-    }).catch(() => setOkrs([]));
+    let mounted = true;
+    (async () => {
+      // defer to next microtask to avoid calling setState synchronously during render
+      await Promise.resolve();
+      if (!mounted) return;
+      if (!fields.employeeCode) {
+        setOkrs([]);
+        setSelectedOkrId(null);
+        setSelectedOkrCode('');
+        return;
+      }
+      try {
+        const resp = await listLevel1OKRs();
+        const data = resp && resp.data ? resp.data : [];
+        const list = (data || []).filter(o => String(o.empCode) === String(fields.employeeCode));
+        if (!mounted) return;
+        setOkrs(list);
+      } catch (err) {
+        if (!mounted) return;
+        setOkrs([]);
+      }
+    })();
+    return () => { mounted = false; };
   }, [fields.employeeCode]);
 
   const resetForNew = () => {
     setSelectedOkrId(null);
     setSelectedOkrCode('NEW');
     setCanClose(false);
-    setFields(prev => ({
-      ...prev,
+    const newFields = {
+      ...fields,
       okrCode: 'NEW',
       okrDate: today,
       okrDescription: '',
@@ -79,14 +94,17 @@ const OKRWorkspaceLevel1 = () => {
         { percent: '', comment: '' },
         { percent: '', comment: '' }
       ]
-    }));
+    };
+    setFields(newFields);
+    setIsDirty(false);
+    pristineRef.current = JSON.stringify(newFields);
   };
 
   const resetForm = () => {
     setSelectedOkrId(null);
     setSelectedOkrCode('');
     setCanClose(false);
-    setFields({
+    const newFields = {
       employeeCode: '',
       employeeName: '',
       employeeLevel: '',
@@ -100,8 +118,11 @@ const OKRWorkspaceLevel1 = () => {
         { percent: '', comment: '' },
         { percent: '', comment: '' },
       ],
-    });
+    };
+    setFields(newFields);
     setOkrs([]);
+    setIsDirty(false);
+    pristineRef.current = JSON.stringify(newFields);
   };
   const firstInputRef = useRef(null);
   useEffect(() => { try { firstInputRef.current && firstInputRef.current.focus(); } catch {} }, []);
@@ -109,8 +130,8 @@ const OKRWorkspaceLevel1 = () => {
   const populateFromOkr = (okr) => {
     setSelectedOkrId(okr._id);
     setSelectedOkrCode(String(okr.level1OkrCode));
-    setFields(prev => ({
-      ...prev,
+    const newFields = {
+      ...fields,
       okrCode: String(okr.level1OkrCode),
       okrDate: okr.okrDate ? new Date(okr.okrDate).toISOString().slice(0,10) : today,
       okrDescription: okr.okrDesc || '',
@@ -121,7 +142,11 @@ const OKRWorkspaceLevel1 = () => {
         { percent: okr.q3_percentage ?? '', comment: okr.q3_comment || '' },
         { percent: okr.q4_percentage ?? '', comment: okr.q4_comment || '' }
       ]
-    }));
+    };
+    setFields(newFields);
+    // mark populated state as pristine
+    pristineRef.current = JSON.stringify(newFields);
+    setIsDirty(false);
   };
 
   const fetchOkrsForEmployee = async () => {
@@ -176,16 +201,17 @@ const OKRWorkspaceLevel1 = () => {
         toast.send('OKR updated successfully.', 'success');
         await fetchOkrsForEmployee();
         setCanClose(true);
+        setIsDirty(false);
       } else {
         const res = await createLevel1OKR(payload);
         const created = res && res.data ? res.data : null;
-        toast.send(`OKR created. New OKR Code: ${created ? created.level1OkrCode : 'unknown'}`, 'success');
+        toast.send('OKR created successfully.', 'success');
         await fetchOkrsForEmployee();
         setCanClose(true);
+        setIsDirty(false);
         if (created) {
-          // clear form after create
-          resetForm();
-          setCanClose(true);
+          // keep created record visible and mark Closed state; no auto-clear or navigation
+          setFields(prev => ({ ...prev, okrCode: created.level1OkrCode || prev.okrCode }));
         }
       }
     } catch (err) {
@@ -194,16 +220,24 @@ const OKRWorkspaceLevel1 = () => {
   };
 
   const handleCancel = () => {
-    if (canClose) {
-      resetForm();
-      navigate('/');
-      return;
-    }
+    // if not dirty (Close shown) or already in closed state, do nothing
+    if (!isDirty || canClose) return;
     if (window.confirm('Cancel OKR entry and return to main menu?')) {
       resetForm();
       navigate('/');
     }
   };
+
+  // track dirty state by comparing to a pristine snapshot
+  useEffect(() => {
+    if (!_initRef.current) {
+      pristineRef.current = JSON.stringify(fields);
+      _initRef.current = true;
+      setIsDirty(false);
+      return;
+    }
+    setIsDirty(JSON.stringify(fields) !== pristineRef.current);
+  }, [fields]);
 
   const handleFieldChange = (field, value) => {
     setFields(prev => ({ ...prev, [field]: value }));
@@ -238,7 +272,7 @@ const OKRWorkspaceLevel1 = () => {
       <div className="absolute top-6 left-6">
         <BackButton onClick={() => navigate('/')} />
       </div>
-      <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-5xl p-8 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-5xl p-8 overflow-hidden professional-panel">
         <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 1</h1>
         <form>
           <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-4">
@@ -271,7 +305,7 @@ const OKRWorkspaceLevel1 = () => {
               <input value={fields.employeeLevel} readOnly className="border px-2 py-2 w-full bg-gray-100" />
             </div>
             <div className="flex flex-col gap-2 min-w-0">
-              <label className="font-semibold">OKR Code</label>
+              <label className="font-semibold">Select OKR</label>
               <select value={selectedOkrCode || ''} onChange={e => {
                 const v = e.target.value;
                 if (v === 'NEW') { resetForNew(); return; }
@@ -281,7 +315,7 @@ const OKRWorkspaceLevel1 = () => {
                 <option value="">Select OKR</option>
                 <option value="NEW">New</option>
                 {okrs.map(o => (
-                  <option key={o._id} value={String(o.level1OkrCode)}>{String(o.level1OkrCode)}</option>
+                  <option key={o._id} value={String(o.level1OkrCode)}>{o.okrDesc?.slice(0,50) || String(o.level1OkrCode)}</option>
                 ))}
               </select>
             </div>
@@ -346,7 +380,7 @@ const OKRWorkspaceLevel1 = () => {
           )} */}
           <div className="flex justify-center gap-6 mt-6">
             <OKRActionButton type="button" onClick={handleSave}>Update OKR</OKRActionButton>
-            <OKRActionButton type="button" onClick={handleCancel}>{canClose ? 'Close' : 'Cancel OKR'}</OKRActionButton>
+            <OKRActionButton type="button" onClick={handleCancel}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
           </div>
         </form>
       </div>

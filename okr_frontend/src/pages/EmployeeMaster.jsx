@@ -1,64 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import LabelInput from '../components/LabelInput';
 import EmployeeLevelSelect from '../components/EmployeeLevelSelect';
 import ActionButton from '../components/ActionButton';
-import HelpText from '../components/HelpText';
 import BackButton from '../components/BackButton';
 
 const EMPLOYEE_LEVELS = ['1', '2', '3', '4', '5', '6', '7'];
 
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ToastProvider';
-import { createEmployee, listEmployees } from '../lib/api';
+import { createEmployee } from '../lib/api';
 
 const EmployeeMaster = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const [code, setCode] = useState('');
+  const [userId, setUserId] = useState('');
   const [name, setName] = useState('');
   const [designation, setDesignation] = useState('');
   const [level, setLevel] = useState('');
+  const [emailId, setEmailId] = useState('');
+  const [cellNumber, setCellNumber] = useState('');
+  const [isAdmin, setIsAdmin] = useState('No');
   const [isRecordAdded, setIsRecordAdded] = useState(false);
-
-  const computeNextCode = (items) => {
-    const maxCode = (items || []).reduce((max, emp) => Math.max(max, Number(emp.empCode) || 0), 0);
-    return String(maxCode + 1);
-  };
-
-  const refreshNextCode = async () => {
-    try {
-      const res = await listEmployees();
-      setCode(computeNextCode(res?.data || []));
-    } catch (err) {
-      console.error(err);
-      setCode('');
-    }
-  };
 
   // Handlers
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      const trimmed = String(code || '').trim();
-      if (!trimmed) {
-        await refreshNextCode();
-      }
-      const finalCode = String(code || '').trim();
-      if (!finalCode) return toast.send('Employee Code is required', 'error');
-      const parsedCode = Number(finalCode);
-      if (!Number.isFinite(parsedCode)) return toast.send('Employee Code must be a valid number', 'error');
+      if (!name.trim()) return toast.send('Employee Name is required', 'error');
+      if (!level) return toast.send('Employee Level is required', 'error');
+      if (!emailId.trim()) return toast.send('Email ID is required', 'error');
+      if (!cellNumber.trim()) return toast.send('Cell Number is required', 'error');
 
       const payload = {
-        empCode: parsedCode,
         empName: name,
         empDesignation: designation,
-        empLevel: Number(level || 0)
+        empLevel: Number(level || 0),
+        emailId: String(emailId || '').trim(),
+        cellNumber: String(cellNumber || '').trim(),
+        isAdmin: isAdmin === 'Yes'
       };
 
       const res = await createEmployee(payload);
       const created = res?.data;
-      if (created?.empCode != null) {
-        setCode(String(created.empCode));
+      if (created?.userId) {
+        setUserId(String(created.userId));
         // mark record as added and lock the form; user must Close or Back to modify again
         setIsRecordAdded(true);
       }
@@ -76,19 +61,14 @@ const EmployeeMaster = () => {
     }
   };
   const handleCancel = () => {
-    setName(''); setDesignation(''); setLevel('');
+    setUserId('');
+    setName('');
+    setDesignation('');
+    setLevel('');
+    setEmailId('');
+    setCellNumber('');
+    setIsAdmin('No');
   };
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      // defer to next microtask to avoid calling setState synchronously during render
-      await Promise.resolve();
-      if (!mounted) return;
-      await refreshNextCode();
-    })();
-    return () => { mounted = false; };
-  }, []);
 
   return (
     <div className="min-h-screen bg-[#0f1724] flex items-center justify-center py-12">
@@ -100,11 +80,12 @@ const EmployeeMaster = () => {
 
         <div className="flex w-full gap-8">
           <form className="flex-1">
-            <LabelInput label="Employee Code:">
+            <LabelInput label="Employee User ID:">
               <input
-                id="employeecode"
+                id="employeeuserid"
                 className="w-40 p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400 bg-gray-100"
-                value={code}
+                value={userId}
+                placeholder="Auto-generated after save"
                 readOnly
               />
             </LabelInput>
@@ -136,6 +117,41 @@ const EmployeeMaster = () => {
                 options={EMPLOYEE_LEVELS}
                 disabled={isRecordAdded}
               />
+            </LabelInput>
+
+            <LabelInput label="Email ID:">
+              <input
+                id="employeeemail"
+                type="email"
+                className="w-full p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400"
+                value={emailId}
+                onChange={e => setEmailId(e.target.value)}
+                disabled={isRecordAdded}
+              />
+            </LabelInput>
+
+            <LabelInput label="Cell Number:">
+              <input
+                id="employeecell"
+                type="text"
+                className="w-full p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400"
+                value={cellNumber}
+                onChange={e => setCellNumber(e.target.value)}
+                disabled={isRecordAdded}
+              />
+            </LabelInput>
+
+            <LabelInput label="Admin User:">
+              <select
+                id="employeeadmin"
+                className="w-full p-2 border border-gray-300 rounded text-lg text-gray-900 bg-white"
+                value={isAdmin}
+                onChange={e => setIsAdmin(e.target.value)}
+                disabled={isRecordAdded}
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
             </LabelInput>
 
             <div className="flex flex-row gap-6 mt-8 justify-start">

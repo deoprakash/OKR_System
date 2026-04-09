@@ -230,7 +230,7 @@ export default function OKRPerformance() {
                       </div>
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
-                      {hierarchyData.level1?.empName || selectedEmployee?.empName || "-"}
+                      {hierarchyData.level1?.empName || "-"}
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
                       {hierarchyData.level1?.okrDesc || "-"}
@@ -259,7 +259,7 @@ export default function OKRPerformance() {
                       </div>
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
-                      {hierarchyData.level2?.empName || selectedEmployee?.empName || "-"}
+                      {hierarchyData.level2?.empName || "-"}
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
                       {hierarchyData.level2?.okrDesc || "-"}
@@ -288,7 +288,7 @@ export default function OKRPerformance() {
                       </div>
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
-                      {hierarchyData.level3?.empName || selectedEmployee?.empName || "-"}
+                      {hierarchyData.level3?.empName || "-"}
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
                       {hierarchyData.level3?.okrDesc || "-"}
@@ -317,7 +317,7 @@ export default function OKRPerformance() {
                       </div>
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
-                      {hierarchyData.level4?.empName || selectedEmployee?.empName || "-"}
+                      {hierarchyData.level4?.empName || "-"}
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
                       {hierarchyData.level4?.okrDesc || "-"}
@@ -346,7 +346,7 @@ export default function OKRPerformance() {
                       </div>
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
-                      {hierarchyData.level5?.empName || selectedEmployee?.empName || "-"}
+                      {hierarchyData.level5?.empName || "-"}
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
                       {hierarchyData.level5?.okrDesc || "-"}
@@ -375,7 +375,7 @@ export default function OKRPerformance() {
                       </div>
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
-                      {hierarchyData.level6?.empName || selectedEmployee?.empName || "-"}
+                      {hierarchyData.level6?.empName || "-"}
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
                       {hierarchyData.level6?.okrDesc || "-"}
@@ -404,7 +404,7 @@ export default function OKRPerformance() {
                       </div>
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
-                      {hierarchyData.level7?.empName || selectedEmployee?.empName || "-"}
+                      {hierarchyData.level7?.empName || "-"}
                     </td>
                     <td className="border border-blue-300 px-4 py-3">
                       {hierarchyData.level7?.okrDesc || "-"}

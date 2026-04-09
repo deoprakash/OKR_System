@@ -5,6 +5,7 @@ import Level4OKR from "../models/level4Okr.js";
 import Level5OKR from "../models/level5Okr.js";
 import Level6OKR from "../models/level6Okr.js";
 import Level7OKR from "../models/level7Okr.js";
+import Employee from "../models/employee.js";
 
 // Get all OKRs for an employee (for dropdown list)
 export async function getEmployeeOKRs(req, res) {
@@ -12,6 +13,17 @@ export async function getEmployeeOKRs(req, res) {
   
   try {
     const empCodeNum = Number(empCode);
+    const employee = await Employee.findOne({ empCode: empCodeNum });
+    if (!employee) return res.status(404).json({ error: "Employee not found" });
+
+    if (!req.user?.isAdmin) {
+      const canView =
+        Number(req.user?.empCode) === empCodeNum ||
+        Number(employee.empLevel || 0) >= Number(req.user?.empLevel || 0);
+      if (!canView) {
+        return res.status(403).json({ error: "You can only view lower level employee OKRs" });
+      }
+    }
     
     // Fetch all OKRs for this employee based on their level
     const [level1, level2, level3, level4, level5, level6, level7] = await Promise.all([
@@ -48,6 +60,12 @@ export async function getOKRHierarchy(req, res) {
   try {
     const levelNum = Number(level);
     const okrCodeNum = Number(okrCode);
+
+    if (!req.user?.isAdmin) {
+      if (levelNum < Number(req.user?.empLevel || 0)) {
+        return res.status(403).json({ error: "You can only view your level or lower levels" });
+      }
+    }
     
     let result = {
       level1: null,

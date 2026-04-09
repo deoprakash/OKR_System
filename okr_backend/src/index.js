@@ -1,6 +1,6 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import morgan from "morgan";
 import mongoose from "mongoose";
 import employeeRoutes from "./routes/employees.js";
@@ -13,8 +13,7 @@ import level5Routes from "./routes/level5.js";
 import level6Routes from "./routes/level6.js";
 import level7Routes from "./routes/level7.js";
 import performanceRoutes from "./routes/performance.js";
-
-dotenv.config();
+import authRoutes from "./routes/auth.js";
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
@@ -29,6 +28,7 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/level1", level1Routes);
 app.use("/api/level2", level2Routes);

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { ToastProvider } from './components/ToastProvider'
+import { AuthProvider } from './context/AuthContext'
 
 console.log('Renderer: main.jsx loaded');
 window.addEventListener('error', (e) => {
@@ -14,8 +15,10 @@ window.addEventListener('unhandledrejection', (e) => {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ToastProvider>
-      <App />
-    </ToastProvider>
+    <AuthProvider>
+      <ToastProvider>
+        <App />
+      </ToastProvider>
+    </AuthProvider>
   </StrictMode>,
 )

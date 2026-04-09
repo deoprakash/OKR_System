@@ -5,6 +5,40 @@ const { request: httpsRequest } = require('https')
 const { URL } = require('url')
 const { ipcMain, dialog } = require('electron');
 
+function buildAppMenu() {
+  const isMac = process.platform === 'darwin';
+  const template = [
+    ...(isMac
+      ? [{ label: app.name, submenu: [{ role: 'about' }, { type: 'separator' }, { role: 'quit' }] }]
+      : [{ label: 'File', submenu: [{ role: 'quit' }] }]),
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { type: 'separator' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'Developer',
+      submenu: [
+        { role: 'toggleDevTools' },
+        { role: 'reload' },
+        { role: 'forceReload' }
+      ]
+    }
+  ];
+
+  return Menu.buildFromTemplate(template);
+}
+
 function waitForServer(urlString, retries = 10, delayMs = 500) {
   const url = new URL(urlString);
   const isHttps = url.protocol === 'https:';
@@ -33,17 +67,14 @@ const createWindow = async () => {
     width: 1200,
     height: 800,
     show: false,
-    autoHideMenuBar: true,
-    menuBarVisible: false,
+    autoHideMenuBar: false,
+    menuBarVisible: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.cjs')
     }
   })
-
-  // Extra safeguard: remove menu from this window instance.
-  win.removeMenu();
 
   const env = process.env.NODE_ENV || 'production';
   console.log('Electron starting, NODE_ENV=', env, 'VITE_DEV_SERVER_URL=', process.env.VITE_DEV_SERVER_URL);
@@ -101,8 +132,7 @@ const createWindow = async () => {
 }
 
 app.whenReady().then(() => {
-  // Hide the native application menu (File/Edit/View/Window/Help)
-  Menu.setApplicationMenu(null);
+  Menu.setApplicationMenu(buildAppMenu());
   createWindow();
 })
 

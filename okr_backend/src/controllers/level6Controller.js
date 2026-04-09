@@ -30,8 +30,13 @@ export async function get(req, res) {
 
 export async function create(req, res) {
   try {
-    const payload = req.body;
-    const doc = new Level6OKR(payload);
+    const payload = req.body || {};
+    const doc = new Level6OKR({
+      ...payload,
+      createdByName: req.user?.empName || "System",
+      createdByEmpCode: req.user?.empCode || null,
+      createdByUserId: req.user?.userId || null
+    });
     await doc.save();
     res.status(201).json({ data: doc });
   } catch (err) {

@@ -1,17 +1,53 @@
-const baseUrl = import.meta.env.VITE_API_URL || 'https://okr-system-backend.onrender.com';
+const baseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : 'https://okr-system-backend.onrender.com');
+
+function getToken() {
+  try {
+    return localStorage.getItem('authToken') || '';
+  } catch {
+    return '';
+  }
+}
 
 async function request(path, options = {}) {
   const url = `${baseUrl}${path}`;
+  const token = getToken();
+  const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
   const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeader },
     ...options,
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || res.statusText);
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = null;
+    }
+
+    const failedChannels = parsed?.delivery?.failedChannels || parsed?.data?.failedChannels;
+    const failedText = Array.isArray(failedChannels) && failedChannels.length
+      ? ` (${failedChannels.map((f) => `${f.channel}: ${f.error}`).join(' | ')})`
+      : '';
+
+    const message = parsed?.error || parsed?.message || text || res.statusText;
+    throw new Error(`${message}${failedText}`.trim());
   }
   return res.json();
 }
+
+export const requestOtp = (userId) => request('/api/auth/request-otp', {
+  method: 'POST',
+  body: JSON.stringify({ userId: String(userId || '').trim() })
+});
+
+export const verifyOtp = (userId, otp) => request('/api/auth/verify-otp', {
+  method: 'POST',
+  body: JSON.stringify({ userId: String(userId || '').trim(), otp: String(otp || '') })
+});
+
+export const getMe = () => request('/api/auth/me');
+export const logoutApi = () => request('/api/auth/logout', { method: 'POST' });
 
 export const getEmployee = (id) => request(`/api/employees/${encodeURIComponent(id)}`);
 export const createEmployee = (payload) => request(`/api/employees`, { method: 'POST', body: JSON.stringify(payload) });

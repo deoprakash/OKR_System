@@ -7,6 +7,7 @@ import AuthSession from "../models/authSession.js";
 let transporter;
 const OTP_EMAIL_TIMEOUT_MS = Number(process.env.OTP_EMAIL_TIMEOUT_MS || 15000);
 const isProduction = process.env.NODE_ENV === "production";
+const OTP_EMAIL_ENABLED = String(process.env.OTP_EMAIL_ENABLED || (isProduction ? "true" : "false")).toLowerCase() === "true";
 
 function getOtpTemplate() {
   return process.env.OTP_TEMPLATE_TEXT || "Your login OTP is {}. This is valid for 5 minutes. NEVER share your OTP.";
@@ -145,19 +146,24 @@ export async function requestOtp(req, res) {
       { upsert: true, new: true }
     );
 
-    try {
-      await sendOtpEmail(employee.emailId, otp);
-    } catch (sendErr) {
-      console.error("OTP email send failed", {
-        userId: employee.userId,
-        email: employee.emailId,
-        message: sendErr?.message,
-        code: sendErr?.code,
-        command: sendErr?.command,
-        response: sendErr?.response,
-        responseCode: sendErr?.responseCode
-      });
-      return res.status(502).json({ error: sendErr.message || "Failed to send OTP email" });
+    if (OTP_EMAIL_ENABLED) {
+      try {
+        await sendOtpEmail(employee.emailId, otp);
+      } catch (sendErr) {
+        console.error("OTP email send failed", {
+          userId: employee.userId,
+          email: employee.emailId,
+          message: sendErr?.message,
+          code: sendErr?.code,
+          command: sendErr?.command,
+          response: sendErr?.response,
+          responseCode: sendErr?.responseCode
+        });
+        return res.status(502).json({ error: sendErr.message || "Failed to send OTP email" });
+      }
+    } else {
+      // In non-production, skip SMTP to keep local/dev flows simple.
+      console.log(`OTP generated (email disabled): userId=${employee.userId} otp=${otp}`);
     }
 
     const payload = {

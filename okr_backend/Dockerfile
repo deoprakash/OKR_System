@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install production dependencies first to leverage Docker layer caching
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Copy app source
 COPY . .

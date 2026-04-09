@@ -25,6 +25,9 @@ function getTransporter() {
   const otpEmailFrom = process.env.OTP_EMAIL_FROM || "";
   const otpEmailUser = process.env.OTP_EMAIL_USER || otpEmailFrom;
   const otpEmailPass = process.env.OTP_EMAIL_PASS || "";
+  const smtpHost = process.env.SMTP_HOST || "";
+  const smtpPort = Number(process.env.SMTP_PORT || 587);
+  const smtpSecure = String(process.env.SMTP_SECURE || (smtpPort === 465 ? "true" : "false")).toLowerCase() === "true";
 
   if (!otpEmailUser || !otpEmailPass) {
     throw new Error("OTP email is not configured. Set OTP_EMAIL_FROM and OTP_EMAIL_PASS (OTP_EMAIL_USER is optional)");
@@ -42,10 +45,19 @@ function getTransporter() {
       }
     };
 
-    transporter = nodemailer.createTransport({
-      service: "gmail",
-      ...commonConfig
-    });
+    if (smtpHost) {
+      transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpSecure,
+        ...commonConfig
+      });
+    } else {
+      transporter = nodemailer.createTransport({
+        service: "gmail",
+        ...commonConfig
+      });
+    }
   }
 
   return transporter;

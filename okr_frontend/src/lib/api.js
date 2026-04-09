@@ -1,4 +1,5 @@
-const deployedBaseUrl = 'https://okr-system-backend.onrender.com';
+const deployedBaseUrl = 'https://okrsystem-production.up.railway.app';
+// const deployedBaseUrl = 'https://okr-system-backend.onrender.com';
 const localBaseUrl = 'http://localhost:5000';
 const isPackagedElectron = typeof window !== 'undefined' && window.location && window.location.protocol === 'file:';
 const baseUrl = import.meta.env.VITE_API_URL || (isPackagedElectron ? deployedBaseUrl : (import.meta.env.DEV ? localBaseUrl : deployedBaseUrl));

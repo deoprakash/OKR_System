@@ -1,12 +1,10 @@
 import crypto from "crypto";
 import nodemailer from "nodemailer";
-import { Resend } from "resend";
 import Employee from "../models/employee.js";
 import OtpChallenge from "../models/otpChallenge.js";
 import AuthSession from "../models/authSession.js";
 
 let transporter;
-let resendClient;
 const OTP_EMAIL_TIMEOUT_MS = Number(process.env.OTP_EMAIL_TIMEOUT_MS || 15000);
 const isProduction = process.env.NODE_ENV === "production";
 const OTP_EMAIL_ENABLED = String(process.env.OTP_EMAIL_ENABLED || (isProduction ? "true" : "false")).toLowerCase() === "true";
@@ -53,19 +51,6 @@ function getTransporter() {
   return transporter;
 }
 
-function getResendClient() {
-  const resendApiKey = process.env.RESEND_API_KEY || process.env.RESEND_API || "";
-  if (!resendApiKey) {
-    throw new Error("RESEND_API_KEY is required in production");
-  }
-
-  if (!resendClient) {
-    resendClient = new Resend(resendApiKey);
-  }
-
-  return resendClient;
-}
-
 async function sendOtpEmail(emailTo, otp) {
   const otpEmailFrom = process.env.OTP_EMAIL_FROM || "";
   const message = buildOtpMessage(otp);
@@ -76,29 +61,6 @@ async function sendOtpEmail(emailTo, otp) {
 
   if (!otpEmailFrom) {
     throw new Error("OTP_EMAIL_FROM is required");
-  }
-
-  if (isProduction) {
-    const resend = getResendClient();
-    await Promise.race([
-      (async () => {
-        const { error } = await resend.emails.send({
-          from: otpEmailFrom,
-          to: [emailTo],
-          subject: "Your OKR Login OTP",
-          text: message,
-          html: `<p>${message}</p>`
-        });
-
-        if (error) {
-          throw new Error(error.message || "Failed to send OTP via Resend");
-        }
-      })(),
-      new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("OTP email send timed out")), OTP_EMAIL_TIMEOUT_MS);
-      })
-    ]);
-    return;
   }
 
   const mailer = getTransporter();

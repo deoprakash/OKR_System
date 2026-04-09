@@ -28,6 +28,10 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+app.get("/", (req, res) => {
+  res.json({ status: "ok", service: "OKR backend" });
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/level1", level1Routes);

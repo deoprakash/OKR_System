@@ -17,11 +17,33 @@ import authRoutes from "./routes/auth.js";
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
+const CLIENT_ORIGINS = (process.env.CLIENT_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+const ALLOW_NULL_ORIGIN = (process.env.ALLOW_NULL_ORIGIN || "true").toLowerCase() === "true";
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/okr_db";
 
 app.use(morgan("dev"));
-app.use(cors({ origin: CLIENT_ORIGIN }));
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin) return callback(null, true);
+
+    const normalizedOrigin = origin.replace(/\/+$/, "");
+
+    if (normalizedOrigin === "null" && ALLOW_NULL_ORIGIN) {
+      return callback(null, true);
+    }
+
+    if (CLIENT_ORIGINS.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express.json());
 
 app.get("/health", (req, res) => {

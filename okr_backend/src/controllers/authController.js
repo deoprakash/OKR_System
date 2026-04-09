@@ -6,6 +6,7 @@ import AuthSession from "../models/authSession.js";
 
 let transporter;
 const OTP_EMAIL_TIMEOUT_MS = Number(process.env.OTP_EMAIL_TIMEOUT_MS || 15000);
+const isProduction = process.env.NODE_ENV === "production";
 
 function getOtpTemplate() {
   return process.env.OTP_TEMPLATE_TEXT || "Your login OTP is {}. This is valid for 5 minutes. NEVER share your OTP.";
@@ -23,16 +24,16 @@ function getTransporter() {
   const otpEmailFrom = process.env.OTP_EMAIL_FROM || "";
   const otpEmailUser = process.env.OTP_EMAIL_USER || otpEmailFrom;
   const otpEmailPass = process.env.OTP_EMAIL_PASS || "";
+  const smtpHost = process.env.SMTP_HOST || "";
+  const smtpPort = Number(process.env.SMTP_PORT || 587);
+  const smtpSecure = String(process.env.SMTP_SECURE || (smtpPort === 465 ? "true" : "false")).toLowerCase() === "true";
 
   if (!otpEmailUser || !otpEmailPass) {
     throw new Error("OTP email is not configured. Set OTP_EMAIL_FROM and OTP_EMAIL_PASS (OTP_EMAIL_USER is optional)");
   }
 
   if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
+    const commonConfig = {
       family: 4,
       connectionTimeout: OTP_EMAIL_TIMEOUT_MS,
       greetingTimeout: OTP_EMAIL_TIMEOUT_MS,
@@ -41,7 +42,25 @@ function getTransporter() {
         user: otpEmailUser,
         pass: otpEmailPass
       }
-    });
+    };
+
+    if (isProduction) {
+      if (!smtpHost) {
+        throw new Error("SMTP_HOST is required in production");
+      }
+
+      transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpSecure,
+        ...commonConfig
+      });
+    } else {
+      transporter = nodemailer.createTransport({
+        service: "gmail",
+        ...commonConfig
+      });
+    }
   }
 
   return transporter;
@@ -129,6 +148,15 @@ export async function requestOtp(req, res) {
     try {
       await sendOtpEmail(employee.emailId, otp);
     } catch (sendErr) {
+      console.error("OTP email send failed", {
+        userId: employee.userId,
+        email: employee.emailId,
+        message: sendErr?.message,
+        code: sendErr?.code,
+        command: sendErr?.command,
+        response: sendErr?.response,
+        responseCode: sendErr?.responseCode
+      });
       return res.status(502).json({ error: sendErr.message || "Failed to send OTP email" });
     }
 
@@ -144,6 +172,10 @@ export async function requestOtp(req, res) {
 
     res.json(payload);
   } catch (err) {
+    console.error("requestOtp failed", {
+      message: err?.message,
+      stack: err?.stack
+    });
     res.status(500).json({ error: "Failed to request OTP" });
   }
 }
@@ -216,6 +248,10 @@ export async function verifyOtp(req, res) {
       }
     });
   } catch (err) {
+    console.error("verifyOtp failed", {
+      message: err?.message,
+      stack: err?.stack
+    });
     res.status(500).json({ error: "Failed to verify OTP" });
   }
 }

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import dns from "dns";
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
@@ -14,6 +15,8 @@ import level6Routes from "./routes/level6.js";
 import level7Routes from "./routes/level7.js";
 import performanceRoutes from "./routes/performance.js";
 import authRoutes from "./routes/auth.js";
+
+dns.setDefaultResultOrder("ipv4first");
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;

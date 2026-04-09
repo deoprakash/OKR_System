@@ -30,7 +30,13 @@ function getTransporter() {
 
   if (!transporter) {
     transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      family: 4,
+      connectionTimeout: OTP_EMAIL_TIMEOUT_MS,
+      greetingTimeout: OTP_EMAIL_TIMEOUT_MS,
+      socketTimeout: OTP_EMAIL_TIMEOUT_MS,
       auth: {
         user: otpEmailUser,
         pass: otpEmailPass
@@ -66,7 +72,6 @@ async function sendOtpEmail(emailTo, otp) {
       setTimeout(() => reject(new Error("OTP email send timed out")), OTP_EMAIL_TIMEOUT_MS);
     })
   ]);
-}
 }
 
 function maskEmail(email) {

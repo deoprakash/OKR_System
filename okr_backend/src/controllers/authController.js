@@ -5,6 +5,7 @@ import OtpChallenge from "../models/otpChallenge.js";
 import AuthSession from "../models/authSession.js";
 
 let transporter;
+const OTP_EMAIL_TIMEOUT_MS = Number(process.env.OTP_EMAIL_TIMEOUT_MS || 15000);
 
 function getOtpTemplate() {
   return process.env.OTP_TEMPLATE_TEXT || "Your login OTP is {}. This is valid for 5 minutes. NEVER share your OTP.";
@@ -53,13 +54,19 @@ async function sendOtpEmail(emailTo, otp) {
   }
 
   const mailer = getTransporter();
-  await mailer.sendMail({
-    from: otpEmailFrom,
-    to: emailTo,
-    subject: "Your OKR Login OTP",
-    text: message,
-    html: `<p>${message}</p>`
-  });
+  await Promise.race([
+    mailer.sendMail({
+      from: otpEmailFrom,
+      to: emailTo,
+      subject: "Your OKR Login OTP",
+      text: message,
+      html: `<p>${message}</p>`
+    }),
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("OTP email send timed out")), OTP_EMAIL_TIMEOUT_MS);
+    })
+  ]);
+}
 }
 
 function maskEmail(email) {

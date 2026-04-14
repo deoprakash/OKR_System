@@ -43,6 +43,18 @@ export default function NavBar() {
       <div className="font-bold text-2xl tracking-wide cursor-pointer" onClick={() => navigate("/")}>OKR System</div>
       <ul className="flex gap-6 text-lg items-center">
         <li className="hover:text-blue-200 transition cursor-pointer" onClick={() => navigate("/")}>Home</li>
+        {auth.isAdmin && (
+          <li>
+            <a
+              className="hover:text-blue-200 transition cursor-pointer"
+              href="https://okr-analytics.netlify.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              OKR Analytics
+            </a>
+          </li>
+        )}
         {smartMenuItems.length > 0 && (
           <li className="relative" ref={dropdownRef}>
             <span

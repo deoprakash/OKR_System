@@ -23,6 +23,8 @@ yarn-debug.log*
 .env
 .env.*
 /.env
+client_secret*.json
+*oauth*secret*.json
 
 # Editor and OS files
 .vscode/

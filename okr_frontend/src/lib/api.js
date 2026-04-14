@@ -40,14 +40,14 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-export const requestOtp = (userId) => request('/api/auth/request-otp', {
+export const requestOtp = (email) => request('/api/auth/request-otp', {
   method: 'POST',
-  body: JSON.stringify({ userId: String(userId || '').trim() })
+  body: JSON.stringify({ email: String(email || '').trim() })
 });
 
-export const verifyOtp = (userId, otp) => request('/api/auth/verify-otp', {
+export const verifyOtp = (email, otp) => request('/api/auth/verify-otp', {
   method: 'POST',
-  body: JSON.stringify({ userId: String(userId || '').trim(), otp: String(otp || '') })
+  body: JSON.stringify({ email: String(email || '').trim(), otp: String(otp || '') })
 });
 
 export const getMe = () => request('/api/auth/me');

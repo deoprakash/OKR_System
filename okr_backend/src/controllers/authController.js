@@ -1,16 +1,17 @@
 import crypto from "crypto";
-import nodemailer from "nodemailer";
+import { google } from "googleapis";
 import Employee from "../models/employee.js";
 import OtpChallenge from "../models/otpChallenge.js";
 import AuthSession from "../models/authSession.js";
 
-let transporter;
+let gmailClient;
 const OTP_EMAIL_TIMEOUT_MS = Number(process.env.OTP_EMAIL_TIMEOUT_MS || 15000);
+const OTP_EXPIRY_SECONDS = Number(process.env.OTP_EXPIRY_SECONDS || 60);
 const isProduction = process.env.NODE_ENV === "production";
 const OTP_EMAIL_ENABLED = String(process.env.OTP_EMAIL_ENABLED || (isProduction ? "true" : "false")).toLowerCase() === "true";
 
 function getOtpTemplate() {
-  return process.env.OTP_TEMPLATE_TEXT || "Your login OTP is {}. This is valid for 5 minutes. NEVER share your OTP.";
+  return process.env.OTP_TEMPLATE_TEXT || "Your login OTP is {}. This is valid for 1 minute. NEVER share your OTP.";
 }
 
 function buildOtpMessage(otp) {
@@ -21,46 +22,30 @@ function buildOtpMessage(otp) {
   return `${template} ${String(otp)}`;
 }
 
-function getTransporter() {
+function getGmailClient() {
   const otpEmailFrom = process.env.OTP_EMAIL_FROM || "";
-  const otpEmailUser = process.env.OTP_EMAIL_USER || otpEmailFrom;
-  const otpEmailPass = process.env.OTP_EMAIL_PASS || "";
-  const smtpHost = process.env.SMTP_HOST || "";
-  const smtpPort = Number(process.env.SMTP_PORT || 587);
-  const smtpSecure = String(process.env.SMTP_SECURE || (smtpPort === 465 ? "true" : "false")).toLowerCase() === "true";
+  const gmailClientId = process.env.GMAIL_CLIENT_ID || "";
+  const gmailClientSecret = process.env.GMAIL_CLIENT_SECRET || "";
+  const gmailRefreshToken = process.env.GMAIL_REFRESH_TOKEN || "";
+  const gmailRedirectUri = process.env.GMAIL_REDIRECT_URI || "https://developers.google.com/oauthplayground";
 
-  if (!otpEmailUser || !otpEmailPass) {
-    throw new Error("OTP email is not configured. Set OTP_EMAIL_FROM and OTP_EMAIL_PASS (OTP_EMAIL_USER is optional)");
+  if (!otpEmailFrom || !gmailClientId || !gmailClientSecret || !gmailRefreshToken) {
+    throw new Error("OTP email is not configured. Set OTP_EMAIL_FROM, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET and GMAIL_REFRESH_TOKEN");
   }
 
-  if (!transporter) {
-    const commonConfig = {
-      family: 4,
-      connectionTimeout: OTP_EMAIL_TIMEOUT_MS,
-      greetingTimeout: OTP_EMAIL_TIMEOUT_MS,
-      socketTimeout: OTP_EMAIL_TIMEOUT_MS,
-      auth: {
-        user: otpEmailUser,
-        pass: otpEmailPass
-      }
-    };
+  if (!gmailClient) {
+    const oauth2Client = new google.auth.OAuth2(gmailClientId, gmailClientSecret, gmailRedirectUri);
+    oauth2Client.setCredentials({
+      refresh_token: gmailRefreshToken
+    });
 
-    if (smtpHost) {
-      transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpSecure,
-        ...commonConfig
-      });
-    } else {
-      transporter = nodemailer.createTransport({
-        service: "gmail",
-        ...commonConfig
-      });
-    }
+    gmailClient = google.gmail({
+      version: "v1",
+      auth: oauth2Client
+    });
   }
 
-  return transporter;
+  return gmailClient;
 }
 
 async function sendOtpEmail(emailTo, otp) {
@@ -75,14 +60,29 @@ async function sendOtpEmail(emailTo, otp) {
     throw new Error("OTP_EMAIL_FROM is required");
   }
 
-  const mailer = getTransporter();
+  const mailer = getGmailClient();
+  const rawMessage = [
+    `From: ${otpEmailFrom}`,
+    `To: ${emailTo}`,
+    "Subject: Your OKR Login OTP",
+    "MIME-Version: 1.0",
+    'Content-Type: text/plain; charset="UTF-8"',
+    "",
+    message
+  ].join("\r\n");
+
+  const encodedMessage = Buffer.from(rawMessage)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+
   await Promise.race([
-    mailer.sendMail({
-      from: otpEmailFrom,
-      to: emailTo,
-      subject: "Your OKR Login OTP",
-      text: message,
-      html: `<p>${message}</p>`
+    mailer.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw: encodedMessage
+      }
     }),
     new Promise((_, reject) => {
       setTimeout(() => reject(new Error("OTP email send timed out")), OTP_EMAIL_TIMEOUT_MS);
@@ -111,22 +111,24 @@ function generateOtp() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export async function requestOtp(req, res) {
   try {
-    const userIdInput = String(req.body?.userId || "").trim().toUpperCase();
-    if (!userIdInput) {
-      return res.status(400).json({ error: "userId is required" });
+    const emailInput = String(req.body?.email || req.body?.userId || "").trim().toLowerCase();
+    if (!emailInput) {
+      return res.status(400).json({ error: "email is required" });
     }
 
-    let employee = await Employee.findOne({ userId: userIdInput });
-    if (!employee && /^\d+$/.test(userIdInput)) {
-      employee = await Employee.findOne({ empCode: Number(userIdInput) });
-    }
+    const emailRegex = new RegExp(`^${escapeRegex(emailInput)}$`, "i");
+    const employee = await Employee.findOne({ emailId: emailRegex });
     if (!employee) return res.status(404).json({ error: "Employee not found" });
 
     const otp = generateOtp();
     const otpHash = hashOtp(otp);
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000);
 
     await OtpChallenge.findOneAndUpdate(
       { empCode: employee.empCode, consumed: false },
@@ -158,7 +160,7 @@ export async function requestOtp(req, res) {
         return res.status(502).json({ error: sendErr.message || "Failed to send OTP email" });
       }
     } else {
-      // In non-production, skip SMTP to keep local/dev flows simple.
+      // In non-production, skip outgoing email to keep local/dev flows simple.
       console.log(`OTP generated (email disabled): userId=${employee.userId} otp=${otp}`);
     }
 
@@ -168,7 +170,7 @@ export async function requestOtp(req, res) {
         userId: employee.userId,
         email: maskEmail(employee.emailId),
         cellNumber: maskMobile(employee.cellNumber),
-        expiresInSeconds: 300
+        expiresInSeconds: OTP_EXPIRY_SECONDS
       }
     };
 
@@ -184,17 +186,15 @@ export async function requestOtp(req, res) {
 
 export async function verifyOtp(req, res) {
   try {
-    const userIdInput = String(req.body?.userId || "").trim().toUpperCase();
+    const emailInput = String(req.body?.email || req.body?.userId || "").trim().toLowerCase();
     const otp = String(req.body?.otp || "").trim();
 
-    if (!userIdInput || !otp) {
-      return res.status(400).json({ error: "userId and otp are required" });
+    if (!emailInput || !otp) {
+      return res.status(400).json({ error: "email and otp are required" });
     }
 
-    let employee = await Employee.findOne({ userId: userIdInput });
-    if (!employee && /^\d+$/.test(userIdInput)) {
-      employee = await Employee.findOne({ empCode: Number(userIdInput) });
-    }
+    const emailRegex = new RegExp(`^${escapeRegex(emailInput)}$`, "i");
+    const employee = await Employee.findOne({ emailId: emailRegex });
     if (!employee) return res.status(404).json({ error: "Employee not found" });
 
     const challenge = await OtpChallenge.findOne({

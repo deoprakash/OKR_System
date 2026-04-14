@@ -21,7 +21,15 @@
 
    3. Make sure MongoDB is running and reachable from `MONGODB_URI` in `.env`.
 
-   4. Run in dev mode:
+   4. Configure Gmail API credentials in `.env` for OTP delivery:
+
+   - `OTP_EMAIL_FROM`
+   - `GMAIL_CLIENT_ID`
+   - `GMAIL_CLIENT_SECRET`
+   - `GMAIL_REFRESH_TOKEN`
+   - Optional: `GMAIL_REDIRECT_URI` (defaults to Google OAuth Playground URL)
+
+   5. Run in dev mode:
 
    ```bash
    npm run dev

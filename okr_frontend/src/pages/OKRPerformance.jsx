@@ -109,22 +109,22 @@ export default function OKRPerformance() {
   const selLevel = selectedOKR ? Number(selectedOKR.level) : null;
 
   return (
-    <div className="min-h-screen bg-[#0f1724] flex flex-col">
+    <div className="min-h-screen flex flex-col bg-transparent">
       <NavBar />
-      <div className="flex-1 p-8 mt-10">
-        <div className="bg-white rounded-2xl shadow-blue-glow-lg p-8 max-w-7xl mx-auto professional-panel">
-          <h1 className="text-3xl font-bold text-blue-700 text-center mb-8">
+      <div className="flex-1 p-4 sm:p-8 mt-10">
+        <div className="glass-card rounded-2xl p-5 sm:p-8 max-w-7xl mx-auto fade-in">
+          <h1 className="text-2xl sm:text-3xl font-bold text-(--text) text-center mb-8">
             Show OKR Performance
           </h1>
 
           {/* Employee Selection Section */}
-          <div className="grid grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
             <div>
-              <label className="block text-blue-900 font-semibold mb-2">
+              <label className="block text-(--text) font-semibold mb-2">
                 Employee Name
               </label>
               <select
-                className="w-full px-4 py-2 border border-blue-300 rounded-lg focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--text) focus:outline-none focus:border-white/30 transition-colors"
                 value={selectedEmployee?.empCode || ""}
                 onChange={handleEmployeeSelect}
               >
@@ -138,24 +138,24 @@ export default function OKRPerformance() {
             </div>
 
             <div>
-              <label className="block text-blue-900 font-semibold mb-2">
+              <label className="block text-(--text) font-semibold mb-2">
                 Employee Level
               </label>
               <input
                 type="text"
-                className="w-full px-4 py-2 border border-blue-300 rounded-lg bg-gray-100"
+                className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--muted) cursor-not-allowed"
                 value={selectedEmployee?.empLevel || ""}
                 readOnly
               />
             </div>
 
             <div>
-              <label className="block text-blue-900 font-semibold mb-2">
+              <label className="block text-(--text) font-semibold mb-2">
                 Employee Code
               </label>
               <input
                 type="text"
-                className="w-full px-4 py-2 border border-blue-300 rounded-lg bg-gray-100"
+                className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--muted) cursor-not-allowed"
                 value={selectedEmployee?.empCode || ""}
                 readOnly
               />
@@ -164,11 +164,11 @@ export default function OKRPerformance() {
 
           {/* OKR Selection */}
           <div className="mb-6">
-            <label className="block text-blue-900 font-semibold mb-2">
+            <label className="block text-(--text) font-semibold mb-2">
               Select OKR
             </label>
             <select
-              className="w-full max-w-2xl px-4 py-2 border border-blue-300 rounded-lg focus:outline-none focus:border-blue-500"
+              className="w-full max-w-2xl px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--text) focus:outline-none focus:border-white/30 transition-colors disabled:opacity-50"
               value={selectedOKR ? employeeOKRs.indexOf(selectedOKR) : ""}
               onChange={handleOKRSelect}
               disabled={!selectedEmployee || employeeOKRs.length === 0}
@@ -185,240 +185,240 @@ export default function OKRPerformance() {
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-100 border border-red-300 rounded-lg text-red-700">
+            <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300">
               {error}
             </div>
           )}
 
           {/* Performance Table */}
           {hierarchyData && (
-            <div className="overflow-x-auto mb-6">
+            <div className="overflow-x-auto mb-6 rounded-lg border border-white/10">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="bg-blue-100">
-                      <th className="border border-blue-300 px-4 py-3 text-left text-blue-900 font-semibold">
+                      <tr className="bg-white/5 border-b border-white/10">
+                        <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-left text-(--text) font-semibold">
                       
                       </th>
-                      <th className="border border-blue-300 px-4 py-3 text-left text-blue-900 font-semibold w-44">
+                      <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-left text-(--text) font-semibold w-44">
                         Employee Name
                       </th>
-                      <th className="border border-blue-300 px-4 py-3 text-left text-blue-900 font-semibold w-1/2">
+                      <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-left text-(--text) font-semibold">
                         OKR Description
                       </th>
-                    <th className="border border-blue-300 px-4 py-3 text-center text-blue-900 font-semibold w-20">
+                    <th className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text) font-semibold w-16 sm:w-20">
                       Q1 %
                     </th>
-                    <th className="border border-blue-300 px-4 py-3 text-center text-blue-900 font-semibold w-20">
+                    <th className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text) font-semibold w-16 sm:w-20">
                       Q2 %
                     </th>
-                    <th className="border border-blue-300 px-4 py-3 text-center text-blue-900 font-semibold w-20">
+                    <th className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text) font-semibold w-16 sm:w-20">
                       Q3 %
                     </th>
-                    <th className="border border-blue-300 px-4 py-3 text-center text-blue-900 font-semibold w-20">
+                    <th className="px-2 sm:px-3 py-3 text-center text-(--text) font-semibold w-16 sm:w-20">
                       Q4 %
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {/* Level 1 */}
-                  <tr className={`hover:bg-blue-50 ${selLevel === 1 ? 'bg-yellow-100' : ''}`}>
-                    <td className="border border-blue-300 px-4 py-3 font-semibold text-blue-900">
+                  <tr className={`border-b border-white/10 transition-colors ${ selLevel === 1 ? 'bg-cyan-500/20' : 'hover:bg-white/5'}`}>
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 font-semibold text-(--text)">
                       <div className="flex items-center gap-2">
                         <span>Level 1 OKR</span>
-                        {selLevel != null && 1 < selLevel && <span className="text-sm text-gray-600">▲</span>}
-                        {selLevel != null && 1 > selLevel && <span className="text-sm text-gray-600">▼</span>}
+                        {selLevel != null && 1 < selLevel && <span className="text-sm text-(--accent)">▲</span>}
+                        {selLevel != null && 1 > selLevel && <span className="text-sm text-(--accent)">▼</span>}
                       </div>
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--text)">
                       {hierarchyData.level1?.empName || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--muted) text-sm">
                       {hierarchyData.level1?.okrDesc || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level1?.q1_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level1?.q2_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level1?.q3_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level1?.q4_percentage ?? "-"}
                     </td>
                   </tr>
 
                   {/* Level 2 */}
-                  <tr className={`hover:bg-blue-50 ${selLevel === 2 ? 'bg-yellow-100' : ''}`}>
-                    <td className="border border-blue-300 px-4 py-3 font-semibold text-blue-900">
+                  <tr className={`border-b border-white/10 transition-colors ${selLevel === 2 ? 'bg-cyan-500/20' : 'hover:bg-white/5'}`}>
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 font-semibold text-(--text)">
                       <div className="flex items-center gap-2">
                         <span>Level 2 OKR</span>
-                        {selLevel != null && 2 < selLevel && <span className="text-sm text-gray-600">▲</span>}
-                        {selLevel != null && 2 > selLevel && <span className="text-sm text-gray-600">▼</span>}
+                        {selLevel != null && 2 < selLevel && <span className="text-sm text-(--accent)">▲</span>}
+                        {selLevel != null && 2 > selLevel && <span className="text-sm text-(--accent)">▼</span>}
                       </div>
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--text)">
                       {hierarchyData.level2?.empName || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--muted) text-sm">
                       {hierarchyData.level2?.okrDesc || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level2?.q1_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level2?.q2_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level2?.q3_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center ">
+                    <td className="px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level2?.q4_percentage ?? "-"}
                     </td>
                   </tr>
 
                   {/* Level 3 */}
-                  <tr className={`hover:bg-blue-50 ${selLevel === 3 ? 'bg-yellow-100' : ''}`}>
-                    <td className="border border-blue-300 px-4 py-3 font-semibold text-blue-900">
+                  <tr className={`border-b border-white/10 transition-colors ${selLevel === 3 ? 'bg-cyan-500/20' : 'hover:bg-white/5'}`}>
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 font-semibold text-(--text)">
                       <div className="flex items-center gap-2">
                         <span>Level 3 OKR</span>
-                        {selLevel != null && 3 < selLevel && <span className="text-sm text-gray-600">▲</span>}
-                        {selLevel != null && 3 > selLevel && <span className="text-sm text-gray-600">▼</span>}
+                        {selLevel != null && 3 < selLevel && <span className="text-sm text-(--accent)">▲</span>}
+                        {selLevel != null && 3 > selLevel && <span className="text-sm text-(--accent)">▼</span>}
                       </div>
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--text)">
                       {hierarchyData.level3?.empName || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--muted) text-sm">
                       {hierarchyData.level3?.okrDesc || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level3?.q1_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level3?.q2_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level3?.q3_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level3?.q4_percentage ?? "-"}
                     </td>
                   </tr>
 
                   {/* Level 4 */}
-                  <tr className={`hover:bg-blue-50 ${selLevel === 4 ? 'bg-yellow-100' : ''}`}>
-                    <td className="border border-blue-300 px-4 py-3 font-semibold text-blue-900">
+                  <tr className={`border-b border-white/10 transition-colors ${selLevel === 4 ? 'bg-cyan-500/20' : 'hover:bg-white/5'}`}>
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 font-semibold text-(--text)">
                       <div className="flex items-center gap-2">
                         <span>Level 4 OKR</span>
-                        {selLevel != null && 4 < selLevel && <span className="text-sm text-gray-600">▲</span>}
-                        {selLevel != null && 4 > selLevel && <span className="text-sm text-gray-600">▼</span>}
+                        {selLevel != null && 4 < selLevel && <span className="text-sm text-(--accent)">▲</span>}
+                        {selLevel != null && 4 > selLevel && <span className="text-sm text-(--accent)">▼</span>}
                       </div>
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--text)">
                       {hierarchyData.level4?.empName || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--muted) text-sm">
                       {hierarchyData.level4?.okrDesc || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level4?.q1_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level4?.q2_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level4?.q3_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level4?.q4_percentage ?? "-"}
                     </td>
                   </tr>
 
                   {/* Level 5 */}
-                  <tr className={`hover:bg-blue-50 ${selLevel === 5 ? 'bg-yellow-100' : ''}`}>
-                    <td className="border border-blue-300 px-4 py-3 font-semibold text-blue-900">
+                  <tr className={`border-b border-white/10 transition-colors ${selLevel === 5 ? 'bg-cyan-500/20' : 'hover:bg-white/5'}`}>
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 font-semibold text-(--text)">
                       <div className="flex items-center gap-2">
                         <span>Level 5 OKR</span>
-                        {selLevel != null && 5 < selLevel && <span className="text-sm text-gray-600">▲</span>}
-                        {selLevel != null && 5 > selLevel && <span className="text-sm text-gray-600">▼</span>}
+                        {selLevel != null && 5 < selLevel && <span className="text-sm text-(--accent)">▲</span>}
+                        {selLevel != null && 5 > selLevel && <span className="text-sm text-(--accent)">▼</span>}
                       </div>
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--text)">
                       {hierarchyData.level5?.empName || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--muted) text-sm">
                       {hierarchyData.level5?.okrDesc || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level5?.q1_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level5?.q2_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level5?.q3_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level5?.q4_percentage ?? "-"}
                     </td>
                   </tr>
 
                   {/* Level 6 */}
-                  <tr className={`hover:bg-blue-50 ${selLevel === 6 ? 'bg-yellow-100' : ''}`}>
-                    <td className="border border-blue-300 px-4 py-3 font-semibold text-blue-900">
+                  <tr className={`border-b border-white/10 transition-colors ${selLevel === 6 ? 'bg-cyan-500/20' : 'hover:bg-white/5'}`}>
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 font-semibold text-(--text)">
                       <div className="flex items-center gap-2">
                         <span>Level 6 OKR</span>
-                        {selLevel != null && 6 < selLevel && <span className="text-sm text-gray-600">▲</span>}
-                        {selLevel != null && 6 > selLevel && <span className="text-sm text-gray-600">▼</span>}
+                        {selLevel != null && 6 < selLevel && <span className="text-sm text-(--accent)">▲</span>}
+                        {selLevel != null && 6 > selLevel && <span className="text-sm text-(--accent)">▼</span>}
                       </div>
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--text)">
                       {hierarchyData.level6?.empName || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--muted) text-sm">
                       {hierarchyData.level6?.okrDesc || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level6?.q1_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level6?.q2_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level6?.q3_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level6?.q4_percentage ?? "-"}
                     </td>
                   </tr>
 
                   {/* Level 7 */}
-                  <tr className={`hover:bg-blue-50 ${selLevel === 7 ? 'bg-yellow-100' : ''}`}>
-                    <td className="border border-blue-300 px-4 py-3 font-semibold text-blue-900">
+                  <tr className={`transition-colors ${selLevel === 7 ? 'bg-cyan-500/20' : 'hover:bg-white/5'}`}>
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 font-semibold text-(--text)">
                       <div className="flex items-center gap-2">
                         <span>Level 7 OKR</span>
-                        {selLevel != null && 7 < selLevel && <span className="text-sm text-gray-600">▲</span>}
-                        {selLevel != null && 7 > selLevel && <span className="text-sm text-gray-600">▼</span>}
+                        {selLevel != null && 7 < selLevel && <span className="text-sm text-(--accent)">▲</span>}
+                        {selLevel != null && 7 > selLevel && <span className="text-sm text-(--accent)">▼</span>}
                       </div>
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--text)">
                       {hierarchyData.level7?.empName || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3">
+                    <td className="border-r border-white/10 px-3 sm:px-4 py-3 text-(--muted) text-sm">
                       {hierarchyData.level7?.okrDesc || "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level7?.q1_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level7?.q2_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="border-r border-white/10 px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level7?.q3_percentage ?? "-"}
                     </td>
-                    <td className="border border-blue-300 px-4 py-3 text-center">
+                    <td className="px-2 sm:px-3 py-3 text-center text-(--text)">
                       {hierarchyData.level7?.q4_percentage ?? "-"}
                     </td>
                   </tr>
@@ -428,20 +428,9 @@ export default function OKRPerformance() {
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-center gap-4 mt-8">
-            <button
-              onClick={handleShowPerformance}
-              disabled={loading || !selectedEmployee || !selectedOKR}
-              className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-blue-glow hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {loading ? "Loading..." : "OKR Details"}
-            </button>
-            <button
-              onClick={handleClose}
-              className="px-8 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow hover:bg-gray-700 transition"
-            >
-              Close
-            </button>
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-8">
+            <button onClick={handleShowPerformance} disabled={loading || !selectedEmployee || !selectedOKR} className="btn btn-primary px-6 sm:px-8 py-2 sm:py-3 whitespace-nowrap">{loading ? 'Loading...' : 'OKR Details'}</button>
+            <button onClick={handleClose} className="btn btn-ghost px-6 sm:px-8 py-2 sm:py-3 whitespace-nowrap">Close</button>
           </div>
         </div>
       </div>

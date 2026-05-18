@@ -1,9 +1,9 @@
 import React from 'react';
 
 const OKRLevelSection = ({ level, employeeCode, employeeName, okrDescription, okrValue, onChange }) => (
-  <div className="border border-black rounded bg-white p-6 mb-8">
+  <div className="card p-6 mb-8 rounded-lg">
     <div className="w-fit mx-auto -mt-6 mb-4">
-      <span className="bg-black text-white px-6 py-1 rounded text-lg font-bold shadow">Level - {level}</span>
+      <span className="badge">Level - {level}</span>
     </div>
     <div className="flex items-center gap-6">
       <label className="text-xl font-bold text-gray-900 min-w-[140px]">Employee Code</label>

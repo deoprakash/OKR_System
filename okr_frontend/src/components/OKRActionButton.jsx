@@ -1,11 +1,11 @@
 import React from 'react';
 
-const OKRActionButton = ({ children, onClick, className = '', disabled = false }) => (
+const OKRActionButton = ({ children, onClick, className = '', disabled = false, type = 'button' }) => (
   <button
-    type="button"
+    type={type}
     onClick={disabled ? undefined : onClick}
     disabled={disabled}
-    className={`px-10 py-3 rounded text-lg font-medium mx-4 mt-4 transition ${disabled ? 'bg-gray-400 text-gray-700 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'} ${className}`}
+    className={`btn ${disabled ? 'btn-ghost opacity-50 cursor-not-allowed' : 'btn-primary'} px-6 sm:px-8 py-2.5 sm:py-3 font-semibold rounded-lg transition-all duration-200 hover:shadow-lg disabled:hover:shadow-none ${className}`}
   >
     {children}
   </button>

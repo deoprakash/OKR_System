@@ -268,11 +268,11 @@ const OKRWorkspaceLevel1 = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f1724] flex items-center justify-center py-12">
+    <div className="min-h-screen flex items-center justify-center py-12">
       <div className="absolute top-6 left-6">
         <BackButton onClick={() => navigate('/')} />
       </div>
-      <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-5xl p-8 overflow-hidden professional-panel">
+      <div className="card w-[95%] max-w-5xl p-8 overflow-hidden">
         <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 1</h1>
         <form>
           <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-4">
@@ -288,7 +288,7 @@ const OKRWorkspaceLevel1 = () => {
                   if (emp) setFields(prev => ({ ...prev, employeeCode: emp.empCode, employeeName: emp.empName, employeeLevel: emp.empLevel }));
                   else setFields(prev => ({ ...prev, employeeCode: '', employeeName: '', employeeLevel: '' }));
                 }}
-                className="border px-2 py-2 w-full bg-white"
+                className="border px-2 py-2 w-full"
               >
                 <option value="">Select Employee</option>
                 {employees.map(emp => (
@@ -298,11 +298,11 @@ const OKRWorkspaceLevel1 = () => {
             </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Name</label>
-              <input value={fields.employeeName} readOnly className="border px-2 py-2 w-full bg-gray-100" />
+              <input value={fields.employeeName} readOnly className="border px-2 py-2 w-full" />
             </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Level</label>
-              <input value={fields.employeeLevel} readOnly className="border px-2 py-2 w-full bg-gray-100" />
+              <input value={fields.employeeLevel} readOnly className="border px-2 py-2 w-full" />
             </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Select OKR</label>
@@ -378,7 +378,7 @@ const OKRWorkspaceLevel1 = () => {
           {/* {percentSum > 100 && (
             <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
           )} */}
-          <div className="flex justify-center gap-6 mt-6">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-8 sm:mt-10">
             <OKRActionButton type="button" onClick={handleSave}>Update OKR</OKRActionButton>
             <OKRActionButton type="button" onClick={handleCancel}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
           </div>

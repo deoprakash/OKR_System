@@ -5,7 +5,8 @@ export async function list(req, res) {
   try {
     let filter = {};
     if (!req.user?.isAdmin) {
-      filter = { empLevel: { $gte: Number(req.user?.empLevel || 0) } };
+      const userLevel = Number(req.user?.empLevel || 0);
+      filter = { empLevel: { $gte: userLevel - 1, $lte: userLevel } };
     }
     const docs = await Employee.find(filter).sort({ createdAt: -1 }).limit(200);
     res.json({ data: docs });
@@ -26,11 +27,13 @@ export async function get(req, res) {
     if (!doc) return res.status(404).json({ error: "Not found" });
 
     if (!req.user?.isAdmin) {
+      const userLevel = Number(req.user?.empLevel || 0);
+      const targetLevel = Number(doc.empLevel || 0);
       const canView =
         Number(doc.empCode) === Number(req.user?.empCode) ||
-        Number(doc.empLevel) >= Number(req.user?.empLevel || 0);
+        (targetLevel >= userLevel - 1 && targetLevel <= userLevel);
       if (!canView) {
-        return res.status(403).json({ error: "You can only view lower level employees" });
+        return res.status(403).json({ error: "You can only view your level and one lower level employees" });
       }
     }
 

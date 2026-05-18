@@ -77,17 +77,31 @@ async function sendOtpEmail(emailTo, otp) {
     .replace(/\//g, "_")
     .replace(/=+$/g, "");
 
-  await Promise.race([
-    mailer.users.messages.send({
-      userId: "me",
-      requestBody: {
-        raw: encodedMessage
+  try {
+    await Promise.race([
+      mailer.users.messages.send({
+        userId: "me",
+        requestBody: {
+          raw: encodedMessage
+        }
+      }),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("OTP email send timed out")), OTP_EMAIL_TIMEOUT_MS);
+      })
+    ]);
+  } catch (err) {
+    // Provide a clearer error when Google returns invalid_grant (expired/revoked refresh token)
+    try {
+      const respErr = err?.response?.data;
+      if (respErr && respErr.error === 'invalid_grant') {
+        throw new Error('GMAIL_REFRESH_TOKEN_INVALID: Gmail refresh token is expired or revoked. Re-authorize and update GMAIL_REFRESH_TOKEN in environment.');
       }
-    }),
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("OTP email send timed out")), OTP_EMAIL_TIMEOUT_MS);
-    })
-  ]);
+    } catch (_) {
+      // fall through
+    }
+    throw err;
+  }
+
 }
 
 function maskEmail(email) {

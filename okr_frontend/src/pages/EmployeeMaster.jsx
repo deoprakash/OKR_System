@@ -71,11 +71,11 @@ const EmployeeMaster = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f1724] flex items-center justify-center py-12">
+    <div className="min-h-screen flex items-center justify-center py-12">
       <div className="absolute top-6 left-6">
         <BackButton onClick={() => navigate('/')} />
       </div>
-      <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-5xl p-8 overflow-hidden professional-panel">
+      <div className="card w-[95%] max-w-5xl p-8 overflow-hidden">
         <h1 className="text-3xl font-bold mb-6 text-center">Employee Master</h1>
 
         <div className="flex w-full gap-8">
@@ -83,7 +83,7 @@ const EmployeeMaster = () => {
             <LabelInput label="Employee User ID:">
               <input
                 id="employeeuserid"
-                className="w-40 p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400 bg-gray-100"
+                className="md:w-40 w-full p-2 border rounded text-lg"
                 value={userId}
                 placeholder="Auto-generated after save"
                 readOnly
@@ -93,7 +93,7 @@ const EmployeeMaster = () => {
             <LabelInput label="Employee Name:">
               <input
                 id="employeename"
-                className="w-full p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400"
+                className="w-full p-2 border rounded text-lg"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 disabled={isRecordAdded}
@@ -103,7 +103,7 @@ const EmployeeMaster = () => {
             <LabelInput label="Employee Designation:">
               <input
                 id="employeedesignation"
-                className="w-full p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400"
+                className="w-full p-2 border rounded text-lg"
                 value={designation}
                 onChange={e => setDesignation(e.target.value)}
                 disabled={isRecordAdded}
@@ -123,7 +123,7 @@ const EmployeeMaster = () => {
               <input
                 id="employeeemail"
                 type="email"
-                className="w-full p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400"
+                className="w-full p-2 border rounded text-lg"
                 value={emailId}
                 onChange={e => setEmailId(e.target.value)}
                 disabled={isRecordAdded}
@@ -134,7 +134,7 @@ const EmployeeMaster = () => {
               <input
                 id="employeecell"
                 type="text"
-                className="w-full p-2 border border-gray-300 rounded text-lg text-gray-900 placeholder-gray-400"
+                className="w-full p-2 border rounded text-lg"
                 value={cellNumber}
                 onChange={e => setCellNumber(e.target.value)}
                 disabled={isRecordAdded}
@@ -144,7 +144,7 @@ const EmployeeMaster = () => {
             <LabelInput label="Admin User:">
               <select
                 id="employeeadmin"
-                className="w-full p-2 border border-gray-300 rounded text-lg text-gray-900 bg-white"
+                className="w-full p-2 border rounded text-lg"
                 value={isAdmin}
                 onChange={e => setIsAdmin(e.target.value)}
                 disabled={isRecordAdded}
@@ -155,20 +155,8 @@ const EmployeeMaster = () => {
             </LabelInput>
 
             <div className="flex flex-row gap-6 mt-8 justify-start">
-              <ActionButton
-                className="bg-blue-700 hover:bg-blue-900 shadow-lg shadow-blue-200 border-2 border-blue-800"
-                onClick={handleUpdate}
-                disabled={isRecordAdded}
-              >
-                Update Record
-              </ActionButton>
-
-              <ActionButton
-                className="bg-gray-400 shadow-lg shadow-gray-200 border-2 border-gray-500"
-                onClick={isRecordAdded ? () => {} : handleCancel}
-              >
-                {isRecordAdded ? 'Close' : 'Cancel'}
-              </ActionButton>
+              <ActionButton onClick={handleUpdate} disabled={isRecordAdded} className="btn btn-primary">Update Record</ActionButton>
+              <ActionButton onClick={isRecordAdded ? () => {} : handleCancel} className="btn btn-ghost">{isRecordAdded ? 'Close' : 'Cancel'}</ActionButton>
             </div>
           </form>
         </div>

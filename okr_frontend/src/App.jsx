@@ -21,7 +21,7 @@ function Protected({ children, adminOnly = false }) {
   const auth = useAuth();
 
   if (auth.loading) {
-    return <div className="min-h-screen bg-[#0f1724] flex items-center justify-center text-white">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center"><div className="card p-6">Loading…</div></div>;
   }
 
   if (!auth.isAuthenticated) {
@@ -39,7 +39,7 @@ function ProtectedLevel({ children, level }) {
   const auth = useAuth();
 
   if (auth.loading) {
-    return <div className="min-h-screen bg-[#0f1724] flex items-center justify-center text-white">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center"><div className="card p-6">Loading…</div></div>;
   }
 
   if (!auth.isAuthenticated) {
@@ -64,26 +64,26 @@ function App() {
         const isInput = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT');
         if (!isInput) return;
         if (typeof document.hasFocus === 'function' && !document.hasFocus() && typeof window.focus === 'function') {
-          try { window.focus(); } catch {}
+          try { window.focus(); } catch (err) { void err; }
         }
         setTimeout(() => {
           try {
             if (t && typeof t.focus === 'function') t.focus();
-          } catch {}
+          } catch (err) { void err; }
         }, 10);
-      } catch {}
+      } catch (err) { void err; }
     }
     function onMouseDown(e) {
       try {
         const t = e.target;
         ensureFocusForTarget(t);
-      } catch {}
+      } catch (err) { void err; }
     }
     function onFocusIn(e) {
       try {
         const t = e.target;
         ensureFocusForTarget(t);
-      } catch {}
+      } catch (err) { void err; }
     }
     document.addEventListener('mousedown', onMouseDown, true);
     document.addEventListener('focusin', onFocusIn, true);

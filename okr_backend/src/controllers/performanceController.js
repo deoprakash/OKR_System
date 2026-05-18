@@ -17,11 +17,13 @@ export async function getEmployeeOKRs(req, res) {
     if (!employee) return res.status(404).json({ error: "Employee not found" });
 
     if (!req.user?.isAdmin) {
+      const userLevel = Number(req.user?.empLevel || 0);
+      const targetLevel = Number(employee.empLevel || 0);
       const canView =
         Number(req.user?.empCode) === empCodeNum ||
-        Number(employee.empLevel || 0) >= Number(req.user?.empLevel || 0);
+        (targetLevel >= userLevel - 1 && targetLevel <= userLevel);
       if (!canView) {
-        return res.status(403).json({ error: "You can only view lower level employee OKRs" });
+        return res.status(403).json({ error: "You can only view your level and one lower level employee OKRs" });
       }
     }
     
@@ -62,8 +64,9 @@ export async function getOKRHierarchy(req, res) {
     const okrCodeNum = Number(okrCode);
 
     if (!req.user?.isAdmin) {
-      if (levelNum < Number(req.user?.empLevel || 0)) {
-        return res.status(403).json({ error: "You can only view your level or lower levels" });
+      const userLevel = Number(req.user?.empLevel || 0);
+      if (levelNum < userLevel - 1 || levelNum > userLevel) {
+        return res.status(403).json({ error: "You can only view your level and one lower level" });
       }
     }
     

@@ -97,80 +97,80 @@ export default function MyProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f1724] flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <NavBar />
-      <div className="flex-1 p-8 mt-10">
-        <div className="bg-white rounded-2xl shadow-blue-glow-lg p-8 max-w-3xl mx-auto professional-panel">
-          <h1 className="text-3xl font-bold text-blue-700 text-center mb-8">My Profile</h1>
+      <div className="flex-1 p-4 sm:p-8 mt-10">
+        <div className="glass-card rounded-2xl p-5 sm:p-8 max-w-3xl mx-auto">
+          <h1 className="text-2xl sm:text-3xl font-bold text-(--text) text-center mb-8">My Profile</h1>
 
           {loading ? (
-            <div className="text-center text-gray-600">Loading profile...</div>
+            <div className="text-center text-(--muted)">Loading profile...</div>
           ) : (
             <form className="space-y-4" onSubmit={handleSave}>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-blue-900 font-semibold mb-2">User ID</label>
-                  <input className="w-full px-4 py-2 border border-blue-300 rounded-lg bg-gray-100" value={form.userId} readOnly />
+                  <label className="block text-(--text) font-semibold mb-2">User ID</label>
+                  <input className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--muted) cursor-not-allowed" value={form.userId} readOnly />
                 </div>
               </div>
 
               <div>
-                <label className="block text-blue-900 font-semibold mb-2">Name</label>
+                <label className="block text-(--text) font-semibold mb-2">Name</label>
                 <input
-                  className="w-full px-4 py-2 border border-blue-300 rounded-lg"
+                  className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--text) focus:outline-none focus:border-white/30 transition-colors"
                   value={form.empName}
                   onChange={(e) => setForm((prev) => ({ ...prev, empName: e.target.value }))}
                 />
               </div>
 
               <div>
-                <label className="block text-blue-900 font-semibold mb-2">Designation</label>
+                <label className="block text-(--text) font-semibold mb-2">Designation</label>
                 <input
-                  className="w-full px-4 py-2 border border-blue-300 rounded-lg"
+                  className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--text) focus:outline-none focus:border-white/30 transition-colors"
                   value={form.empDesignation}
                   onChange={(e) => setForm((prev) => ({ ...prev, empDesignation: e.target.value }))}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-blue-900 font-semibold mb-2">Email</label>
+                  <label className="block text-(--text) font-semibold mb-2">Email</label>
                   <input
                     type="email"
-                    className="w-full px-4 py-2 border border-blue-300 rounded-lg"
+                    className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--text) focus:outline-none focus:border-white/30 transition-colors"
                     value={form.emailId}
                     onChange={(e) => setForm((prev) => ({ ...prev, emailId: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className="block text-blue-900 font-semibold mb-2">Cell Number</label>
+                  <label className="block text-(--text) font-semibold mb-2">Cell Number</label>
                   <input
-                    className="w-full px-4 py-2 border border-blue-300 rounded-lg"
+                    className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--text) focus:outline-none focus:border-white/30 transition-colors"
                     value={form.cellNumber}
                     onChange={(e) => setForm((prev) => ({ ...prev, cellNumber: e.target.value }))}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-blue-900 font-semibold mb-2">Level</label>
-                  <input className="w-full px-4 py-2 border border-blue-300 rounded-lg bg-gray-100" value={form.empLevel} readOnly />
+                  <label className="block text-(--text) font-semibold mb-2">Level</label>
+                  <input className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--muted) cursor-not-allowed" value={form.empLevel} readOnly />
                 </div>
                 <div>
-                  <label className="block text-blue-900 font-semibold mb-2">Admin</label>
-                  <input className="w-full px-4 py-2 border border-blue-300 rounded-lg bg-gray-100" value={form.isAdmin ? 'Yes' : 'No'} readOnly />
+                  <label className="block text-(--text) font-semibold mb-2">Admin</label>
+                  <input className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--muted) cursor-not-allowed" value={form.isAdmin ? 'Yes' : 'No'} readOnly />
                 </div>
               </div>
 
-              {error && <div className="p-3 rounded bg-red-100 text-red-700">{error}</div>}
-              {message && <div className="p-3 rounded bg-green-100 text-green-700">{message}</div>}
+              {error && <div className="p-3 rounded bg-red-500/20 border border-red-500/30 text-red-300">{error}</div>}
+              {message && <div className="p-3 rounded bg-green-500/20 border border-green-500/30 text-green-300">{message}</div>}
 
               <div className="flex gap-3 justify-center pt-2">
-                <button type="submit" disabled={saving} className="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:bg-gray-400">
+                <button type="submit" disabled={saving} className="px-6 py-2 rounded-lg btn btn-primary">
                   {saving ? 'Saving...' : 'Save Changes'}
                 </button>
-                <button type="button" className="px-6 py-2 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700" onClick={() => navigate('/')}>
+                <button type="button" className="px-6 py-2 rounded-lg btn btn-ghost" onClick={() => navigate('/')}>
                   Close
                 </button>
               </div>

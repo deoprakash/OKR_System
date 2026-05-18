@@ -66,18 +66,9 @@ const OKRWorkspaceLevel2 = () => {
         const emps = empRes.data || [];
         setEmployeeOptions(emps.filter(e => Number(e.empLevel) === 2));
 
-        const l1 = await listLevel1OKRs();
-        const l1data = l1.data || [];
-        // unique level1 employees who have OKRs
-        const unique = [];
-        const seen = new Set();
-        l1data.forEach(item => {
-          if (!seen.has(item.empCode)) {
-            seen.add(item.empCode);
-            unique.push({ empCode: item.empCode, empName: item.empName });
-          }
-        });
-        setLevel1Options(unique);
+        // build level-1 employee options from full employee list (so level2 can select any level1 user)
+        const l1Options = emps.filter(e => Number(e.empLevel) === 1).map(e => ({ empCode: e.empCode, empName: e.empName }));
+        setLevel1Options(l1Options);
 
         const l2 = await listLevel2OKRs();
         setLevel2OkrsAll(l2.data || []);
@@ -245,7 +236,7 @@ const OKRWorkspaceLevel2 = () => {
   }, [fields]);
 
   return (
-    <div className="min-h-screen bg-[#0f1724] flex items-center justify-center py-12">
+    <div className="min-h-screen flex items-center justify-center py-12">
       <div className="absolute top-6 left-6">
         <BackButton onClick={() => navigate('/')} />
       </div>
@@ -411,7 +402,7 @@ const OKRWorkspaceLevel2 = () => {
           {/* {percentSum > 100 && (
             <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
           )} */}
-          <div className="flex flex-row gap-8 justify-center mt-8">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8 sm:mt-10">
             <OKRActionButton onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>Update OKR</OKRActionButton>
             <OKRActionButton onClick={(e) => { e.preventDefault(); handleCancel(); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
           </div>

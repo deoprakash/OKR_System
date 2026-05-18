@@ -3,10 +3,11 @@ import React from 'react';
 const BackButton = ({ onClick, className = '' }) => (
   <button
     type="button"
-    className={`bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-6 rounded shadow mr-4 flex items-center ${className}`}
+    className={`back-button hero-secondary inline-flex items-center gap-2 py-2.5 px-5 rounded-full font-semibold ${className}`}
     onClick={onClick}
+    aria-label="Go back"
   >
-    <span className="mr-2">&#8592;</span> Back
+    <span>&#8592;</span> Back
   </button>
 );
 

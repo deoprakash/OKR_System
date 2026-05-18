@@ -60,17 +60,9 @@ const OKRWorkspaceLevel7 = () => {
         const emps = empRes.data || [];
         setEmployeeOptions(emps.filter(e => Number(e.empLevel) === 7));
 
-        const l6 = await listLevel6OKRs();
-        const l6data = l6.data || [];
-        const seen = new Set();
-        const unique = [];
-        l6data.forEach(item => {
-          if (!seen.has(item.empCode)) {
-            seen.add(item.empCode);
-            unique.push({ empCode: item.empCode, empName: item.empName });
-          }
-        });
-        setLevel6Options(unique);
+        setLevel6Options(emps
+          .filter(e => Number(e.empLevel) === 6)
+          .map(e => ({ empCode: e.empCode, empName: e.empName })));
 
         const l7 = await listLevel7OKRs();
         setLevel7All(l7.data || []);
@@ -226,11 +218,11 @@ const OKRWorkspaceLevel7 = () => {
   }, [fields]);
 
   return (
-    <div className="min-h-screen bg-[#0f1724] flex items-center justify-center py-12">
+    <div className="min-h-screen flex items-center justify-center py-12">
       <div className="absolute top-6 left-6">
         <BackButton onClick={() => navigate('/')} />
       </div>
-      <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-6xl p-8 overflow-hidden professional-panel">
+      <div className="card w-[95%] max-w-6xl p-8 overflow-hidden">
         <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 7</h1>
         <form>
           <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-4">
@@ -265,7 +257,7 @@ const OKRWorkspaceLevel7 = () => {
           <Box>
             <SectionTitle>Level - 6</SectionTitle>
             <FormRow>
-              <div className="w-62">
+              <div className="w-full md:w-62">
                 <label className="font-semibold block mb-1">Employee Code</label>
                   <select ref={firstInputRef} value={fields.level6EmployeeCode} onChange={handleSelectLevel6Employee} className="border px-2 py-1 w-full min-w-0">
                   <option value="">-- Select --</option>
@@ -274,7 +266,7 @@ const OKRWorkspaceLevel7 = () => {
                   ))}
                 </select>
               </div>
-              <div className="w-62">
+              <div className="w-full md:w-62">
                 <label className="font-semibold block mb-1">Employee Name</label>
                 <input value={fields.level6EmployeeName} readOnly className="border px-2 py-1 w-full bg-gray-100" />
               </div>
@@ -388,7 +380,7 @@ const OKRWorkspaceLevel7 = () => {
               {/* {percentSum > 100 && (
                 <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
               )} */}
-              <div className="flex flex-row gap-8 justify-center mt-8">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8 sm:mt-10">
                 <OKRActionButton onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>Update OKR</OKRActionButton>
                 <OKRActionButton onClick={(e) => { e.preventDefault(); handleCancel(); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
               </div>

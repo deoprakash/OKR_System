@@ -63,17 +63,9 @@ const OKRWorkspaceLevel3 = () => {
         const emps = empRes.data || [];
         setEmployeeOptions(emps.filter(e => Number(e.empLevel) === 3));
 
-        const l2 = await listLevel2OKRs();
-        const l2data = l2.data || [];
-        const seen = new Set();
-        const unique = [];
-        l2data.forEach(item => {
-          if (!seen.has(item.empCode)) {
-            seen.add(item.empCode);
-            unique.push({ empCode: item.empCode, empName: item.empName });
-          }
-        });
-        setLevel2Options(unique);
+        setLevel2Options(emps
+          .filter(e => Number(e.empLevel) === 2)
+          .map(e => ({ empCode: e.empCode, empName: e.empName })));
 
         const l3 = await listLevel3OKRs();
         setLevel3All(l3.data || []);
@@ -209,7 +201,7 @@ const OKRWorkspaceLevel3 = () => {
     setIsDirty(JSON.stringify(fields) !== pristineRef.current);
   }, [fields]);
   return (
-    <div className="min-h-screen bg-[#0f1724] flex items-center justify-center py-12">
+    <div className="min-h-screen flex items-center justify-center py-12">
       <div className="absolute top-6 left-6">
         <BackButton onClick={() => navigate('/')} />
       </div>
@@ -370,7 +362,7 @@ const OKRWorkspaceLevel3 = () => {
               {/* {percentSum > 100 && (
                 <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
               )} */}
-              <div className="flex flex-row gap-8 justify-center mt-8">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8 sm:mt-10">
                 <OKRActionButton onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>Update OKR</OKRActionButton>
                 <OKRActionButton onClick={(e) => { e.preventDefault(); handleCancel(); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
               </div>

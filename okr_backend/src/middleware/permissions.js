@@ -2,7 +2,9 @@ import mongoose from "mongoose";
 
 function canViewLevel(user, level) {
   if (user.isAdmin) return true;
-  return Number(level) >= Number(user.empLevel || 0);
+  const userLevel = Number(user.empLevel || 0);
+  const targetLevel = Number(level);
+  return targetLevel >= userLevel - 1 && targetLevel <= userLevel;
 }
 
 function canWriteLevel(user, level) {
@@ -14,7 +16,7 @@ export function allowLevelRead(level) {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ error: "Unauthorized" });
     if (!canViewLevel(req.user, level)) {
-      return res.status(403).json({ error: "You can only view lower level records" });
+      return res.status(403).json({ error: "You can only view your level and one lower level records" });
     }
     next();
   };

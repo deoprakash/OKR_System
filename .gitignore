@@ -24,7 +24,23 @@ yarn-debug.log*
 .env.*
 /.env
 client_secret*.json
+client_secret_386701526932-3at32oiubm8197dstbddr21gmj1q0l3q.apps.googleusercontent.com.json
 *oauth*secret*.json
+
+# Python virtualenvs and caches
+myenv/
+okr_backend/myenv/
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.venv/
+.eggs/
+*.egg-info/
 
 # Editor and OS files
 .vscode/

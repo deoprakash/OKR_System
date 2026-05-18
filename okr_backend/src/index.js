@@ -25,7 +25,7 @@ const CLIENT_ORIGINS = (process.env.CLIENT_ORIGIN || "http://localhost:5173")
   .map((origin) => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 const ALLOW_NULL_ORIGIN = (process.env.ALLOW_NULL_ORIGIN || "true").toLowerCase() === "true";
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/okr_db";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 app.use(morgan("dev"));
 app.use(cors({

@@ -1,4 +1,4 @@
-const deployedBaseUrl = 'https://okrsystem-production.up.railway.app';
+const deployedBaseUrl = 'https://okr-backend-bbbbfyckfmcrdfbj.canadacentral-01.azurewebsites.net';
 // const deployedBaseUrl = 'https://okr-system-backend.onrender.com';
 const localBaseUrl = 'http://localhost:5000';
 const isPackagedElectron = typeof window !== 'undefined' && window.location && window.location.protocol === 'file:';

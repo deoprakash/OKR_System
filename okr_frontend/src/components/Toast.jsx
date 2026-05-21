@@ -5,7 +5,7 @@ export default function Toast({ id, message, type = 'info', onClose }) {
   return (
     <div className={`${color} text-white px-4 py-2 rounded shadow mb-2 flex items-center justify-between`}>
       <div>{message}</div>
-      <button className="ml-4 font-bold" onClick={() => onClose(id)}>×</button>
+      <button className="ml-4 font-bold" onMouseDown={(e) => e.preventDefault()} onClick={() => onClose(id)}>×</button>
     </div>
   )
 }

@@ -26,6 +26,7 @@ const OKRWorkspaceLevel4 = () => {
   const [fields, setFields] = useState({
     employeeCode: '',
     employeeName: '',
+    employeeUserId: '',
     employeeLevel: '',
     okrCode: '',
     okrDate: '',
@@ -39,6 +40,7 @@ const OKRWorkspaceLevel4 = () => {
     ],
     level3EmployeeCode: '',
     level3EmployeeName: '',
+    level3EmployeeUserId: '',
     level3OKRDescription: '',
     level3OkrCode: '',
   });
@@ -58,11 +60,12 @@ const OKRWorkspaceLevel4 = () => {
       try {
         const empRes = await listEmployees();
         const emps = empRes.data || [];
-        setEmployeeOptions(emps.filter(e => Number(e.empLevel) === 4));
+        const empsLevel4 = emps.filter(e => Number(e.empLevel) === 4).map(e => ({ ...e, userId: e.userId || (e._id ? String(e._id) : '') }));
+        setEmployeeOptions(empsLevel4);
 
         setLevel3Options(emps
           .filter(e => Number(e.empLevel) === 3)
-          .map(e => ({ empCode: e.empCode, empName: e.empName })));
+          .map(e => ({ empCode: e.empCode, empName: e.empName, userId: e.userId || (e._id ? String(e._id) : '') })));
 
         const l4 = await listLevel4OKRs();
         setLevel4All(l4.data || []);
@@ -73,6 +76,22 @@ const OKRWorkspaceLevel4 = () => {
     }
     load();
   }, []);
+
+  useEffect(() => {
+    if (!employeeOptions || !fields.employeeCode) return;
+    const emp = employeeOptions.find(x => Number(x.empCode) === Number(fields.employeeCode));
+    if (emp && emp.userId && emp.userId !== fields.employeeUserId) {
+      setFields(f => ({ ...f, employeeUserId: emp.userId }));
+    }
+  }, [employeeOptions, fields.employeeCode]);
+
+  useEffect(() => {
+    if (!level3Options || !fields.level3EmployeeCode) return;
+    const emp = level3Options.find(x => Number(x.empCode) === Number(fields.level3EmployeeCode));
+    if (emp && emp.userId && emp.userId !== fields.level3EmployeeUserId) {
+      setFields(f => ({ ...f, level3EmployeeUserId: emp.userId }));
+    }
+  }, [level3Options, fields.level3EmployeeCode]);
 
   const resetForm = () => {
     const newFields = {
@@ -86,6 +105,7 @@ const OKRWorkspaceLevel4 = () => {
       quarters: [ { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' } ],
       level3EmployeeCode: '',
       level3EmployeeName: '',
+      level3EmployeeUserId: '',
       level3OKRDescription: '',
       level3OkrCode: ''
     };
@@ -115,7 +135,7 @@ const OKRWorkspaceLevel4 = () => {
   const handleSelectEmployee = (e) => {
     const code = Number(e.target.value) || '';
     const emp = employeeOptions.find(x => Number(x.empCode) === code);
-    setFields(f => ({ ...f, employeeCode: code, employeeName: emp ? emp.empName : '', employeeLevel: emp ? String(emp.empLevel) : '', okrCode: '' }));
+    setFields(f => ({ ...f, employeeCode: code, employeeName: emp ? emp.empName : '', employeeUserId: emp ? emp.userId : '', employeeLevel: emp ? String(emp.empLevel) : '', okrCode: '' }));
   };
 
   const handleSelectOKRCode = (e) => {
@@ -139,7 +159,7 @@ const OKRWorkspaceLevel4 = () => {
   const handleSelectLevel3Employee = (e) => {
     const code = Number(e.target.value) || '';
     const emp = level3Options.find(x => Number(x.empCode) === code);
-    setFields(f => ({ ...f, level3EmployeeCode: code, level3EmployeeName: emp ? emp.empName : '', level3OKRDescription: '', level3OkrCode: '' }));
+    setFields(f => ({ ...f, level3EmployeeCode: code, level3EmployeeName: emp ? emp.empName : '', level3EmployeeUserId: emp ? emp.userId : '', level3OKRDescription: '', level3OkrCode: '' }));
     listLevel3OKRs().then(res => {
       const items = (res.data || []).filter(i => Number(i.empCode) === Number(code)).map(i => ({ level3OkrCode: i.level3OkrCode, okrDesc: i.okrDesc || '' }));
       setLevel3OKRDescriptions(items);
@@ -227,19 +247,19 @@ const OKRWorkspaceLevel4 = () => {
         <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 4</h1>
         <form>
           <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-4">
-            <div className="flex flex-col gap-2 min-w-0">
-              <label className="font-semibold">Employee Code</label>
-              <select value={fields.employeeCode} onChange={handleSelectEmployee} className="border px-2 py-2 w-full bg-white">
-                <option value="">-- Select --</option>
-                {employeeOptions.map(emp => (
-                  <option key={emp.empCode} value={emp.empCode}>{emp.empCode} - {emp.empName}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-2 min-w-0">
-              <label className="font-semibold">Employee Name</label>
-              <input value={fields.employeeName} readOnly className="border px-2 py-2 w-full bg-gray-100" />
-            </div>
+              <div className="flex flex-col gap-2 min-w-0">
+                <label className="font-semibold">Employee</label>
+                <select value={fields.employeeCode} onChange={handleSelectEmployee} className="border px-2 py-2 w-full bg-white">
+                  <option value="">-- Select --</option>
+                  {employeeOptions.map(emp => (
+                    <option key={emp.empCode} value={emp.empCode}>{emp.empName}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-2 min-w-0">
+                <label className="font-semibold">Employee Code</label>
+                <input value={fields.employeeUserId} readOnly className="border px-2 py-2 w-full bg-gray-100" />
+              </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Level</label>
               <input value={fields.employeeLevel} readOnly className="border px-2 py-2 w-full bg-gray-100" />
@@ -249,9 +269,12 @@ const OKRWorkspaceLevel4 = () => {
               <select value={fields.okrCode} onChange={handleSelectOKRCode} className="border px-2 py-2 w-full">
                 <option value="">-- Select --</option>
                 <option value="NEW">New</option>
-                {level4All.filter(o => Number(o.empCode) === Number(fields.employeeCode)).map(o => (
-                  <option key={o.level4OkrCode} value={o.level4OkrCode}>{o.okrDesc?.slice(0,50) || String(o.level4OkrCode)}</option>
-                ))}
+                {level4All
+                  .filter(o => Number(o.empCode) === Number(fields.employeeCode))
+                  .filter((v,i,a) => a.findIndex(t => String(t.level4OkrCode) === String(v.level4OkrCode)) === i)
+                  .map(o => (
+                    <option key={o.level4OkrCode} value={o.level4OkrCode}>{o.okrDesc?.slice(0,50) || String(o.level4OkrCode)}</option>
+                  ))}
               </select>
             </div>
           </div>
@@ -263,13 +286,13 @@ const OKRWorkspaceLevel4 = () => {
                   <select ref={firstInputRef} value={fields.level3EmployeeCode} onChange={handleSelectLevel3Employee} className="border px-2 py-1 w-full min-w-0">
                   <option value="">-- Select --</option>
                   {level3Options.map(opt => (
-                    <option key={opt.empCode} value={opt.empCode}>{opt.empCode} - {opt.empName}</option>
+                    <option key={opt.empCode} value={opt.empCode}>{opt.empName}</option>
                   ))}
                 </select>
               </div>
               <div className="w-62">
-                <label className="font-semibold block mb-1">Employee Name</label>
-                <input value={fields.level3EmployeeName} readOnly className="border px-2 py-1 w-full bg-gray-100" />
+                <label className="font-semibold block mb-1">Employee Code</label>
+                <input value={fields.level3EmployeeUserId} readOnly className="border px-2 py-1 w-full bg-gray-100" />
               </div>
               <div className="w-full">
                 <label className="font-semibold block mb-1">OKR Description</label>

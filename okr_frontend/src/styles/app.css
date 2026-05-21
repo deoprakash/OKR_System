@@ -200,6 +200,25 @@ td {
   font-weight: 800;
 }
 
+/* Brand text stylings to match provided Objecto logo */
+.brand-text {
+  color: #071a4f; /* deep navy */
+  font-weight: 900;
+  font-size: 1.5rem; /* increased for better visibility */
+  line-height: 1;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: baseline;
+}
+.brand-text .tm {
+  font-size: 0.48em; /* slightly larger TM */
+  margin-left: 0.22rem;
+  transform: translateY(-0.25em);
+  font-weight: 700;
+  color: #0b2a5a;
+}
+.footer-brand { font-size: 1.125rem; }
+
 .brand-icon {
   display: inline-flex;
   align-items: center;

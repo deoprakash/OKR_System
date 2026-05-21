@@ -15,8 +15,9 @@ const OKRWorkspaceLevel1 = () => {
     const toast = useToast();
 
     const [fields, setFields] = useState({
-    employeeCode: '',
-    employeeName: '',
+      employeeCode: '',
+      employeeName: '',
+      employeeUserId: '',
     employeeLevel: '',
       okrCode: '',
       okrDate: today,
@@ -42,14 +43,24 @@ const OKRWorkspaceLevel1 = () => {
   useEffect(() => {
     listEmployees().then(resp => {
       const data = resp && resp.data ? resp.data : [];
-      const level1 = (data || []).filter(e => String(e.empLevel) === '1' || e.empLevel === 1);
+      const level1 = (data || [])
+        .filter(e => String(e.empLevel) === '1' || e.empLevel === 1)
+        .map(e => ({ ...e, userId: e.userId || (e._id ? String(e._id) : '') }));
       setEmployees(level1);
       if (fields.employeeCode) {
         const match = level1.find(e => String(e.empCode) === String(fields.employeeCode) || String(e._id) === String(fields.employeeCode));
-        if (match) setFields(prev => ({ ...prev, employeeName: match.empName, employeeLevel: match.empLevel }));
+        if (match) setFields(prev => ({ ...prev, employeeName: match.empName, employeeLevel: match.empLevel, employeeUserId: match.userId || '' }));
       }
     }).catch(() => setEmployees([]));
   }, []);
+
+  useEffect(() => {
+    if (!employees || !fields.employeeCode) return;
+    const match = employees.find(e => String(e.empCode) === String(fields.employeeCode) || String(e._id) === String(fields.employeeCode));
+    if (match && match.userId && match.userId !== fields.employeeUserId) {
+      setFields(f => ({ ...f, employeeUserId: match.userId }));
+    }
+  }, [employees, fields.employeeCode]);
 
   // fetch OKRs for selected employee whenever employeeCode changes
   useEffect(() => {
@@ -285,20 +296,20 @@ const OKRWorkspaceLevel1 = () => {
                   const val = e.target.value;
                   const emp = employees.find(x => String(x.empCode) === val || String(x._id) === val);
                   setCanClose(false);
-                  if (emp) setFields(prev => ({ ...prev, employeeCode: emp.empCode, employeeName: emp.empName, employeeLevel: emp.empLevel }));
-                  else setFields(prev => ({ ...prev, employeeCode: '', employeeName: '', employeeLevel: '' }));
+                  if (emp) setFields(prev => ({ ...prev, employeeCode: emp.empCode, employeeName: emp.empName, employeeLevel: emp.empLevel, employeeUserId: emp.userId || '' }));
+                  else setFields(prev => ({ ...prev, employeeCode: '', employeeName: '', employeeLevel: '', employeeUserId: '' }));
                 }}
                 className="border px-2 py-2 w-full"
               >
                 <option value="">Select Employee</option>
                 {employees.map(emp => (
-                  <option key={emp._id || emp.empCode} value={String(emp.empCode)}>{`${emp.empCode} - ${emp.empName}`}</option>
+                  <option key={emp._id || emp.empCode} value={String(emp.empCode)}>{emp.empName}</option>
                 ))}
               </select>
             </div>
             <div className="flex flex-col gap-2 min-w-0">
-              <label className="font-semibold">Employee Name</label>
-              <input value={fields.employeeName} readOnly className="border px-2 py-2 w-full" />
+              <label className="font-semibold">Employee Code</label>
+              <input value={fields.employeeUserId} readOnly className="border px-2 py-2 w-full" />
             </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Level</label>
@@ -314,9 +325,11 @@ const OKRWorkspaceLevel1 = () => {
               }} className="border px-2 py-2 w-full">
                 <option value="">Select OKR</option>
                 <option value="NEW">New</option>
-                {okrs.map(o => (
-                  <option key={o._id} value={String(o.level1OkrCode)}>{o.okrDesc?.slice(0,50) || String(o.level1OkrCode)}</option>
-                ))}
+                {okrs
+                  .filter((v,i,a) => a.findIndex(t => String(t.level1OkrCode) === String(v.level1OkrCode)) === i)
+                  .map(o => (
+                    <option key={o._id} value={String(o.level1OkrCode)}>{o.okrDesc?.slice(0,50) || String(o.level1OkrCode)}</option>
+                  ))}
               </select>
             </div>
           </div>

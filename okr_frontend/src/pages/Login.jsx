@@ -161,7 +161,7 @@ export default function Login() {
                     />
                   </div>
 
-                  <button disabled={requestLoading} type="submit" className="hero-primary w-full">
+                  <button onMouseDown={(e) => e.preventDefault()} disabled={requestLoading} type="submit" className="hero-primary w-full">
                     {requestLoading ? 'Sending OTP...' : 'Send OTP'}
                   </button>
                 </form>
@@ -185,15 +185,16 @@ export default function Login() {
                   </div>
 
                   <div className="grid gap-3">
-                    <button disabled={verifyLoading || otpExpired} className="hero-primary w-full">
+                    <button onMouseDown={(e) => e.preventDefault()} disabled={verifyLoading || otpExpired} className="hero-primary w-full">
                       {verifyLoading ? 'Verifying...' : 'Verify OTP'}
                     </button>
                     {otpExpired && (
-                      <button type="button" disabled={resendLoading} onClick={resendOtp} className="hero-secondary w-full">
+                      <button onMouseDown={(e) => e.preventDefault()} type="button" disabled={resendLoading} onClick={resendOtp} className="hero-secondary w-full">
                         {resendLoading ? 'Resending...' : 'Resend OTP'}
                       </button>
                     )}
                     <button
+                      onMouseDown={(e) => e.preventDefault()}
                       type="button"
                       className="btn btn-ghost w-full"
                       onClick={() => {

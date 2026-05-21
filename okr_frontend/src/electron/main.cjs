@@ -7,6 +7,11 @@ const { ipcMain, dialog } = require('electron');
 
 function buildAppMenu() {
   const isMac = process.platform === 'darwin';
+  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+  // In production (packaged exe) we keep menus minimal/empty per distribution rules
+  if (!isDev) {
+    return Menu.buildFromTemplate([]);
+  }
   const template = [
     ...(isMac
       ? [{ label: app.name, submenu: [{ role: 'about' }, { type: 'separator' }, { role: 'quit' }] }]

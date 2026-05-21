@@ -167,10 +167,10 @@ export default function MyProfile() {
               {message && <div className="p-3 rounded bg-green-500/20 border border-green-500/30 text-green-300">{message}</div>}
 
               <div className="flex gap-3 justify-center pt-2">
-                <button type="submit" disabled={saving} className="px-6 py-2 rounded-lg btn btn-primary">
+                <button onMouseDown={(e) => e.preventDefault()} type="submit" disabled={saving} className="px-6 py-2 rounded-lg btn btn-primary">
                   {saving ? 'Saving...' : 'Save Changes'}
                 </button>
-                <button type="button" className="px-6 py-2 rounded-lg btn btn-ghost" onClick={() => navigate('/')}>
+                <button onMouseDown={(e) => e.preventDefault()} type="button" className="px-6 py-2 rounded-lg btn btn-ghost" onClick={() => navigate('/')}>
                   Close
                 </button>
               </div>

@@ -73,7 +73,7 @@ export default function Home() {
                 </p>
 
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                  <button className="hero-primary" onClick={() => navigate(primaryAction)}>
+                  <button onMouseDown={(e) => e.preventDefault()} className="hero-primary" onClick={() => navigate(primaryAction)}>
                     {auth.isAuthenticated ? "Open workspace" : "Get started"}
                   </button>
                   <a className="hero-secondary inline-flex items-center justify-center" href={secondaryAction}>
@@ -258,10 +258,10 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="hero-primary" onClick={() => navigate(primaryAction)}>
+                <button onMouseDown={(e) => e.preventDefault()} className="hero-primary" onClick={() => navigate(primaryAction)}>
                   {auth.isAuthenticated ? "Open workspace" : "Login now"}
                 </button>
-                <button className="hero-secondary" onClick={() => navigate("/okr-performance")}>See performance</button>
+                <button onMouseDown={(e) => e.preventDefault()} className="hero-secondary" onClick={() => navigate("/okr-performance")}>See performance</button>
               </div>
             </div>
           </div>

@@ -429,8 +429,8 @@ export default function OKRPerformance() {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-8">
-            <button onClick={handleShowPerformance} disabled={loading || !selectedEmployee || !selectedOKR} className="btn btn-primary px-6 sm:px-8 py-2 sm:py-3 whitespace-nowrap">{loading ? 'Loading...' : 'OKR Details'}</button>
-            <button onClick={handleClose} className="btn btn-ghost px-6 sm:px-8 py-2 sm:py-3 whitespace-nowrap">Close</button>
+            <button onMouseDown={(e) => e.preventDefault()} onClick={handleShowPerformance} disabled={loading || !selectedEmployee || !selectedOKR} className="btn btn-primary px-6 sm:px-8 py-2 sm:py-3 whitespace-nowrap">{loading ? 'Loading...' : 'OKR Details'}</button>
+            <button onMouseDown={(e) => e.preventDefault()} onClick={() => navigate('/')} className="btn btn-ghost px-6 sm:px-8 py-2 sm:py-3 whitespace-nowrap">Close</button>
           </div>
         </div>
       </div>

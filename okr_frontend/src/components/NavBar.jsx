@@ -41,8 +41,7 @@ export default function NavBar() {
   return (
     <nav className="w-full mb-2 site-nav flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 relative">
       <div className="brand cursor-pointer" onClick={() => navigate("/")}>
-        <span className="brand-icon">OS</span>
-        <span className="font-bold text-lg sm:text-xl tracking-wide text-white">OKR System</span>
+        <span className="brand-text">Objecto<span className="tm">™</span></span>
       </div>
       <ul className="nav-center absolute left-1/2 transform -translate-x-1/2 flex gap-4 lg:gap-6 text-sm lg:text-lg items-center">
         <li className="nav-link transition cursor-pointer" onClick={() => navigate("/")}>Home</li>
@@ -73,6 +72,7 @@ export default function NavBar() {
                   <button
                     key={item.path}
                     className="text-left px-3 py-2 rounded-lg hover:bg-slate-50 font-medium transition text-base nav-link"
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
                       setDropdownOpen(false);
                       navigate(item.path);
@@ -94,6 +94,7 @@ export default function NavBar() {
           <div className="relative" ref={profileMenuRef}>
             <button
               className="avatar"
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => setProfileMenuOpen((open) => !open)}
               title="Profile options"
               aria-label="Profile options"
@@ -104,6 +105,7 @@ export default function NavBar() {
               <div className="absolute right-0 mt-2 z-20 dropdown-panel py-2 px-2 min-w-40 flex flex-col gap-1">
                 <button
                   className="text-left px-3 py-2 rounded-lg hover:bg-slate-50 font-medium transition text-sm nav-link"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     setProfileMenuOpen(false);
                     navigate('/my-profile');
@@ -113,6 +115,7 @@ export default function NavBar() {
                 </button>
                 <button
                   className="text-left px-3 py-2 rounded-lg hover:bg-slate-50 font-medium transition text-sm nav-link"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={async () => {
                     setProfileMenuOpen(false);
                     await auth.logout();
@@ -127,6 +130,7 @@ export default function NavBar() {
         ) : (
           <button
             className="login-button px-5 py-2 rounded-full"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => navigate('/login')}
           >
             Login

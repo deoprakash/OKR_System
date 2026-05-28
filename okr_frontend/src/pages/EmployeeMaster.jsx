@@ -61,13 +61,8 @@ const EmployeeMaster = () => {
     }
   };
   const handleCancel = () => {
-    setUserId('');
-    setName('');
-    setDesignation('');
-    setLevel('');
-    setEmailId('');
-    setCellNumber('');
-    setIsAdmin('No');
+    // behave like Back/Close: navigate to main screen
+    navigate('/');
   };
 
   return (
@@ -156,7 +151,7 @@ const EmployeeMaster = () => {
 
             <div className="flex flex-row gap-6 mt-8 justify-start">
               <ActionButton onClick={handleUpdate} disabled={isRecordAdded} className="btn btn-primary">Update Record</ActionButton>
-              <ActionButton onClick={isRecordAdded ? () => {} : handleCancel} className="btn btn-ghost">{isRecordAdded ? 'Close' : 'Cancel'}</ActionButton>
+              <ActionButton onClick={(e) => { e.preventDefault(); navigate('/'); }} className="btn btn-ghost">{isRecordAdded ? 'Close' : 'Cancel'}</ActionButton>
             </div>
           </form>
         </div>

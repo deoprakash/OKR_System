@@ -207,8 +207,8 @@ const OKRWorkspaceLevel3 = () => {
   };
 
   const handleCancel = () => {
-    if (!isDirty || canClose) return;
-    if (confirm('Cancel OKR Entry and Exit?')) { resetForm(); navigate('/'); }
+    // behave like Back/Close: navigate immediately to main menu
+    navigate('/');
   };
 
   useEffect(() => {
@@ -387,7 +387,7 @@ const OKRWorkspaceLevel3 = () => {
               )} */}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8 sm:mt-10">
                 <OKRActionButton onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>Update OKR</OKRActionButton>
-                <OKRActionButton onClick={(e) => { e.preventDefault(); handleCancel(); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
+                <OKRActionButton onClick={(e) => { e.preventDefault(); navigate('/'); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
               </div>
         </form>
       </div>

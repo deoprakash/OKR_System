@@ -231,12 +231,8 @@ const OKRWorkspaceLevel1 = () => {
   };
 
   const handleCancel = () => {
-    // if not dirty (Close shown) or already in closed state, do nothing
-    if (!isDirty || canClose) return;
-    if (window.confirm('Cancel OKR entry and return to main menu?')) {
-      resetForm();
-      navigate('/');
-    }
+    // behave like Back/Close: navigate immediately to main menu
+    navigate('/');
   };
 
   // track dirty state by comparing to a pristine snapshot
@@ -393,7 +389,7 @@ const OKRWorkspaceLevel1 = () => {
           )} */}
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-8 sm:mt-10">
             <OKRActionButton type="button" onClick={handleSave}>Update OKR</OKRActionButton>
-            <OKRActionButton type="button" onClick={handleCancel}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
+            <OKRActionButton type="button" onClick={(e) => { e.preventDefault(); navigate('/'); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
           </div>
         </form>
       </div>

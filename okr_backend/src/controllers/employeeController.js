@@ -48,6 +48,13 @@ export async function get(req, res) {
 export async function create(req, res) {
   try {
     const payload = req.body || {};
+    // normalize email for checks
+    const emailCheck = String(payload.emailId || "").toLowerCase().trim();
+
+    if (emailCheck) {
+      const existing = await Employee.findOne({ emailId: emailCheck });
+      if (existing) return res.status(409).json({ error: "Email already in use" });
+    }
     const totalEmployees = await Employee.countDocuments();
 
     // Bootstrap flow: first user can be created without auth if marked as admin.
@@ -71,6 +78,8 @@ export async function create(req, res) {
       createdByEmpCode: req.user?.empCode || null,
       createdByUserId: req.user?.userId || null
     };
+    // ensure stored email is normalized
+    if (emailCheck) payloadWithCreator.emailId = emailCheck;
 
     const doc = new Employee(payloadWithCreator);
 
@@ -106,6 +115,13 @@ export async function create(req, res) {
 
     res.status(201).json({ data: doc });
   } catch (err) {
+    // handle duplicate key errors gracefully
+    if (err && (err.code === 11000 || err.name === "MongoServerError")) {
+      const key = err.keyValue && Object.keys(err.keyValue)[0];
+      const fieldMap = { emailId: "Email", cellNumber: "Phone", userId: "User ID", empCode: "Employee code" };
+      const fieldLabel = fieldMap[key] || key || "Field";
+      return res.status(409).json({ error: `${fieldLabel} already exists` });
+    }
     res.status(400).json({ error: err.message || "Failed to create" });
   }
 }
@@ -114,6 +130,21 @@ export async function update(req, res) {
   const { id } = req.params;
   try {
     const incoming = { ...(req.body || {}) };
+
+    // normalize and check email duplication when updating
+    if (incoming.emailId) {
+      const newEmail = String(incoming.emailId || "").toLowerCase().trim();
+      const existing = await Employee.findOne({ emailId: newEmail });
+      if (existing) {
+        // if existing record is not the one we're updating -> conflict
+        if (mongoose.isValidObjectId(id)) {
+          if (String(existing._id) !== String(id)) return res.status(409).json({ error: "Email already in use" });
+        } else {
+          if (Number(existing.empCode) !== Number(id)) return res.status(409).json({ error: "Email already in use" });
+        }
+      }
+      incoming.emailId = newEmail;
+    }
 
     if (!req.user?.isAdmin) {
       const targetEmpCode = mongoose.isValidObjectId(id) ? null : Number(id);
@@ -147,6 +178,12 @@ export async function update(req, res) {
     if (!doc) return res.status(404).json({ error: "Not found" });
     res.json({ data: doc });
   } catch (err) {
+    if (err && (err.code === 11000 || err.name === "MongoServerError")) {
+      const key = err.keyValue && Object.keys(err.keyValue)[0];
+      const fieldMap = { emailId: "Email", cellNumber: "Phone", userId: "User ID", empCode: "Employee code" };
+      const fieldLabel = fieldMap[key] || key || "Field";
+      return res.status(409).json({ error: `${fieldLabel} already exists` });
+    }
     res.status(400).json({ error: err.message || "Failed to update" });
   }
 }

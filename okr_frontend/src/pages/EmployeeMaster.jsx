@@ -8,7 +8,7 @@ const EMPLOYEE_LEVELS = ['1', '2', '3', '4', '5', '6', '7'];
 
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ToastProvider';
-import { createEmployee } from '../lib/api';
+import { createEmployee, listEmployees } from '../lib/api';
 
 const EmployeeMaster = () => {
   const navigate = useNavigate();
@@ -29,6 +29,16 @@ const EmployeeMaster = () => {
       if (!name.trim()) return toast.send('Employee Name is required', 'error');
       if (!level) return toast.send('Employee Level is required', 'error');
       if (!emailId.trim()) return toast.send('Email ID is required', 'error');
+
+      // Client-side duplicate email check
+      try {
+        const all = await listEmployees();
+        const exists = (all.data || []).some(e => String(e.emailId || '').toLowerCase() === String(emailId || '').toLowerCase().trim());
+        if (exists) return toast.send('Email already in use', 'error');
+      } catch (err) {
+        // non-fatal: proceed and let server validate if list fetch fails
+        console.warn('Failed to fetch employee list for duplicate check', err);
+      }
       if (!cellNumber.trim()) return toast.send('Cell Number is required', 'error');
 
       const payload = {

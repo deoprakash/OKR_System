@@ -50,6 +50,26 @@ export const verifyOtp = (email, otp) => request('/api/auth/verify-otp', {
   body: JSON.stringify({ email: String(email || '').trim(), otp: String(otp || '') })
 });
 
+export const login = (identifier, password) => request('/api/auth/login', {
+  method: 'POST',
+  body: JSON.stringify({ identifier: String(identifier || '').trim(), password: String(password || '') })
+});
+
+export const changePasswordApi = (oldPassword, newPassword) => request('/api/auth/change-password', {
+  method: 'POST',
+  body: JSON.stringify({ oldPassword: String(oldPassword || ''), newPassword: String(newPassword || '') })
+});
+
+export const forgotPassword = (identifier) => request('/api/auth/forgot-password', {
+  method: 'POST',
+  body: JSON.stringify({ identifier: String(identifier || '').trim() })
+});
+
+export const resetPassword = (token, newPassword) => request('/api/auth/reset-password', {
+  method: 'POST',
+  body: JSON.stringify({ token: String(token || '').trim(), newPassword: String(newPassword || '') })
+});
+
 export const getMe = () => request('/api/auth/me');
 export const logoutApi = () => request('/api/auth/logout', { method: 'POST' });
 
@@ -103,3 +123,5 @@ export const getEmployeeOKRs = (empCode) => request(`/api/performance/okrs/${enc
 export const getOKRHierarchy = (level, okrCode) => request(`/api/performance/${encodeURIComponent(level)}/${encodeURIComponent(okrCode)}`);
 
 export default { getEmployee, createEmployee, updateEmployee, deleteEmployee };
+
+export const getSetupStatus = () => request('/api/setup');

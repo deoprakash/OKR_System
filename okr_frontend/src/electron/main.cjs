@@ -4,6 +4,7 @@ const { request } = require('http')
 const { request: httpsRequest } = require('https')
 const { URL } = require('url')
 const { ipcMain, dialog } = require('electron');
+const { autoUpdater } = require("electron-updater");
 
 function buildAppMenu() {
   const isMac = process.platform === 'darwin';
@@ -136,10 +137,54 @@ const createWindow = async () => {
   }
 }
 
+function initializeAutoUpdater() {
+  autoUpdater.autoDownload = true;
+
+  autoUpdater.on("checking-for-update", () => {
+    console.log("Checking for updates...");
+  });
+
+  autoUpdater.on("update-available", () => {
+    console.log("Update available");
+  });
+
+  autoUpdater.on("update-not-available", () => {
+    console.log("No updates available");
+  });
+
+  autoUpdater.on("download-progress", (progress) => {
+    console.log(`Download: ${progress.percent.toFixed(2)}%`);
+  });
+
+  autoUpdater.on("error", (err) => {
+    console.error("Update error:", err);
+  });
+
+  autoUpdater.on("update-downloaded", async () => {
+    const result = await dialog.showMessageBox({
+      type: "info",
+      title: "Update Ready",
+      message: "A new version has been downloaded.",
+      buttons: ["Restart Now", "Later"]
+    });
+
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall();
+    }
+  });
+
+  autoUpdater.checkForUpdatesAndNotify();
+}
+
 app.whenReady().then(() => {
   Menu.setApplicationMenu(buildAppMenu());
+
   createWindow();
-})
+
+  if (app.isPackaged) {
+    initializeAutoUpdater();
+  }
+});
 
 // IPC handler to show native message boxes from renderer
 ipcMain.handle('show-message', async (event, options) => {

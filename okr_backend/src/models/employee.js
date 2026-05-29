@@ -44,6 +44,16 @@ const EmployeeSchema = new mongoose.Schema(
     },
     isAdmin: { type: Boolean, default: false }
     ,
+    // password storage (pbkdf2)
+    passwordHash: { type: String },
+    passwordSalt: { type: String },
+    mustChangePassword: { type: Boolean, default: false },
+    passwordChangedAt: { type: Date }
+    ,
+    // password reset token (sha256 of token) and expiry
+    resetTokenHash: { type: String },
+    resetTokenExpires: { type: Date }
+    ,
     createdByName: { type: String, maxlength: 40 },
     createdByEmpCode: { type: Number },
     createdByUserId: { type: String, maxlength: 10 }
@@ -89,6 +99,31 @@ EmployeeSchema.pre("validate", async function (next) {
     next(err);
   }
 });
+
+// Password helpers using pbkdf2
+function generateSalt() {
+  return crypto.randomBytes(16).toString("hex");
+}
+
+function hashWithSalt(password, salt) {
+  const hash = crypto.pbkdf2Sync(String(password), salt, 100000, 64, "sha512");
+  return hash.toString("hex");
+}
+
+EmployeeSchema.methods.setPassword = function (plain) {
+  const salt = generateSalt();
+  const hash = hashWithSalt(plain, salt);
+  this.passwordSalt = salt;
+  this.passwordHash = hash;
+  this.mustChangePassword = Boolean(this.mustChangePassword) || false;
+  this.passwordChangedAt = new Date();
+};
+
+EmployeeSchema.methods.validatePassword = function (plain) {
+  if (!this.passwordSalt || !this.passwordHash) return false;
+  const hash = hashWithSalt(plain, this.passwordSalt);
+  return hash === this.passwordHash;
+};
 
 const Employee = mongoose.model("Employee", EmployeeSchema);
 

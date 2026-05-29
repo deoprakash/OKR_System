@@ -15,6 +15,10 @@ import OKRWorkspaceLevel6 from './pages/OKRWorkspaceLevel6';
 import OKRWorkspaceLevel7 from './pages/OKRWorkspaceLevel7';
 import OKRPerformance from './pages/OKRPerformance';
 import MyProfile from './pages/MyProfile';
+import Setup from './pages/Setup';
+import ChangePassword from './pages/ChangePassword';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import { useAuth } from './context/useAuth';
 
 function Protected({ children, adminOnly = false }) {
@@ -96,6 +100,10 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/setup" element={<Setup />} />
+        <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<Home />} />
         <Route path="/my-profile" element={<Protected><MyProfile /></Protected>} />
         <Route path="/employee-master" element={<Protected adminOnly><EmployeeMaster /></Protected>} />

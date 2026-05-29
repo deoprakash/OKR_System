@@ -2,7 +2,7 @@
   "name": "okr_frontend",
   "main": "src/electron/main.cjs",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite --port 5173 --strictPort\" \"npm run electron:dev\"",
@@ -18,6 +18,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "electron-updater": "^6.8.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.12.0"
@@ -49,6 +50,12 @@
       "src/electron/**",
       "node_modules/**",
       "package.json"
+    ],
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://gridseven.blob.core.windows.net/downloads/OKR%20System/"
+      }
     ],
     "win": {
       "target": [

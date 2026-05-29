@@ -1,98 +1,48 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { requestOtp, verifyOtp } from '../lib/api';
+import { login, getSetupStatus } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import BackButton from '../components/BackButton';
-
-const OTP_RESEND_SECONDS = 60;
 
 export default function Login() {
   const navigate = useNavigate();
   const auth = useAuth();
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [step, setStep] = useState('request');
-  const [message, setMessage] = useState('');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [requestLoading, setRequestLoading] = useState(false);
-  const [verifyLoading, setVerifyLoading] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [otpExpiresAt, setOtpExpiresAt] = useState(0);
-  const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    if (step !== 'verify' || !otpExpiresAt) return undefined;
+    (async () => {
+      try {
+        const resp = await getSetupStatus();
+        if (resp?.setupEnabled) {
+          navigate('/setup');
+        }
+      } catch (err) {
+        // ignore
+      }
+    })();
+  }, []);
 
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, [step, otpExpiresAt]);
-
-  const otpExpired = step === 'verify' && otpExpiresAt > 0 && now >= otpExpiresAt;
-  const secondsLeft = useMemo(() => {
-    if (!otpExpiresAt) return 0;
-    return Math.max(0, Math.ceil((otpExpiresAt - now) / 1000));
-  }, [otpExpiresAt, now]);
-
-  const requestOtpFlow = async (targetEmail) => {
-    const res = await requestOtp(targetEmail);
-    const data = res?.data || {};
-    const expiresInSeconds = Math.min(
-      OTP_RESEND_SECONDS,
-      Math.max(1, Number(data.expiresInSeconds || OTP_RESEND_SECONDS))
-    );
-    setOtp('');
-    setOtpExpiresAt(Date.now() + expiresInSeconds * 1000);
-    setNow(Date.now());
-    setStep('verify');
-    return data;
-  };
-
-  const resendOtp = async () => {
-    setResendLoading(true);
-    setError('');
-    setMessage('');
-    try {
-      const data = await requestOtpFlow(email);
-      setMessage(`OTP resent to ${data?.email || email || '-'}.`);
-    } catch (err) {
-      setError(err.message || 'Failed to resend OTP');
-    } finally {
-      setResendLoading(false);
-    }
-  };
-
-  async function onRequestOtp(e) {
+  async function onSubmit(e) {
     e.preventDefault();
-    setRequestLoading(true);
     setError('');
-    setMessage('');
+    if (!identifier || !password) return setError('Both identifier and password are required');
+    setLoading(true);
     try {
-      const data = await requestOtpFlow(email);
-      setMessage(`OTP sent to ${data?.email || email || '-'}.`);
+      const res = await login(identifier, password);
+      const data = res?.data || {};
+      auth.loginWithSession(data);
+      if (data?.mustChangePassword) {
+        navigate('/change-password');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
-      setError(err.message || 'Failed to request OTP');
+      setError(err.message || 'Login failed');
     } finally {
-      setRequestLoading(false);
-    }
-  }
-
-  async function onVerifyOtp(e) {
-    e.preventDefault();
-    if (otpExpired) {
-      setError('OTP expired.');
-      return;
-    }
-
-    setVerifyLoading(true);
-    setError('');
-    try {
-      const res = await verifyOtp(email, otp);
-      auth.loginWithSession(res?.data || {});
-      navigate('/');
-    } catch (err) {
-      setError(err.message || 'OTP verification failed');
-    } finally {
-      setVerifyLoading(false);
+      setLoading(false);
     }
   }
 
@@ -114,23 +64,8 @@ export default function Login() {
               Login to your OKR workspace
             </h1>
             <p className="hero-copy mt-6">
-              Enter your registered email, receive a one-time password, and continue into a focused workspace for planning,
-              tracking, and reviewing objectives.
+              Enter your username (or email) and password to access the workspace.
             </p>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              {[
-                ['OTP verification', 'Fast, secure access with expiring codes.'],
-                ['Role-based access', 'Jump into the right OKR level instantly.'],
-                ['Performance insights', 'Review progress and alignment after login.'],
-                ['Modern UI', 'A clean, professional command surface.'],
-              ].map(([title, text]) => (
-                <div key={title} className="glass-card p-4">
-                  <div className="text-white font-semibold">{title}</div>
-                  <p className="mt-2 text-sm leading-7">{text}</p>
-                </div>
-              ))}
-            </div>
           </aside>
 
           <section className="hero-panel p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
@@ -138,78 +73,45 @@ export default function Login() {
               <div className="mb-6 flex items-center justify-between gap-4">
                 <div>
                   <p className="metric-label">Authentication</p>
-                  <h2 className="mt-2 text-3xl font-bold text-white">{step === 'request' ? 'Request OTP' : 'Verify OTP'}</h2>
+                  <h2 className="mt-2 text-3xl font-bold text-white">Welcome Back</h2>
                 </div>
-                <span className="info-pill">{step === 'request' ? 'Step 1 of 2' : 'Step 2 of 2'}</span>
+                <span className="info-pill">Sign in</span>
               </div>
 
-              {message && <div className="mb-4 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100">{message}</div>}
               {error && <div className="mb-4 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>}
 
-              {step === 'request' ? (
-                <form onSubmit={onRequestOtp} className="space-y-5 mt-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-(--text) mb-2">Employee Email</label>
-                    <input
-                      type="email"
-                      className="w-full rounded-2xl px-4 py-3 border border-white/10 bg-white/3 outline-none focus:border-cyan-400/40"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      autoComplete="email"
-                      placeholder="name@company.com"
-                      required
-                    />
-                  </div>
+              <form onSubmit={onSubmit} className="space-y-5 mt-6">
+                <div>
+                  <label className="block text-sm font-semibold text-(--text) mb-2">Username or Email</label>
+                  <input
+                    type="text"
+                    className="w-full rounded-2xl px-4 py-3 border border-white/10 bg-white/3 outline-none focus:border-cyan-400/40"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="user id or email"
+                    required
+                  />
+                </div>
 
-                  <button onMouseDown={(e) => e.preventDefault()} disabled={requestLoading} type="submit" className="hero-primary w-full">
-                    {requestLoading ? 'Sending OTP...' : 'Send OTP'}
+                <div>
+                  <label className="block text-sm font-semibold text-(--text) mb-2">Password</label>
+                  <input
+                    type="password"
+                    className="w-full rounded-2xl px-4 py-3 border border-white/10 bg-white/3 outline-none focus:border-cyan-400/40"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <button onMouseDown={(e) => e.preventDefault()} disabled={loading} type="submit" className="hero-primary w-full">
+                    {loading ? 'Signing in...' : 'Enter password'}
                   </button>
-                </form>
-              ) : (
-                <form onSubmit={onVerifyOtp} className="space-y-5 mt-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-(--text) mb-2">Enter OTP</label>
-                    <input
-                      type="text"
-                      maxLength={6}
-                      className="w-full rounded-2xl px-4 py-3 border border-white/10 bg-white/3 outline-none focus:border-cyan-400/40 tracking-[0.4em] text-center text-lg"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      placeholder="••••••"
-                      required
-                    />
-                    {otpExpiresAt > 0 && !otpExpired && (
-                      <p className="mt-2 text-xs text-(--muted)">Resend available in {secondsLeft}s</p>
-                    )}
-                    {otpExpired && <p className="mt-2 text-xs text-red-300 font-medium">OTP expired. Request a new code.</p>}
-                  </div>
-
-                  <div className="grid gap-3">
-                    <button onMouseDown={(e) => e.preventDefault()} disabled={verifyLoading || otpExpired} className="hero-primary w-full">
-                      {verifyLoading ? 'Verifying...' : 'Verify OTP'}
-                    </button>
-                    {otpExpired && (
-                      <button onMouseDown={(e) => e.preventDefault()} type="button" disabled={resendLoading} onClick={resendOtp} className="hero-secondary w-full">
-                        {resendLoading ? 'Resending...' : 'Resend OTP'}
-                      </button>
-                    )}
-                    <button
-                      onMouseDown={(e) => e.preventDefault()}
-                      type="button"
-                      className="btn btn-ghost w-full"
-                      onClick={() => {
-                        setStep('request');
-                        setOtp('');
-                        setError('');
-                        setOtpExpiresAt(0);
-                        setNow(Date.now());
-                      }}
-                    >
-                      Back
-                    </button>
-                  </div>
-                </form>
-              )}
+                  <a href="/forgot-password" className="text-center text-sm text-cyan-200 hover:underline">Forgot password?</a>
+                </div>
+              </form>
             </div>
           </section>
         </div>

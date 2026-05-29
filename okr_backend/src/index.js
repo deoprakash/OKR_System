@@ -15,6 +15,7 @@ import level6Routes from "./routes/level6.js";
 import level7Routes from "./routes/level7.js";
 import performanceRoutes from "./routes/performance.js";
 import authRoutes from "./routes/auth.js";
+import setupRoutes from "./routes/setup.js";
 
 dns.setDefaultResultOrder("ipv4first");
 
@@ -58,6 +59,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/setup", setupRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/level1", level1Routes);
 app.use("/api/level2", level2Routes);

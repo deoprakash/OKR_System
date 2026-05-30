@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { login, getSetupStatus } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import BackButton from '../components/BackButton';
@@ -109,7 +109,7 @@ export default function Login() {
                   <button onMouseDown={(e) => e.preventDefault()} disabled={loading} type="submit" className="hero-primary w-full">
                     {loading ? 'Signing in...' : 'Enter password'}
                   </button>
-                  <a href="/forgot-password" className="text-center text-sm text-cyan-200 hover:underline">Forgot password?</a>
+                  <Link to="/forgot-password" className="text-center text-sm text-cyan-200 hover:underline">Forgot password?</Link>
                 </div>
               </form>
             </div>

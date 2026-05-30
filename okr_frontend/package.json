@@ -2,7 +2,7 @@
   "name": "objectoTM",
   "main": "src/electron/main.cjs",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite --port 5173 --strictPort\" \"npm run electron:dev\"",
@@ -50,12 +50,6 @@
       "src/electron/**",
       "node_modules/**",
       "package.json"
-    ],
-    "publish": [
-      {
-        "provider": "generic",
-        "url": "https://gridseven.blob.core.windows.net/downloads/OKR%20System/"
-      }
     ],
     "win": {
       "target": [

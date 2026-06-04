@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 export default function NavBar() {
@@ -11,6 +11,7 @@ export default function NavBar() {
   const profileMenuRef = useRef(null);
   const profileInitial = (auth.user?.empName || '?').trim().charAt(0).toUpperCase() || '?';
   const userLevel = Number(auth.user?.empLevel || 0);
+  const location = useLocation();
 
   const smartMenuItems = [];
   if (auth.isAuthenticated) {
@@ -44,7 +45,7 @@ export default function NavBar() {
         <span className="brand-text">Objecto<span className="tm">™</span></span>
       </div>
       <ul className="nav-center absolute left-1/2 transform -translate-x-1/2 flex gap-4 lg:gap-6 text-sm lg:text-lg items-center">
-        <li className="nav-link transition cursor-pointer" onClick={() => navigate("/")}>Home</li>
+        <li className={`nav-link transition cursor-pointer ${location.pathname === '/' ? 'active' : ''}`} onClick={() => navigate("/")}>Home</li>
         {auth.isAdmin && (
           <li>
             <a
@@ -71,7 +72,7 @@ export default function NavBar() {
                 {smartMenuItems.map((item) => (
                   <button
                     key={item.path}
-                    className="text-left px-3 py-2 rounded-lg hover:bg-slate-50 font-medium transition text-base nav-link"
+                    className={`text-left px-3 py-2 rounded-lg hover:bg-slate-50 font-medium transition text-base nav-link ${location.pathname === item.path ? 'active' : ''}`}
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
                       setDropdownOpen(false);
@@ -86,7 +87,10 @@ export default function NavBar() {
           </li>
         )}
         {auth.isAuthenticated && (
-          <li className="nav-link transition cursor-pointer" onClick={() => navigate('/okr-performance')}>OKR Performance</li>
+          <li className={`nav-link transition cursor-pointer ${location.pathname === '/okr-performance' ? 'active' : ''}`} onClick={() => navigate('/okr-performance')}>OKR Performance</li>
+        )}
+        {auth.isAdmin && (
+          <li className={`nav-link transition cursor-pointer ${location.pathname === '/admin-users' ? 'active' : ''}`} onClick={() => navigate('/admin-users')}>User Management</li>
         )}
       </ul>
       <div className="flex items-center gap-2">

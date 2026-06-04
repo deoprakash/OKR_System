@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import EmployeeMaster from './pages/EmployeeMaster';
+import AdminUsers from './pages/AdminUsers';
 import OKRWorkspaceLevel1 from './pages/OKRWorkspaceLevel1';
 import OKRWorkspaceLevel2 from './pages/OKRWorkspaceLevel2';
 import OKRWorkspaceLevel3 from './pages/OKRWorkspaceLevel3';
@@ -107,6 +108,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/my-profile" element={<Protected><MyProfile /></Protected>} />
         <Route path="/employee-master" element={<Protected adminOnly><EmployeeMaster /></Protected>} />
+        <Route path="/admin-users" element={<Protected adminOnly><AdminUsers /></Protected>} />
         <Route path="/okr-workspace-level-1" element={<ProtectedLevel level={1}><OKRWorkspaceLevel1 /></ProtectedLevel>} />
         <Route path="/okr-workspace-level-2" element={<ProtectedLevel level={2}><OKRWorkspaceLevel2 /></ProtectedLevel>} />
         <Route path="/okr-workspace-level-3" element={<ProtectedLevel level={3}><OKRWorkspaceLevel3 /></ProtectedLevel>} />

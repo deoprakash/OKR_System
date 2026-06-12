@@ -11,7 +11,7 @@ const QuarterInput = ({ label, value, onChange, comment, onCommentChange }) => (
       value={value}
       onChange={onChange}
     />
-    <span className="mx-1 text-(--muted)">%</span>
+    <span className="font-bold mx-1 text-(--muted)">Comments (Optional)</span>
     <input
       type="text"
       placeholder="Comments"

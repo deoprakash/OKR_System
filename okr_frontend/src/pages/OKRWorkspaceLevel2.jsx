@@ -359,7 +359,6 @@ const OKRWorkspaceLevel2 = () => {
 
           <div className="flex flex-wrap gap-8 mb-6">
             <div className="flex-1 min-w-0">
-              <div className="font-bold text-lg mb-2">Comments</div>
               <QuarterInput
                 label="Q1 % Completion"
                 value={fields.quarters[0].percent}
@@ -393,7 +392,6 @@ const OKRWorkspaceLevel2 = () => {
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="font-bold text-lg mb-2">Comments</div>
               <QuarterInput
                 label="Q3 % Completion"
                 value={fields.quarters[2].percent}

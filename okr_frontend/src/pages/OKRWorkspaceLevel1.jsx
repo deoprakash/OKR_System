@@ -277,10 +277,12 @@ const OKRWorkspaceLevel1 = () => {
   return (
     <div className="min-h-screen flex items-center justify-center py-12">
       <div className="absolute top-6 left-6">
-        <BackButton onClick={() => navigate('/')} />
+        <BackButton onClick={() => navigate("/")} />
       </div>
       <div className="card w-[95%] max-w-5xl p-8 overflow-hidden">
-        <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 1</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center">
+          OKR Workspace - Level 1
+        </h1>
         <form>
           <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-4">
             <div className="flex flex-col gap-2 min-w-0">
@@ -288,43 +290,89 @@ const OKRWorkspaceLevel1 = () => {
               <select
                 value={String(fields.employeeCode)}
                 ref={firstInputRef}
-                onChange={e => {
+                onChange={(e) => {
                   const val = e.target.value;
-                  const emp = employees.find(x => String(x.empCode) === val || String(x._id) === val);
+                  const emp = employees.find(
+                    (x) => String(x.empCode) === val || String(x._id) === val,
+                  );
                   setCanClose(false);
-                  if (emp) setFields(prev => ({ ...prev, employeeCode: emp.empCode, employeeName: emp.empName, employeeLevel: emp.empLevel, employeeUserId: emp.userId || '' }));
-                  else setFields(prev => ({ ...prev, employeeCode: '', employeeName: '', employeeLevel: '', employeeUserId: '' }));
+                  if (emp)
+                    setFields((prev) => ({
+                      ...prev,
+                      employeeCode: emp.empCode,
+                      employeeName: emp.empName,
+                      employeeLevel: emp.empLevel,
+                      employeeUserId: emp.userId || "",
+                    }));
+                  else
+                    setFields((prev) => ({
+                      ...prev,
+                      employeeCode: "",
+                      employeeName: "",
+                      employeeLevel: "",
+                      employeeUserId: "",
+                    }));
                 }}
                 className="border px-2 py-2 w-full"
               >
                 <option value="">Select Employee</option>
-                {employees.map(emp => (
-                  <option key={emp._id || emp.empCode} value={String(emp.empCode)}>{emp.empName}</option>
+                {employees.map((emp) => (
+                  <option
+                    key={emp._id || emp.empCode}
+                    value={String(emp.empCode)}
+                  >
+                    {emp.empName}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Code</label>
-              <input value={fields.employeeUserId} readOnly className="border px-2 py-2 w-full" />
+              <input
+                value={fields.employeeUserId}
+                readOnly
+                className="border px-2 py-2 w-full"
+              />
             </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Level</label>
-              <input value={fields.employeeLevel} readOnly className="border px-2 py-2 w-full" />
+              <input
+                value={fields.employeeLevel}
+                readOnly
+                className="border px-2 py-2 w-full"
+              />
             </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Select OKR</label>
-              <select value={selectedOkrCode || ''} onChange={e => {
-                const v = e.target.value;
-                if (v === 'NEW') { resetForNew(); return; }
-                const found = okrs.find(o => String(o.level1OkrCode) === String(v));
-                if (found) populateFromOkr(found);
-              }} className="border px-2 py-2 w-full">
+              <select
+                value={selectedOkrCode || ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "NEW") {
+                    resetForNew();
+                    return;
+                  }
+                  const found = okrs.find(
+                    (o) => String(o.level1OkrCode) === String(v),
+                  );
+                  if (found) populateFromOkr(found);
+                }}
+                className="border px-2 py-2 w-full"
+              >
                 <option value="">Select OKR</option>
                 <option value="NEW">New</option>
                 {okrs
-                  .filter((v,i,a) => a.findIndex(t => String(t.level1OkrCode) === String(v.level1OkrCode)) === i)
-                  .map(o => (
-                    <option key={o._id} value={String(o.level1OkrCode)}>{o.okrDesc?.slice(0,50) || String(o.level1OkrCode)}</option>
+                  .filter(
+                    (v, i, a) =>
+                      a.findIndex(
+                        (t) =>
+                          String(t.level1OkrCode) === String(v.level1OkrCode),
+                      ) === i,
+                  )
+                  .map((o) => (
+                    <option key={o._id} value={String(o.level1OkrCode)}>
+                      {o.okrDesc?.slice(0, 50) || String(o.level1OkrCode)}
+                    </option>
                   ))}
               </select>
             </div>
@@ -333,52 +381,86 @@ const OKRWorkspaceLevel1 = () => {
           <div className="flex flex-wrap items-start gap-4 mb-6">
             <div className="flex flex-col items-start gap-2 w-48 min-w-0">
               <label className="font-semibold">OKR Date</label>
-              <input type="date" value={fields.okrDate} readOnly className="border px-2 py-1 w-full bg-gray-100" />
+              <input
+                type="date"
+                value={fields.okrDate}
+                readOnly
+                className="border px-2 py-1 w-full bg-gray-100"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <label className="font-semibold">OKR Description</label>
-              <textarea maxLength={100} value={fields.okrDescription} onChange={e => handleFieldChange('okrDescription', e.target.value)} className="border w-full h-24 p-2 mt-1 min-w-0" />
+              <textarea
+                maxLength={100}
+                value={fields.okrDescription}
+                onChange={(e) =>
+                  handleFieldChange("okrDescription", e.target.value)
+                }
+                className="border w-full h-24 p-2 mt-1 min-w-0"
+              />
             </div>
           </div>
 
           <div className="space-y-3 mb-6">
             {fields.keyResults.map((kr, idx) => (
               <div key={idx} className="flex items-center gap-4 min-w-0">
-                <label className="w-40 font-semibold">Key Results {idx + 1}</label>
-                <input maxLength={100} type="text" value={kr} onChange={e => handleKeyResultChange(idx, e.target.value)} className="border px-3 py-2 flex-1 min-w-0" />
+                <label className="w-40 font-semibold">
+                  Key Results {idx + 1}
+                </label>
+                <input
+                  maxLength={100}
+                  type="text"
+                  value={kr}
+                  onChange={(e) => handleKeyResultChange(idx, e.target.value)}
+                  className="border px-3 py-2 flex-1 min-w-0"
+                />
               </div>
             ))}
           </div>
 
           <div className="flex flex-wrap gap-8 mb-6">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-4 mb-2">
-                <label className="w-28">Q1 % Completion</label>
-                <input type="number" min={0} max={100} value={fields.quarters[0].percent} onChange={e => handleQuarterChange(0, e.target.value)} className="border px-2 py-1 w-20" />
-                <span className="ml-1">%</span>
-                <input maxLength={100} placeholder="Comments" value={fields.quarters[0].comment} onChange={e => handleQuarterCommentChange(0, e.target.value)} className="border ml-4 px-2 py-1 flex-1 " />
-              </div>
-              <div className="flex items-center gap-4">
-                <label className="w-28">Q2 % Completion</label>
-                <input type="number" min={0} max={100} value={fields.quarters[1].percent} onChange={e => handleQuarterChange(1, e.target.value)} className="border px-2 py-1 w-20" />
-                <span className="ml-1">%</span>
-                <input maxLength={100} placeholder="Comments" value={fields.quarters[1].comment} onChange={e => handleQuarterCommentChange(1, e.target.value)} className="border ml-4 px-2 py-1 flex-1" />
-              </div>
+              <QuarterInput
+                label="Q1 % Completion"
+                value={fields.quarters[0].percent}
+                onChange={(e) => handleQuarterChange(0, e.target.value)}
+                comment={fields.quarters[0].comment}
+                onCommentChange={(e) =>
+                  handleQuarterCommentChange(0, e.target.value)
+                }
+              />
+
+              <QuarterInput
+                label="Q2 % Completion"
+                value={fields.quarters[1].percent}
+                onChange={(e) => handleQuarterChange(1, e.target.value)}
+                comment={fields.quarters[1].comment}
+                onCommentChange={(e) =>
+                  handleQuarterCommentChange(1, e.target.value)
+                }
+              />
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-4 mb-2">
-                <label className="w-28">Q3 % Completion</label>
-                <input type="number" min={0} max={100} value={fields.quarters[2].percent} onChange={e => handleQuarterChange(2, e.target.value)} className="border px-2 py-1 w-20" />
-                <span className="ml-1">%</span>
-                <input maxLength={100} placeholder="Comments" value={fields.quarters[2].comment} onChange={e => handleQuarterCommentChange(2, e.target.value)} className="border ml-4 px-2 py-1 flex-1 min-w-0" />
-              </div>
-              <div className="flex items-center gap-4">
-                <label className="w-28">Q4 % Completion</label>
-                <input type="number" min={0} max={100} value={fields.quarters[3].percent} onChange={e => handleQuarterChange(3, e.target.value)} className="border px-2 py-1 w-20" />
-                <span className="ml-1">%</span>
-                <input maxLength={100} placeholder="Comments" value={fields.quarters[3].comment} onChange={e => handleQuarterCommentChange(3, e.target.value)} className="border ml-4 px-2 py-1 flex-1 min-w-0" />
-              </div>
+              <QuarterInput
+                label="Q3 % Completion"
+                value={fields.quarters[2].percent}
+                onChange={(e) => handleQuarterChange(2, e.target.value)}
+                comment={fields.quarters[2].comment}
+                onCommentChange={(e) =>
+                  handleQuarterCommentChange(2, e.target.value)
+                }
+              />
+
+              <QuarterInput
+                label="Q4 % Completion"
+                value={fields.quarters[3].percent}
+                onChange={(e) => handleQuarterChange(3, e.target.value)}
+                comment={fields.quarters[3].comment}
+                onCommentChange={(e) =>
+                  handleQuarterCommentChange(3, e.target.value)
+                }
+              />
             </div>
           </div>
 
@@ -388,8 +470,18 @@ const OKRWorkspaceLevel1 = () => {
             <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
           )} */}
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-8 sm:mt-10">
-            <OKRActionButton type="button" onClick={handleSave}>Update OKR</OKRActionButton>
-            <OKRActionButton type="button" onClick={(e) => { e.preventDefault(); navigate('/'); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
+            <OKRActionButton type="button" onClick={handleSave}>
+              Update OKR
+            </OKRActionButton>
+            <OKRActionButton
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/");
+              }}
+            >
+              {!isDirty || canClose ? "Close" : "Cancel OKR"}
+            </OKRActionButton>
           </div>
         </form>
       </div>

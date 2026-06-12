@@ -183,10 +183,11 @@ export default function AdminUsers() {
                   <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-left w-12">S. No</th>
                 <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-left w-24">Employee User ID</th>
                 <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-left w-48 cursor-pointer" onClick={() => toggleSort('empName')}>
-                  Name {sortKey === 'empName' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                  Name {sortKey === 'empName' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅'}
                 </th>
                 <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-left">Designation</th>
-                <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-center w-16">Level</th>
+                <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-left w-48 cursor-pointer" onClick={() => toggleSort('empLevel')}>
+                Level {sortKey === 'empLevel' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅'}</th>
                 <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-left w-64">Email</th>
                 <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-left w-36">Phone</th>
                 <th className="border-r border-white/10 px-3 sm:px-4 py-3 text-center w-28">Admin</th>

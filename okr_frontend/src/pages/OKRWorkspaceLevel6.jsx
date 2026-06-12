@@ -339,7 +339,6 @@ const OKRWorkspaceLevel6 = () => {
           </Box>
               <div className="flex gap-16 mt-8 mb-8">
                 <div className="flex-1">
-                  <div className="font-bold text-lg mb-2">Comments</div>
                   <QuarterInput
                     label="Q1 % Completion"
                     value={fields.quarters[0].percent}
@@ -372,7 +371,6 @@ const OKRWorkspaceLevel6 = () => {
                   />
                 </div>
                 <div className="flex-1">
-                  <div className="font-bold text-lg mb-2">Comments</div>
                   <QuarterInput
                     label="Q3 % Completion"
                     value={fields.quarters[2].percent}

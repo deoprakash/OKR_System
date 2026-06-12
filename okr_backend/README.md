@@ -21,13 +21,14 @@
 
    3. Make sure MongoDB is running and reachable from `MONGODB_URI` in `.env`.
 
-   4. Configure Gmail API credentials in `.env` for OTP delivery:
+   4. Configure SMTP credentials in `.env` for OTP and account emails:
 
-   - `OTP_EMAIL_FROM`
-   - `GMAIL_CLIENT_ID`
-   - `GMAIL_CLIENT_SECRET`
-   - `GMAIL_REFRESH_TOKEN`
-   - Optional: `GMAIL_REDIRECT_URI` (defaults to Google OAuth Playground URL)
+   - `OTP_EMAIL_FROM` — sender address shown to recipients
+   - `SMTP_HOST` — e.g. `smtp.gmail.com`
+   - `SMTP_PORT` — e.g. `587` (TLS) or `465` (SSL)
+   - `SMTP_USER` — SMTP login username (often the same as the sender email)
+   - `SMTP_PASS` — SMTP password or app password
+   - Optional: `SMTP_SECURE=true` — force SSL (defaults to `true` when port is 465)
 
    5. Run in dev mode:
 

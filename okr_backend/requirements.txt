@@ -1,2 +1,0 @@
-google-auth-oauthlib
-http://localhost:5000/?state=E4CgT6c5dlPY7hvVnKMrW1aQEz1cpd&iss=https://accounts.google.com&code=4/0Aci98E8vzEPJVvbmAwZJjqu0LGmvHKC20yEKXJ5r8uxGmYyBjaPwAe-nycv328z0RYIEOw&scope=https://www.googleapis.com/auth/gmail.send

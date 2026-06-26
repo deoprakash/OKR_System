@@ -11,6 +11,7 @@ import SectionTitle from '../components/SectionTitle';
 import Box from '../components/Box';
 import { listEmployees, listLevel2OKRs, listLevel3OKRs, createLevel3OKR, updateLevel3OKR } from '../lib/api';
 import { useToast } from '../components/ToastProvider';
+import { createEmptyOKRFields, YEAR_OPTIONS, QUARTER_OPTIONS } from "../lib/okrDefaults";
 
 const EMPLOYEE_LEVELS = ['new value 1', 'new value 2', 'new value 3'];
 
@@ -26,20 +27,21 @@ const OKRWorkspaceLevel3 = () => {
     return `${yyyy}-${mm}-${dd}`;
   };
   const [fields, setFields] = useState({
-    employeeCode: '',
-    employeeName: '',
-    employeeUserId: '',
-    employeeLevel: '',
-    okrCode: '',
-    okrDate: '',
-    okrDescription: '',
-    keyResults: Array(5).fill(''),
-    quarters: [
-      { percent: '', comment: '' },
-      { percent: '', comment: '' },
-      { percent: '', comment: '' },
-      { percent: '', comment: '' },
-    ],
+    // employeeCode: '',
+    // employeeName: '',
+    // employeeUserId: '',
+    // employeeLevel: '',
+    // okrCode: '',
+    // okrDate: '',
+    // okrDescription: '',
+    // keyResults: Array(5).fill(''),
+    // quarters: [
+    //   { percent: '', comment: '' },
+    //   { percent: '', comment: '' },
+    //   { percent: '', comment: '' },
+    //   { percent: '', comment: '' },
+    // ],
+    ...createEmptyOKRFields(),
     level2EmployeeCode: '',
     level2EmployeeName: '',
     level2EmployeeUserId: '',
@@ -98,20 +100,27 @@ const OKRWorkspaceLevel3 = () => {
 
   const resetForm = () => {
     const newFields = {
-      employeeCode: '',
-      employeeName: '',
-      employeeLevel: '',
-      okrCode: '',
-      okrDate: getLocalDateString(),
-      okrDescription: '',
-      keyResults: Array(5).fill(''),
-      quarters: [ { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' } ],
-      level2EmployeeCode: '',
-      level2EmployeeName: '',
-      level2EmployeeUserId: '',
-      level2OKRDescription: '',
-      level2OkrCode: '',
-      level2OKRValue: EMPLOYEE_LEVELS[0]
+      // employeeCode: "",
+      // employeeName: "",
+      // employeeLevel: "",
+      // employeeUserId: "",
+      // okrCode: "",
+      // okrDate: getLocalDateString(),
+      // okrDescription: "",
+      // keyResults: Array(5).fill(""),
+      // quarters: [
+      //   { percent: "", comment: "" },
+      //   { percent: "", comment: "" },
+      //   { percent: "", comment: "" },
+      //   { percent: "", comment: "" },
+      // ],
+      ...createEmptyOKRFields(),      
+      level2EmployeeCode: "",
+      level2EmployeeName: "",
+      level2EmployeeUserId: "",
+      level2OKRDescription: "",
+      level2OkrCode: "",
+      level2OKRValue: EMPLOYEE_LEVELS[0],
     };
     setFields(newFields);
     setLevel3All([]);
@@ -142,7 +151,14 @@ const OKRWorkspaceLevel3 = () => {
     const num = Number(val);
     const okr = level3All.find(x => Number(x.level3OkrCode) === num || Number(x._id) === num);
     if (!okr) return;
-    const newFields = { ...fields, okrCode: okr.level3OkrCode, okrDate: okr.okrDate ? getLocalDateString(okr.okrDate) : fields.okrDate, okrDescription: okr.okrDesc || '', keyResults: [okr.kr1 || '', okr.kr2 || '', okr.kr3 || '', okr.kr4 || '', okr.kr5 || ''], quarters: [ { percent: okr.q1_percentage ?? '', comment: okr.q1_comment || '' }, { percent: okr.q2_percentage ?? '', comment: okr.q2_comment || '' }, { percent: okr.q3_percentage ?? '', comment: okr.q3_comment || '' }, { percent: okr.q4_percentage ?? '', comment: okr.q4_comment || '' } ] };
+    const newFields = { ...fields, 
+      okrCode: okr.level3OkrCode, 
+      okrDate: okr.okrDate ? getLocalDateString(okr.okrDate) : fields.okrDate, 
+      okrYear: okr.okrYear || new Date().getFullYear(),
+      okrQuarter: okr.okrQuarter || "Q1",
+      
+      okrDescription: okr.okrDesc || '', 
+      keyResults: [okr.kr1 || '', okr.kr2 || '', okr.kr3 || '', okr.kr4 || '', okr.kr5 || ''], quarters: [ { percent: okr.q1_percentage ?? '', comment: okr.q1_comment || '' }, { percent: okr.q2_percentage ?? '', comment: okr.q2_comment || '' }, { percent: okr.q3_percentage ?? '', comment: okr.q3_comment || '' }, { percent: okr.q4_percentage ?? '', comment: okr.q4_comment || '' } ] };
     setFields(newFields);
     setIsDirty(false);
     pristineRef.current = JSON.stringify(newFields);
@@ -167,6 +183,8 @@ const OKRWorkspaceLevel3 = () => {
         empName: fields.employeeName,
         empLevel: Number(fields.employeeLevel) || 3,
         okrDate: fields.okrDate,
+        okrYear: fields.okrYear,
+        okrQuarter: fields.okrQuarter,
         level2OkrCode: fields.level2OkrCode ? Number(fields.level2OkrCode) : undefined,
         okrDesc: fields.okrDescription,
         kr1: fields.keyResults[0] || '',
@@ -223,65 +241,177 @@ const OKRWorkspaceLevel3 = () => {
   return (
     <div className="min-h-screen flex items-center justify-center py-12">
       <div className="absolute top-6 left-6">
-        <BackButton onClick={() => navigate('/')} />
+        <BackButton onClick={() => navigate("/")} />
       </div>
       <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-6xl p-8 overflow-hidden professional-panel">
-        <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 3</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center">
+          OKR Workspace - Level 3
+        </h1>
         <form>
-          <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-6">
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Code</label>
-              <select value={fields.employeeCode} onChange={handleSelectEmployee} className="border px-2 py-2 w-full bg-white">
+              <select
+                value={fields.employeeCode}
+                onChange={handleSelectEmployee}
+                className="border px-2 py-2 w-full bg-white"
+              >
                 <option value="">-- Select --</option>
-                {employeeOptions.map(emp => (
-                  <option key={emp.empCode} value={emp.empCode}>{emp.empName}</option>
+                {employeeOptions.map((emp) => (
+                  <option key={emp.empCode} value={emp.empCode}>
+                    {emp.empName}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Code</label>
-              <input value={fields.employeeUserId} readOnly className="border px-2 py-2 w-full bg-gray-100" />
+              <input
+                value={fields.employeeUserId}
+                readOnly
+                className="border px-2 py-2 w-full bg-gray-100"
+              />
             </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Level</label>
-              <input value={fields.employeeLevel} readOnly className="border px-2 py-2 w-full bg-gray-100" />
+              <input
+                value={fields.employeeLevel}
+                readOnly
+                className="border px-2 py-2 w-full bg-gray-100"
+              />
             </div>
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Select OKR</label>
-                <select value={fields.okrCode} onChange={handleSelectOKRCode} className="border px-2 py-2 w-full">
-                            <option value="">-- Select --</option>
-                            <option value="NEW">New</option>
-                            {level3All
-                              .filter(o => Number(o.empCode) === Number(fields.employeeCode))
-                              .filter((v,i,a) => a.findIndex(t => String(t.level3OkrCode) === String(v.level3OkrCode)) === i)
-                              .map(o => (
-                                <option key={o.level3OkrCode} value={o.level3OkrCode}>{o.okrDesc?.slice(0,50) || String(o.level3OkrCode)}</option>
-                              ))}
-                          </select>
+              <select
+                value={fields.okrCode}
+                onChange={handleSelectOKRCode}
+                className="border px-2 py-2 w-full"
+              >
+                <option value="">-- Select --</option>
+                <option value="NEW">New</option>
+                {level3All
+                  .filter(
+                    (o) => Number(o.empCode) === Number(fields.employeeCode),
+                  )
+                  .filter(
+                    (v, i, a) =>
+                      a.findIndex(
+                        (t) =>
+                          String(t.level3OkrCode) === String(v.level3OkrCode),
+                      ) === i,
+                  )
+                  .map((o) => (
+                    <option key={o.level3OkrCode} value={o.level3OkrCode}>
+                      {o.okrDesc?.slice(0, 50) || String(o.level3OkrCode)}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-2 min-w-0">
+              <label className="font-semibold">Year</label>
+              <select
+                value={fields.okrYear}
+                onChange={(e) =>
+                  setFields((prev) => ({
+                    ...prev,
+                    okrYear: Number(e.target.value),
+                  }))
+                }
+                className="border px-2 py-2 w-full"
+              >
+                {YEAR_OPTIONS.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-2 min-w-0">
+              <label className="font-semibold">Quarter</label>
+              <select
+                value={fields.okrQuarter}
+                onChange={(e) =>
+                  setFields((prev) => ({
+                    ...prev,
+                    okrQuarter: e.target.value,
+                  }))
+                }
+                className="border px-2 py-2 w-full"
+              >
+                {QUARTER_OPTIONS.map((q) => (
+                  <option key={q} value={q}>
+                    {q}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <Box>
             <SectionTitle>Level - 2</SectionTitle>
             <FormRow>
               <div className="w-62">
-                <label className="font-semibold block mb-1">Employee Code</label>
-                  <select ref={firstInputRef} value={fields.level2EmployeeCode} onChange={handleSelectLevel2Employee} className="border px-2 py-1 w-full min-w-0">
+                <label className="font-semibold block mb-1">
+                  Employee Code
+                </label>
+                <select
+                  ref={firstInputRef}
+                  value={fields.level2EmployeeCode}
+                  onChange={handleSelectLevel2Employee}
+                  className="border px-2 py-1 w-full min-w-0"
+                >
                   <option value="">-- Select --</option>
-                  {level2Options.map(opt => (
-                    <option key={opt.empCode} value={opt.empCode}>{opt.empName}</option>
+                  {level2Options.map((opt) => (
+                    <option key={opt.empCode} value={opt.empCode}>
+                      {opt.empName}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="w-62">
-                <label className="font-semibold block mb-1">Employee Code</label>
-                <input value={fields.level2EmployeeUserId} readOnly className="border px-2 py-1 w-full bg-gray-100" />
+                <label className="font-semibold block mb-1">
+                  Employee Code
+                </label>
+                <input
+                  value={fields.level2EmployeeUserId}
+                  readOnly
+                  className="border px-2 py-1 w-full bg-gray-100"
+                />
               </div>
               <div className="w-full">
-                <label className="font-semibold block mb-1">OKR Description</label>
-                <select value={fields.level2OKRDescription} onChange={e => setFields(f => ({ ...f, level2OKRDescription: e.target.value, level2OkrCode: e.target.value && (() => { try { const v = JSON.parse(e.target.selectedOptions[0].dataset.payload); return v.level2OkrCode; } catch { return ''; } })() }))} className="border px-2 py-1 w-full">
+                <label className="font-semibold block mb-1">
+                  OKR Description
+                </label>
+                <select
+                  value={fields.level2OKRDescription}
+                  onChange={(e) =>
+                    setFields((f) => ({
+                      ...f,
+                      level2OKRDescription: e.target.value,
+                      level2OkrCode:
+                        e.target.value &&
+                        (() => {
+                          try {
+                            const v = JSON.parse(
+                              e.target.selectedOptions[0].dataset.payload,
+                            );
+                            return v.level2OkrCode;
+                          } catch {
+                            return "";
+                          }
+                        })(),
+                    }))
+                  }
+                  className="border px-2 py-1 w-full"
+                >
                   <option value="">-- Select Description --</option>
                   {level2OKRDescriptions.map((d, i) => (
-                    <option key={i} value={d.okrDesc} data-payload={JSON.stringify(d)}>{d.okrDesc}</option>
+                    <option
+                      key={i}
+                      value={d.okrDesc}
+                      data-payload={JSON.stringify(d)}
+                    >
+                      {d.okrDesc}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -292,11 +422,22 @@ const OKRWorkspaceLevel3 = () => {
             <div className="flex flex-wrap items-start gap-2 mb-6">
               <div className="flex flex-col items-start gap-1 w-36 min-w-0">
                 <label className="font-semibold">OKR Date</label>
-                <input type="date" value={fields.okrDate} disabled className="border py-1 w-full bg-gray-100 text-center px-2" />
+                <input
+                  type="date"
+                  value={fields.okrDate}
+                  disabled
+                  className="border py-1 w-full bg-gray-100 text-center px-2"
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <label className="font-semibold">OKR Description</label>
-                <textarea value={fields.okrDescription} onChange={e => setFields(f => ({ ...f, okrDescription: e.target.value }))} className="border w-full h-24 p-2 mt-1 min-w-0" />
+                <textarea
+                  value={fields.okrDescription}
+                  onChange={(e) =>
+                    setFields((f) => ({ ...f, okrDescription: e.target.value }))
+                  }
+                  className="border w-full h-24 p-2 mt-1 min-w-0"
+                />
               </div>
             </div>
             <div className="mt-8 mb-8">
@@ -305,88 +446,120 @@ const OKRWorkspaceLevel3 = () => {
                   key={idx}
                   label={`Key Results ${idx + 1}`}
                   value={kr}
-                  onChange={e => setFields(f => {
-                    const keyResults = [...f.keyResults];
-                    keyResults[idx] = e.target.value;
-                    return { ...f, keyResults };
-                  })}
+                  onChange={(e) =>
+                    setFields((f) => {
+                      const keyResults = [...f.keyResults];
+                      keyResults[idx] = e.target.value;
+                      return { ...f, keyResults };
+                    })
+                  }
                 />
               ))}
             </div>
           </Box>
-              <div className="flex gap-16 mt-8 mb-8">
-                <div className="flex-1">
-                  <QuarterInput
-                    label="Q1 % Completion"
-                    value={fields.quarters[0].percent}
-                    onChange={e => setFields(f => {
-                      const quarters = [...f.quarters];
-                      quarters[0].percent = e.target.value;
-                      return { ...f, quarters };
-                    })}
-                    comment={fields.quarters[0].comment}
-                    onCommentChange={e => setFields(f => {
-                      const quarters = [...f.quarters];
-                      quarters[0].comment = e.target.value;
-                      return { ...f, quarters };
-                    })}
-                  />
-                  <QuarterInput
-                    label="Q2 % Completion"
-                    value={fields.quarters[1].percent}
-                    onChange={e => setFields(f => {
-                      const quarters = [...f.quarters];
-                      quarters[1].percent = e.target.value;
-                      return { ...f, quarters };
-                    })}
-                    comment={fields.quarters[1].comment}
-                    onCommentChange={e => setFields(f => {
-                      const quarters = [...f.quarters];
-                      quarters[1].comment = e.target.value;
-                      return { ...f, quarters };
-                    })}
-                  />
-                </div>
-                <div className="flex-1">
-                  <QuarterInput
-                    label="Q3 % Completion"
-                    value={fields.quarters[2].percent}
-                    onChange={e => setFields(f => {
-                      const quarters = [...f.quarters];
-                      quarters[2].percent = e.target.value;
-                      return { ...f, quarters };
-                    })}
-                    comment={fields.quarters[2].comment}
-                    onCommentChange={e => setFields(f => {
-                      const quarters = [...f.quarters];
-                      quarters[2].comment = e.target.value;
-                      return { ...f, quarters };
-                    })}
-                  />
-                  <QuarterInput
-                    label="Q4 % Completion"
-                    value={fields.quarters[3].percent}
-                    onChange={e => setFields(f => {
-                      const quarters = [...f.quarters];
-                      quarters[3].percent = e.target.value;
-                      return { ...f, quarters };
-                    })}
-                    comment={fields.quarters[3].comment}
-                    onCommentChange={e => setFields(f => {
-                      const quarters = [...f.quarters];
-                      quarters[3].comment = e.target.value;
-                      return { ...f, quarters };
-                    })}
-                  />
-                </div>
-              </div>
-              {/* {percentSum > 100 && (
+          <div className="flex gap-16 mt-8 mb-8">
+            <div className="flex-1">
+              <QuarterInput
+                label="Q1 % Completion"
+                value={fields.quarters[0].percent}
+                onChange={(e) =>
+                  setFields((f) => {
+                    const quarters = [...f.quarters];
+                    quarters[0].percent = e.target.value;
+                    return { ...f, quarters };
+                  })
+                }
+                comment={fields.quarters[0].comment}
+                onCommentChange={(e) =>
+                  setFields((f) => {
+                    const quarters = [...f.quarters];
+                    quarters[0].comment = e.target.value;
+                    return { ...f, quarters };
+                  })
+                }
+              />
+              <QuarterInput
+                label="Q2 % Completion"
+                value={fields.quarters[1].percent}
+                onChange={(e) =>
+                  setFields((f) => {
+                    const quarters = [...f.quarters];
+                    quarters[1].percent = e.target.value;
+                    return { ...f, quarters };
+                  })
+                }
+                comment={fields.quarters[1].comment}
+                onCommentChange={(e) =>
+                  setFields((f) => {
+                    const quarters = [...f.quarters];
+                    quarters[1].comment = e.target.value;
+                    return { ...f, quarters };
+                  })
+                }
+              />
+            </div>
+            <div className="flex-1">
+              <QuarterInput
+                label="Q3 % Completion"
+                value={fields.quarters[2].percent}
+                onChange={(e) =>
+                  setFields((f) => {
+                    const quarters = [...f.quarters];
+                    quarters[2].percent = e.target.value;
+                    return { ...f, quarters };
+                  })
+                }
+                comment={fields.quarters[2].comment}
+                onCommentChange={(e) =>
+                  setFields((f) => {
+                    const quarters = [...f.quarters];
+                    quarters[2].comment = e.target.value;
+                    return { ...f, quarters };
+                  })
+                }
+              />
+              <QuarterInput
+                label="Q4 % Completion"
+                value={fields.quarters[3].percent}
+                onChange={(e) =>
+                  setFields((f) => {
+                    const quarters = [...f.quarters];
+                    quarters[3].percent = e.target.value;
+                    return { ...f, quarters };
+                  })
+                }
+                comment={fields.quarters[3].comment}
+                onCommentChange={(e) =>
+                  setFields((f) => {
+                    const quarters = [...f.quarters];
+                    quarters[3].comment = e.target.value;
+                    return { ...f, quarters };
+                  })
+                }
+              />
+            </div>
+          </div>
+          {/* {percentSum > 100 && (
                 <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
               )} */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8 sm:mt-10">
-                <OKRActionButton onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>Update OKR</OKRActionButton>
-                <OKRActionButton onClick={(e) => { e.preventDefault(); navigate('/'); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
-              </div>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8 sm:mt-10">
+            <OKRActionButton
+              onClick={(e) => {
+                e.preventDefault();
+                handleUpdateOKR();
+              }}
+            >
+              Update OKR
+            </OKRActionButton>
+            <OKRActionButton
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/");
+              }}
+            >
+              {!isDirty || canClose ? "Close" : "Cancel OKR"}
+            </OKRActionButton>
+          </div>
         </form>
       </div>
     </div>

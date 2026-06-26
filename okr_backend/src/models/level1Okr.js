@@ -5,12 +5,29 @@ const Level1OKRSchema = new mongoose.Schema(
   {
     empLevel: { type: Number, default: 1 },
     level1OkrCode: { type: Number, unique: true, index: true },
+
     empCode: { type: Number, required: true },
     empName: { type: String, maxlength: 40 },
+
     createdByName: { type: String, maxlength: 40 },
     createdByEmpCode: { type: Number },
+
     createdByUserId: { type: String, maxlength: 10 },
     okrDate: { type: Date, default: () => new Date() },
+
+    okrYear: {
+      type: Number,
+      required: true,
+      min: 2000,
+      max: 2050,
+    },
+
+    okrQuarter: {
+      type: String,
+      enum: ["Q1", "Q2", "Q3", "Q4"],
+      required: true,
+    },
+
     okrDesc: { type: String, maxlength: 100 },
     kr1: { type: String, maxlength: 100 },
     kr2: { type: String, maxlength: 100 },
@@ -24,9 +41,9 @@ const Level1OKRSchema = new mongoose.Schema(
     q3_percentage: { type: Number, min: 0, max: 100 },
     q3_comment: { type: String, maxlength: 100 },
     q4_percentage: { type: Number, min: 0, max: 100 },
-    q4_comment: { type: String, maxlength: 100 }
+    q4_comment: { type: String, maxlength: 100 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Auto-generate a running serial number for `level1OkrCode`

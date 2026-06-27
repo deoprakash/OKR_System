@@ -7,6 +7,7 @@ const Level1OKRSchema = new mongoose.Schema(
     level1OkrCode: { type: Number, unique: true, index: true },
 
     empCode: { type: Number, required: true },
+    userId: {type:String, maxlength: 10},
     empName: { type: String, maxlength: 40 },
 
     createdByName: { type: String, maxlength: 40 },

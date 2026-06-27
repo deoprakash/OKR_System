@@ -199,6 +199,7 @@ const OKRWorkspaceLevel1 = () => {
     const payload = {
       empLevel: Number(fields.employeeLevel) || 1,
       empCode: Number(fields.employeeCode),
+      userId: fields.userId, 
       empName: fields.employeeName,
       okrDate: fields.okrDate,
       okrDesc: fields.okrDescription,

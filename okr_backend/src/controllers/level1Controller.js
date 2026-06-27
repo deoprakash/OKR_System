@@ -37,7 +37,12 @@ export async function create(req, res) {
       createdByEmpCode: req.user?.empCode || null,
       createdByUserId: req.user?.userId || null
     });
+    console.log("doc.userId =", doc.userId);
+
     await doc.save();
+
+    console.log("saved =", doc);
+
     res.status(201).json({ data: doc });
   } catch (err) {
     res.status(400).json({ error: err.message || "Failed to create" });

@@ -8,31 +8,28 @@ import OKRActionButton from '../components/OKRActionButton';
 import BackButton from '../components/BackButton';
 import { listEmployees, listLevel1OKRs, createLevel1OKR, updateLevel1OKR } from '../lib/api';
 import { useToast } from '../components/ToastProvider';
-import {createEmptyOKRFields, YEAR_OPTIONS, QUARTER_OPTIONS } from "../lib/okrDefaults";
 
 const OKRWorkspaceLevel1 = () => {
     const navigate = useNavigate();
     const today = new Date().toISOString().slice(0, 10);
     const toast = useToast();
 
-  //   const [fields, setFields] = useState({
-  //     employeeCode: '',
-  //     employeeName: '',
-  //     userId: '',
-  //   employeeLevel: '',
-  //     okrCode: '',
-  //     okrDate: today,
-  //   okrDescription: '',
-  //   keyResults: Array(5).fill(''),
-  //   quarters: [
-  //     { percent: '', comment: '' },
-  //     { percent: '', comment: '' },
-  //     { percent: '', comment: '' },
-  //     { percent: '', comment: '' },
-  //   ],
-  // });
-
-  const [fields, setFields] = useState(createEmptyOKRFields());
+    const [fields, setFields] = useState({
+      employeeCode: '',
+      employeeName: '',
+      userId: '',
+    employeeLevel: '',
+      okrCode: '',
+      okrDate: today,
+    okrDescription: '',
+    keyResults: Array(5).fill(''),
+    quarters: [
+      { percent: '', comment: '' },
+      { percent: '', comment: '' },
+      { percent: '', comment: '' },
+      { percent: '', comment: '' },
+    ],
+  });
 
   const [employees, setEmployees] = useState([]);
   const [okrs, setOkrs] = useState([]);
@@ -98,55 +95,46 @@ const OKRWorkspaceLevel1 = () => {
     setCanClose(false);
     const newFields = {
       ...fields,
-      okrCode: "NEW",
+      okrCode: 'NEW',
       okrDate: today,
-      okrDescription: "",
-      keyResults: Array(5).fill(""),
+      okrDescription: '',
+      keyResults: Array(5).fill(''),
       quarters: [
-        { percent: "", comment: "" },
-        { percent: "", comment: "" },
-        { percent: "", comment: "" },
-        { percent: "", comment: "" },
-      ],
+        { percent: '', comment: '' },
+        { percent: '', comment: '' },
+        { percent: '', comment: '' },
+        { percent: '', comment: '' }
+      ]
     };
     setFields(newFields);
     setIsDirty(false);
     pristineRef.current = JSON.stringify(newFields);
   };
 
-  // const resetForm = () => {
-  //   setSelectedOkrId(null);
-  //   setSelectedOkrCode('');
-  //   setCanClose(false);
-  //   const newFields = {
-  //     employeeCode: '',
-  //     employeeName: '',
-  //     employeeLevel: '',
-  //     okrCode: '',
-  //     okrDate: today,
-  //     okrDescription: '',
-  //     keyResults: Array(5).fill(''),
-  //     quarters: [
-  //       { percent: '', comment: '' },
-  //       { percent: '', comment: '' },
-  //       { percent: '', comment: '' },
-  //       { percent: '', comment: '' },
-  //     ],
-  //   };
-  //   setFields(newFields);
-  //   setOkrs([]);
-  //   setIsDirty(false);
-  //   pristineRef.current = JSON.stringify(newFields);
-  // };
-
   const resetForm = () => {
-    const newFields = createEmptyOKRFields();
-
+    setSelectedOkrId(null);
+    setSelectedOkrCode('');
+    setCanClose(false);
+    const newFields = {
+      employeeCode: '',
+      employeeName: '',
+      employeeLevel: '',
+      okrCode: '',
+      okrDate: today,
+      okrDescription: '',
+      keyResults: Array(5).fill(''),
+      quarters: [
+        { percent: '', comment: '' },
+        { percent: '', comment: '' },
+        { percent: '', comment: '' },
+        { percent: '', comment: '' },
+      ],
+    };
     setFields(newFields);
+    setOkrs([]);
     setIsDirty(false);
     pristineRef.current = JSON.stringify(newFields);
   };
-
   const firstInputRef = useRef(null);
   useEffect(() => { try { firstInputRef.current && firstInputRef.current.focus(); } catch {} }, []);
 
@@ -296,7 +284,7 @@ const OKRWorkspaceLevel1 = () => {
           OKR Workspace - Level 1
         </h1>
         <form>
-          <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-6">
+          <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-4">
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee</label>
               <select
@@ -386,44 +374,6 @@ const OKRWorkspaceLevel1 = () => {
                       {o.okrDesc?.slice(0, 50) || String(o.level1OkrCode)}
                     </option>
                   ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-2 min-w-0">
-              <label className="font-semibold">Year</label>
-              <select
-                value={fields.okrYear}
-                onChange={(e) =>
-                  setFields((prev) => ({
-                    ...prev,
-                    okrYear: Number(e.target.value),
-                  }))
-                }
-                className="border px-2 py-2 w-full"
-              >
-                {YEAR_OPTIONS.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-2 min-w-0">
-              <label className="font-semibold">Quarter</label>
-              <select
-                value={fields.okrQuarter}
-                onChange={(e) =>
-                  setFields((prev) => ({
-                    ...prev,
-                    okrQuarter: e.target.value,
-                  }))
-                }
-                className="border px-2 py-2 w-full"
-              >
-                {QUARTER_OPTIONS.map((q) => (
-                  <option key={q} value={q}>
-                    {q}
-                  </option>
-                ))}
               </select>
             </div>
           </div>

@@ -32,7 +32,7 @@ const OKRWorkspaceLevel4 = () => {
   const [fields, setFields] = useState({
     // employeeCode: '',
     // employeeName: '',
-    // employeeUserId: '',
+    // userId: '',
     // employeeLevel: '',
     // okrCode: '',
     // okrDate: '',
@@ -47,7 +47,7 @@ const OKRWorkspaceLevel4 = () => {
     ...createEmptyOKRFields(),
     level3EmployeeCode: '',
     level3EmployeeName: '',
-    level3EmployeeUserId: '',
+    level3userId: '',
     level3OKRDescription: '',
     level3OkrCode: '',
   });
@@ -56,6 +56,7 @@ const OKRWorkspaceLevel4 = () => {
   const [level3OKRDescriptions, setLevel3OKRDescriptions] = useState([]);
   const [level4All, setLevel4All] = useState([]);
   const [canClose, setCanClose] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const pristineRef = useRef(null);
   const _initRef = useRef(false);
@@ -87,16 +88,16 @@ const OKRWorkspaceLevel4 = () => {
   useEffect(() => {
     if (!employeeOptions || !fields.employeeCode) return;
     const emp = employeeOptions.find(x => Number(x.empCode) === Number(fields.employeeCode));
-    if (emp && emp.userId && emp.userId !== fields.employeeUserId) {
-      setFields(f => ({ ...f, employeeUserId: emp.userId }));
+    if (emp && emp.userId && emp.userId !== fields.userId) {
+      setFields(f => ({ ...f, userId: emp.userId }));
     }
   }, [employeeOptions, fields.employeeCode]);
 
   useEffect(() => {
     if (!level3Options || !fields.level3EmployeeCode) return;
     const emp = level3Options.find(x => Number(x.empCode) === Number(fields.level3EmployeeCode));
-    if (emp && emp.userId && emp.userId !== fields.level3EmployeeUserId) {
-      setFields(f => ({ ...f, level3EmployeeUserId: emp.userId }));
+    if (emp && emp.userId && emp.userId !== fields.level3userId) {
+      setFields(f => ({ ...f, level3userId: emp.userId }));
     }
   }, [level3Options, fields.level3EmployeeCode]);
 
@@ -104,7 +105,7 @@ const OKRWorkspaceLevel4 = () => {
     const newFields = {
       // employeeCode: "",
       // employeeName: "",
-      // employeeUserId: "",
+      // userId: "",
       // employeeLevel: "",
       // okrCode: "",
       // okrDate: getLocalDateString(),
@@ -117,14 +118,20 @@ const OKRWorkspaceLevel4 = () => {
       //   { percent: "", comment: "" },
       // ],
       ...createEmptyOKRFields(),
+
+      employeeCode: "",
+      employeeName: "",
+      userId: "",
+      employeeLevel: "",
+
       level3EmployeeCode: "",
       level3EmployeeName: "",
-      level3EmployeeUserId: "",
+      level3userId: "",
       level3OKRDescription: "",
       level3OkrCode: "",
     };
     setFields(newFields);
-    setLevel4All([]);
+    setLevel3OKRDescriptions([]);
     setIsDirty(false);
     pristineRef.current = JSON.stringify(newFields);
   };
@@ -149,7 +156,7 @@ const OKRWorkspaceLevel4 = () => {
   const handleSelectEmployee = (e) => {
     const code = Number(e.target.value) || '';
     const emp = employeeOptions.find(x => Number(x.empCode) === code);
-    setFields(f => ({ ...f, employeeCode: code, employeeName: emp ? emp.empName : '', employeeUserId: emp ? emp.userId : '', employeeLevel: emp ? String(emp.empLevel) : '', okrCode: '' }));
+    setFields(f => ({ ...f, employeeCode: code, employeeName: emp ? emp.empName : '', userId: emp ? emp.userId : '', employeeLevel: emp ? String(emp.empLevel) : '', okrCode: '' }));
   };
 
   const handleSelectOKRCode = (e) => {
@@ -197,7 +204,7 @@ const OKRWorkspaceLevel4 = () => {
   const handleSelectLevel3Employee = (e) => {
     const code = Number(e.target.value) || '';
     const emp = level3Options.find(x => Number(x.empCode) === code);
-    setFields(f => ({ ...f, level3EmployeeCode: code, level3EmployeeName: emp ? emp.empName : '', level3EmployeeUserId: emp ? emp.userId : '', level3OKRDescription: '', level3OkrCode: '' }));
+    setFields(f => ({ ...f, level3EmployeeCode: code, level3EmployeeName: emp ? emp.empName : '', level3userId: emp ? emp.userId : '', level3OKRDescription: '', level3OkrCode: '' }));
     listLevel3OKRs().then(res => {
       const items = (res.data || []).filter(i => Number(i.empCode) === Number(code)).map(i => ({ level3OkrCode: i.level3OkrCode, okrDesc: i.okrDesc || '' }));
       setLevel3OKRDescriptions(items);
@@ -217,9 +224,11 @@ const OKRWorkspaceLevel4 = () => {
       toast.send('Invalid OKR Date', 'error'); return;
     }
     if (!fields.level3OkrCode) { toast.send('Please select a Level-3 OKR to link before saving.', 'error'); return; }
+    
     try {
       const payload = {
         empCode: Number(fields.employeeCode),
+        userId: fields.userId,
         empName: fields.employeeName,
         empLevel: Number(fields.employeeLevel) || 4,
         okrDate: fields.okrDate,
@@ -256,25 +265,32 @@ const OKRWorkspaceLevel4 = () => {
         q4_comment: fields.quarters[3].comment || "",
       };
 
+      setIsUpdating(true);
+
       if (fields.okrCode === 'NEW' || fields.okrCode === '' || fields.okrCode == null) {
         const res = await createLevel4OKR(payload);
         const created = res.data;
         toast.send('Created OKR with code: ' + (created.level4OkrCode || created._id), 'success');
         const l4 = await listLevel4OKRs(); setLevel4All(l4.data || []);
         if (created) {
-          const newFields = { ...fields, okrCode: created.level4OkrCode || fields.okrCode };
-          setFields(newFields);
-          setCanClose(true);
-          setIsDirty(false);
-          pristineRef.current = JSON.stringify(newFields);
+          resetForm();
+          setCanClose(false);
         }
       } else {
         await updateLevel4OKR(fields.okrCode, payload);
-        toast.send('OKR updated', 'success');
-        const l4 = await listLevel4OKRs(); setLevel4All(l4.data || []);
-        setCanClose(true);
+
+        toast.send("OKR updated", "success");
+        
+        const l4 = await listLevel4OKRs();
+        setLevel4All(l4.data || []);
+        
+        resetForm();
+        setCanClose(false);
       }
     } catch (err) { console.error(err); toast.send('Save failed: ' + (err.message || err), 'error'); }
+    finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleCancel = () => {
@@ -321,7 +337,7 @@ const OKRWorkspaceLevel4 = () => {
             <div className="flex flex-col gap-2 min-w-0">
               <label className="font-semibold">Employee Code</label>
               <input
-                value={fields.employeeUserId}
+                value={fields.userId}
                 readOnly
                 className="border px-2 py-2 w-full bg-gray-100"
               />
@@ -426,7 +442,7 @@ const OKRWorkspaceLevel4 = () => {
                   Employee Code
                 </label>
                 <input
-                  value={fields.level3EmployeeUserId}
+                  value={fields.level3userId}
                   readOnly
                   className="border px-2 py-1 w-full bg-gray-100"
                 />
@@ -597,13 +613,14 @@ const OKRWorkspaceLevel4 = () => {
                 <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
               )} */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8 sm:mt-10">
-            <OKRActionButton
+          <OKRActionButton
+              disabled={isUpdating}
               onClick={(e) => {
                 e.preventDefault();
                 handleUpdateOKR();
               }}
             >
-              Update OKR
+              {isUpdating ? "Updating..." : "Update OKR"}
             </OKRActionButton>
             <OKRActionButton
               onClick={(e) => {

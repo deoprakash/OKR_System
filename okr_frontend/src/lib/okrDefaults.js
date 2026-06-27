@@ -24,7 +24,7 @@ export const getLocalDateString = (value) => {
 export const createEmptyOKRFields = () => ({
   employeeCode: "",
   employeeName: "",
-  employeeUserId: "",
+  userId: "",
   employeeLevel: "",
 
   okrCode: "",

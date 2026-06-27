@@ -11,11 +11,6 @@ import SectionTitle from '../components/SectionTitle';
 import Box from '../components/Box';
 import { listEmployees, listLevel5OKRs, listLevel6OKRs, createLevel6OKR, updateLevel6OKR } from '../lib/api';
 import { useToast } from '../components/ToastProvider';
-import {
-  createEmptyOKRFields,
-  YEAR_OPTIONS,
-  QUARTER_OPTIONS,
-} from "../lib/okrDefaults";
 
 const OKRWorkspaceLevel6 = () => {
   const navigate = useNavigate();
@@ -29,22 +24,20 @@ const OKRWorkspaceLevel6 = () => {
     return `${yyyy}-${mm}-${dd}`;
   };
   const [fields, setFields] = useState({
-    // employeeCode: '',
-    // employeeName: '',
-    // userId: '',
-    // employeeLevel: '',
-    // okrCode: '',
-    // okrDate: '',
-    // okrDescription: '',
-    // keyResults: Array(5).fill(''),
-    // quarters: [
-    //   { percent: '', comment: '' },
-    //   { percent: '', comment: '' },
-    //   { percent: '', comment: '' },
-    //   { percent: '', comment: '' },
-    // ],
-
-    ...createEmptyOKRFields(),
+    employeeCode: '',
+    employeeName: '',
+    userId: '',
+    employeeLevel: '',
+    okrCode: '',
+    okrDate: '',
+    okrDescription: '',
+    keyResults: Array(5).fill(''),
+    quarters: [
+      { percent: '', comment: '' },
+      { percent: '', comment: '' },
+      { percent: '', comment: '' },
+      { percent: '', comment: '' },
+    ],
     level5EmployeeCode: '',
     level5EmployeeName: '',
     level5userId: '',
@@ -107,26 +100,19 @@ const OKRWorkspaceLevel6 = () => {
 
   const resetForm = () => {
     const newFields = {
-      // employeeCode: "",
-      // employeeName: "",
-      // employeeLevel: "",
-      // userId: "",
-      // okrCode: "",
-      // okrDate: getLocalDateString(),
-      // okrDescription: "",
-      // keyResults: Array(5).fill(""),
-      // quarters: [
-      //   { percent: "", comment: "" },
-      //   { percent: "", comment: "" },
-      //   { percent: "", comment: "" },
-      //   { percent: "", comment: "" },
-      // ],
-      ...createEmptyOKRFields(),
-      level5EmployeeCode: "",
-      level5EmployeeName: "",
-      level5userId: "",
-      level5OKRDescription: "",
-      level5OkrCode: "",
+      employeeCode: '',
+      employeeName: '',
+      employeeLevel: '',
+      okrCode: '',
+      okrDate: getLocalDateString(),
+      okrDescription: '',
+      keyResults: Array(5).fill(''),
+      quarters: [ { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' } ],
+      level5EmployeeCode: '',
+      level5EmployeeName: '',
+      level5userId: '',
+      level5OKRDescription: '',
+      level5OkrCode: ''
     };
     setFields(newFields);
     setLevel6All([]);
@@ -169,27 +155,7 @@ const OKRWorkspaceLevel6 = () => {
     const num = Number(val);
     const okr = level6All.find(x => Number(x.level6OkrCode) === num || Number(x._id) === num);
     if (!okr) return;
-    const newFields = {
-      ...fields,
-      okrCode: okr.level6OkrCode,
-      okrDate: okr.okrDate ? getLocalDateString(okr.okrDate) : fields.okrDate,
-      okrYear: okr.okrYear || new Date().getFullYear(),
-      okrQuarter: okr.okrQuarter || "Q1",
-      okrDescription: okr.okrDesc || "",
-      keyResults: [
-        okr.kr1 || "",
-        okr.kr2 || "",
-        okr.kr3 || "",
-        okr.kr4 || "",
-        okr.kr5 || "",
-      ],
-      quarters: [
-        { percent: okr.q1_percentage ?? "", comment: okr.q1_comment || "" },
-        { percent: okr.q2_percentage ?? "", comment: okr.q2_comment || "" },
-        { percent: okr.q3_percentage ?? "", comment: okr.q3_comment || "" },
-        { percent: okr.q4_percentage ?? "", comment: okr.q4_comment || "" },
-      ],
-    };
+    const newFields = { ...fields, okrCode: okr.level6OkrCode, okrDate: okr.okrDate ? getLocalDateString(okr.okrDate) : fields.okrDate, okrDescription: okr.okrDesc || '', keyResults: [okr.kr1 || '', okr.kr2 || '', okr.kr3 || '', okr.kr4 || '', okr.kr5 || ''], quarters: [ { percent: okr.q1_percentage ?? '', comment: okr.q1_comment || '' }, { percent: okr.q2_percentage ?? '', comment: okr.q2_comment || '' }, { percent: okr.q3_percentage ?? '', comment: okr.q3_comment || '' }, { percent: okr.q4_percentage ?? '', comment: okr.q4_comment || '' } ] };
     setFields(newFields);
     setIsDirty(false);
     pristineRef.current = JSON.stringify(newFields);
@@ -216,48 +182,29 @@ const OKRWorkspaceLevel6 = () => {
     } catch (e) { toast.send('Invalid OKR Date', 'error'); return; }
 
     if (!fields.level5OkrCode) { toast.send('Please select a Level-5 OKR to link before saving.', 'error'); return; }
-    
+
     try {
       const payload = {
         empCode: Number(fields.employeeCode),
-        userId: fields.userId,
         empName: fields.employeeName,
         empLevel: Number(fields.employeeLevel) || 6,
         okrDate: fields.okrDate,
-        okrYear: fields.okrYear,
-        okrQuarter: fields.okrQuarter,
-        level5OkrCode: fields.level5OkrCode
-          ? Number(fields.level5OkrCode)
-          : undefined,
+        level5OkrCode: fields.level5OkrCode ? Number(fields.level5OkrCode) : undefined,
         okrDesc: fields.okrDescription,
-        kr1: fields.keyResults[0] || "",
-        kr2: fields.keyResults[1] || "",
-        kr3: fields.keyResults[2] || "",
-        kr4: fields.keyResults[3] || "",
-        kr5: fields.keyResults[4] || "",
-        q1_percentage:
-          fields.quarters[0].percent === ""
-            ? undefined
-            : Number(fields.quarters[0].percent),
-        q1_comment: fields.quarters[0].comment || "",
-        q2_percentage:
-          fields.quarters[1].percent === ""
-            ? undefined
-            : Number(fields.quarters[1].percent),
-        q2_comment: fields.quarters[1].comment || "",
-        q3_percentage:
-          fields.quarters[2].percent === ""
-            ? undefined
-            : Number(fields.quarters[2].percent),
-        q3_comment: fields.quarters[2].comment || "",
-        q4_percentage:
-          fields.quarters[3].percent === ""
-            ? undefined
-            : Number(fields.quarters[3].percent),
-        q4_comment: fields.quarters[3].comment || "",
+        kr1: fields.keyResults[0] || '',
+        kr2: fields.keyResults[1] || '',
+        kr3: fields.keyResults[2] || '',
+        kr4: fields.keyResults[3] || '',
+        kr5: fields.keyResults[4] || '',
+        q1_percentage: fields.quarters[0].percent === '' ? undefined : Number(fields.quarters[0].percent),
+        q1_comment: fields.quarters[0].comment || '',
+        q2_percentage: fields.quarters[1].percent === '' ? undefined : Number(fields.quarters[1].percent),
+        q2_comment: fields.quarters[1].comment || '',
+        q3_percentage: fields.quarters[2].percent === '' ? undefined : Number(fields.quarters[2].percent),
+        q3_comment: fields.quarters[2].comment || '',
+        q4_percentage: fields.quarters[3].percent === '' ? undefined : Number(fields.quarters[3].percent),
+        q4_comment: fields.quarters[3].comment || ''
       };
-
-      setIsUpdating(true);
 
       if (fields.okrCode === 'NEW' || fields.okrCode === '' || fields.okrCode == null) {
         const res = await createLevel6OKR(payload);
@@ -265,24 +212,19 @@ const OKRWorkspaceLevel6 = () => {
         toast.send('Created OKR with code: ' + (created.level6OkrCode || created._id), 'success');
         const l6 = await listLevel6OKRs(); setLevel6All(l6.data || []);
         if (created) {
-          resetForm();
-          setCanClose(false);
+          const newFields = { ...fields, okrCode: created.level6OkrCode || fields.okrCode };
+          setFields(newFields);
+          setCanClose(true);
+          setIsDirty(false);
+          pristineRef.current = JSON.stringify(newFields);
         }
       } else {
-        await updateLevel5OKR(fields.okrCode, payload);
-
-        toast.send("OKR updated", "success");
-
-        const l5 = await listLevel5OKRs();
-        setLevel5All(l5.data || []);
-
-        resetForm();
-        setCanClose(false);
-              }
+        await updateLevel6OKR(fields.okrCode, payload);
+        toast.send('OKR updated', 'success');
+        const l6 = await listLevel6OKRs(); setLevel6All(l6.data || []);
+        setCanClose(true);
+      }
     } catch (err) { console.error(err); toast.send('Save failed: ' + (err.message || err), 'error'); }
-    finally {
-      setIsUpdating(false);
-    }
   };
 
   const handleCancel = () => {
@@ -337,44 +279,6 @@ const OKRWorkspaceLevel6 = () => {
                   .map(o => (
                     <option key={o.level6OkrCode} value={o.level6OkrCode}>{o.okrDesc?.slice(0,50) || String(o.level6OkrCode)}</option>
                   ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-2 min-w-0">
-              <label className="font-semibold">Year</label>
-              <select
-                value={fields.okrYear}
-                onChange={(e) =>
-                  setFields((prev) => ({
-                    ...prev,
-                    okrYear: Number(e.target.value),
-                  }))
-                }
-                className="border px-2 py-2 w-full"
-              >
-                {YEAR_OPTIONS.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-2 min-w-0">
-              <label className="font-semibold">Quarter</label>
-              <select
-                value={fields.okrQuarter}
-                onChange={(e) =>
-                  setFields((prev) => ({
-                    ...prev,
-                    okrQuarter: e.target.value,
-                  }))
-                }
-                className="border px-2 py-2 w-full"
-              >
-                {QUARTER_OPTIONS.map((q) => (
-                  <option key={q} value={q}>
-                    {q}
-                  </option>
-                ))}
               </select>
             </div>
           </div>
@@ -503,15 +407,7 @@ const OKRWorkspaceLevel6 = () => {
                 <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
               )} */}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8 sm:mt-10">
-              <OKRActionButton
-                disabled={isUpdating}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleUpdateOKR();
-                }}
-              >
-                {isUpdating ? "Updating..." : "Update OKR"}
-              </OKRActionButton>
+                <OKRActionButton onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>Update OKR</OKRActionButton>
                   <OKRActionButton onClick={(e) => { e.preventDefault(); navigate('/'); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
               </div>
         </form>

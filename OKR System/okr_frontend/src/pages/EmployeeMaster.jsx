@@ -22,17 +22,6 @@ const EmployeeMaster = () => {
   const [isAdmin, setIsAdmin] = useState('No');
   const [isRecordAdded, setIsRecordAdded] = useState(false);
 
-  const resetForm = () => {
-    setUserId("");
-    setName("");
-    setDesignation("");
-    setLevel("");
-    setEmailId("");
-    setCellNumber("");
-    setIsAdmin("No");
-  };
-
-
   // Handlers
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -64,10 +53,9 @@ const EmployeeMaster = () => {
       const res = await createEmployee(payload);
       const created = res?.data;
       if (created?.userId) {
-        resetForm();
-        setUserId("");
+        setUserId(String(created.userId));
         // mark record as added and lock the form; user must Close or Back to modify again
-        setIsRecordAdded(false);
+        setIsRecordAdded(true);
       }
       const message = { type: 'info', title: 'Employee Master', message: 'Record has been updated successfully' };
       if (window.__electron && typeof window.__electron.showMessage === 'function') {

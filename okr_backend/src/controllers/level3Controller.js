@@ -31,13 +31,16 @@ export async function get(req, res) {
 export async function create(req, res) {
   try {
     const payload = req.body || {};
+    console.log("req.body =", req.body);
     const doc = new Level3OKR({
       ...payload,
       createdByName: req.user?.empName || "System",
       createdByEmpCode: req.user?.empCode || null,
       createdByUserId: req.user?.userId || null
     });
+    console.log("doc.userId =", doc.userId);
     await doc.save();
+    console.log("saved =", doc);
     res.status(201).json({ data: doc });
   } catch (err) {
     res.status(400).json({ error: err.message || "Failed to create" });

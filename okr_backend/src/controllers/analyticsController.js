@@ -1,5 +1,4 @@
 import Employee from "../models/employee.js";
-
 import Level1OKR from "../models/level1Okr.js";
 import Level2OKR from "../models/level2Okr.js";
 import Level3OKR from "../models/level3Okr.js";
@@ -8,103 +7,152 @@ import Level5OKR from "../models/level5Okr.js";
 import Level6OKR from "../models/level6Okr.js";
 import Level7OKR from "../models/level7Okr.js";
 
-export async function employeeTrend(req, res) {
+/*
+|--------------------------------------------------------------------------
+| Employee Dropdown
+|--------------------------------------------------------------------------
+*/
+
+export async function getEmployees(req, res) {
   try {
-    const OKR_MODELS = [
-      Level1OKR,
-      Level2OKR,
-      Level3OKR,
-      Level4OKR,
-      Level5OKR,
-      Level6OKR,
-      Level7OKR,
-    ];
-    const { userId } = req.params;
-    const { year } = req.query;
+    const employees = await Employee.find(
+      {},
+      {
+        _id: 0,
+        userId: 1,
+        empName: 1,
+        empDesignation: 1,
+        empLevel: 1,
+        emailId: 1,
+      }
+    ).sort({ empName: 1 });
 
-    // Find employee
-    const employee = await Employee.findOne({ userId });
+    return res.json(employees);
+  } catch (error) {
+    console.error(error);
 
-    if (!employee) {
-      return res.status(404).json({
-        error: "Employee not found",
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch employees.",
+    });
+  }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Search Analytics
+|--------------------------------------------------------------------------
+*/
+
+export async function searchAnalytics(req, res) {
+  try {
+    const { userId, year } = req.query;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Employee is required.",
       });
     }
 
-    // Build query
-    const query = {
-      userId: employee.userId,
-    };
+    /*
+    |--------------------------------------------------------------------------
+    | Employee Information
+    |--------------------------------------------------------------------------
+    */
 
-    if (year && year !== "ALL") {
-      query.okrYear = Number(year);
+    const employee = await Employee.findOne(
+      { userId },
+      {
+        _id: 0,
+        userId: 1,
+        empName: 1,
+        empDesignation: 1,
+        empLevel: 1,
+        emailId: 1,
+      }
+    );
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found.",
+      });
     }
 
-    // Fetch OKRs
-   const allOKRs = [];
+    /*
+    |--------------------------------------------------------------------------
+    | Find OKR according to Employee Level
+    |--------------------------------------------------------------------------
+    */
 
-   for (const Model of OKR_MODELS) {
-     const docs = await Model.find(query);
+    const modelMap = {
+      1: Level1OKR,
+      2: Level2OKR,
+      3: Level3OKR,
+      4: Level4OKR,
+      5: Level5OKR,
+      6: Level6OKR,
+      7: Level7OKR,
+    };
 
-     allOKRs.push(...docs);
-   }
+    const OKRModel = modelMap[employee.empLevel];
 
-   allOKRs.sort((a, b) => {
-     if (a.okrYear !== b.okrYear) {
-       return a.okrYear - b.okrYear;
-     }
+    if (!OKRModel) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid employee level.",
+      });
+    }
 
-     return a.okrQuarter.localeCompare(b.okrQuarter);
-   });
+    /*
+    |--------------------------------------------------------------------------
+    | Search Selected Year
+    |--------------------------------------------------------------------------
+    */
 
-    console.log("Employee:", employee);
-    console.log("Query:", query);
+    const okr = await OKRModel.findOne({
+      userId,
+      okrYear: Number(year),
+    }).lean();
 
-    console.log("Found OKRs:", okrs.length);
-    console.log(okrs);
+    if (!okr) {
+      return res.json({
+        success: true,
+        employee,
+        performance: null,
+      });
+    }
 
-    // Calculate average performance
-    const analytics = allOKRs.map((doc) => {
-      const values = [
-        doc.q1_percentage,
-        doc.q2_percentage,
-        doc.q3_percentage,
-        doc.q4_percentage,
-      ].filter((v) => typeof v === "number");
+    /*
+    |--------------------------------------------------------------------------
+    | Response
+    |--------------------------------------------------------------------------
+    */
 
-      const average =
-        values.length > 0
-          ? Number(
-              (
-                values.reduce((sum, value) => sum + value, 0) / values.length
-              ).toFixed(2),
-            )
-          : 0;
+    return res.json({
+      success: true,
 
-      return {
-        _id: doc._id,
-        level: doc.empLevel,
-        okrYear: doc.okrYear,
-        okrQuarter: doc.okrQuarter,
-        okrDesc: doc.okrDesc,
+      employee,
 
-        q1_percentage: doc.q1_percentage,
-        q2_percentage: doc.q2_percentage,
-        q3_percentage: doc.q3_percentage,
-        q4_percentage: doc.q4_percentage,
+      performance: {
+        q1_percentage: okr.q1_percentage || 0,
+        q2_percentage: okr.q2_percentage || 0,
+        q3_percentage: okr.q3_percentage || 0,
+        q4_percentage: okr.q4_percentage || 0,
 
-        average,
-      };
+        q1_comment: okr.q1_comment || "",
+        q2_comment: okr.q2_comment || "",
+        q3_comment: okr.q3_comment || "",
+        q4_comment: okr.q4_comment || "",
+      },
     });
+  } catch (error) {
+    console.error(error);
 
-    res.json({
-      data: analytics,
-    });
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      error: "Unable to fetch analytics.",
+    return res.status(500).json({
+      success: false,
+      message: "Unable to load analytics.",
     });
   }
 }

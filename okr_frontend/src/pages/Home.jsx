@@ -49,8 +49,14 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-transparent">
       <NavBar />
+      
       <main className="flex-1">
         <section className="hero-shell section shift-bg">
+          <div className="objecto-title-wrapper">
+            <h1 className="objecto-title">
+              Objecto<span className="tm">™</span>
+            </h1>
+          </div>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
             <div className="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
               <div className="rise-in">
@@ -79,13 +85,6 @@ export default function Home() {
                   <a className="hero-secondary inline-flex items-center justify-center" href={secondaryAction}>
                     {auth.isAuthenticated ? "View performance" : "Explore OKR flow"}
                   </a>
-                </div>
-
-                <div className="mt-10 flex flex-wrap gap-3 text-sm text-(--muted)">
-                  <span className="info-pill">Strategic planning</span>
-                  <span className="info-pill">Weekly reviews</span>
-                  <span className="info-pill">Team visibility</span>
-                  <span className="info-pill">Outcome-driven execution</span>
                 </div>
               </div>
 
@@ -145,123 +144,6 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="section">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-4 md:grid-cols-3">
-              {highlights.map((item, index) => (
-                <article key={item.label} className="metric-card p-6 rise-in" style={{ animationDelay: `${index * 120}ms` }}>
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="metric-label">REF. 0{index + 1}</span>
-                    <span className="w-3 h-3 rounded-full bg-cyan-400/80" />
-                  </div>
-                  <div className="metric-value">{item.value}</div>
-                  <h3 className="mt-3 text-lg font-semibold uppercase tracking-wide text-white/90">{item.label}</h3>
-                  <p className="mt-3 text-sm leading-7">{item.desc}</p>
-                  <div className="mt-6 h-1.5 rounded-full bg-white/6 overflow-hidden">
-                    <div className="h-full rounded-full bg-linear-to-r from-cyan-400 to-blue-500" style={{ width: `${72 + index * 7}%` }} />
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="okr-flow" className="section">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mb-10">
-              <p className="hero-badge mb-4">OKR operating model</p>
-              <h2 className="section-heading">A clear system for planning, tracking, and improving</h2>
-              <p className="section-subtitle mt-4">
-                The home screen now explains the workflow visually: strategy becomes measurable objectives,
-                objectives become key results, and weekly reviews keep delivery focused.
-              </p>
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-              {pillars.map((item, index) => (
-                <div key={item.title} className="step-card p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="info-pill">0{index + 1}</span>
-                    <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center">
-                      <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7">{item.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="section">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] items-start">
-              <div>
-                <p className="hero-badge mb-4">Why it works</p>
-                <h2 className="section-heading">Everything leaders need to keep OKRs visible</h2>
-                <p className="section-subtitle mt-4">
-                  Reduce ambiguity, create consistent review habits, and make progress easier to understand across the organization.
-                </p>
-
-                <div className="mt-6 space-y-4">
-                  {features.map((item) => (
-                    <div key={item} className="flex items-start gap-3 rounded-2xl border border-white/7 bg-white/3 p-4">
-                      <span className="mt-1 badge-dot" />
-                      <span className="text-sm leading-7 text-(--text)">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                {cycleSteps.map((item, index) => (
-                  <article key={item.title} className="feature-card p-6 relative overflow-hidden">
-                    <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-cyan-400 via-blue-500 to-indigo-500" />
-                    <div className="flex items-center justify-between mb-5">
-                      <span className="text-xs uppercase tracking-[0.28em] text-(--muted)">Step {item.step}</span>
-                      <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
-                    </div>
-                    <h3 className="text-2xl font-semibold text-white">{item.title}</h3>
-                    <p className="mt-3 text-sm leading-7">{item.text}</p>
-                    <div className="mt-6 h-28 rounded-2xl border border-white/7 bg-linear-to-br from-cyan-400/10 to-transparent flex items-end p-4">
-                      <div className="w-full">
-                        <div className="flex items-center justify-between text-xs text-(--muted) mb-2">
-                          <span>Momentum</span>
-                          <span>{70 + index * 6}%</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-white/6 overflow-hidden">
-                          <div className="h-full rounded-full bg-linear-to-r from-cyan-400 to-blue-500" style={{ width: `${70 + index * 6}%` }} />
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="section">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="hero-panel p-8 sm:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-              <div className="max-w-2xl">
-                <p className="hero-badge mb-4">Ready to align your team?</p>
-                <h2 className="section-heading">Make OKRs visible, actionable, and easy to review</h2>
-                <p className="section-subtitle mt-4">
-                  Start with one cycle, connect every level, and build a rhythm that turns goals into measurable delivery.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button onMouseDown={(e) => e.preventDefault()} className="hero-primary" onClick={() => navigate(primaryAction)}>
-                  {auth.isAuthenticated ? "Open workspace" : "Login now"}
-                </button>
-                <button onMouseDown={(e) => e.preventDefault()} className="hero-secondary" onClick={() => navigate("/okr-performance")}>See performance</button>
               </div>
             </div>
           </div>

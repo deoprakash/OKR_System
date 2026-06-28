@@ -47,16 +47,14 @@ export default function NavBar() {
       <ul className="nav-center absolute left-1/2 transform -translate-x-1/2 flex gap-4 lg:gap-6 text-sm lg:text-lg items-center">
         <li className={`nav-link transition cursor-pointer ${location.pathname === '/' ? 'active' : ''}`} onClick={() => navigate("/")}>Home</li>
         {auth.isAdmin && (
-          <li>
-            <a
-              className="nav-link transition cursor-pointer"
-              href="https://okr-analytics.netlify.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              OKR Analytics
-            </a>
-          </li>
+          <li
+          className={`nav-link transition cursor-pointer ${
+            location.pathname === "/analytics" ? "active" : ""
+          }`}
+          onClick={() => navigate("/analytics")}
+        >
+          Analytics
+        </li>
         )}
         {smartMenuItems.length > 0 && (
           <li className="relative" ref={dropdownRef}>

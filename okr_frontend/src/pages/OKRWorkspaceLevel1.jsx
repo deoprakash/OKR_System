@@ -94,22 +94,11 @@ const OKRWorkspaceLevel1 = () => {
 
   const resetForNew = () => {
     setSelectedOkrId(null);
-    setSelectedOkrCode('NEW');
+    setSelectedOkrCode("");
     setCanClose(false);
-    const newFields = {
-      ...fields,
-      okrCode: "NEW",
-      okrDate: today,
-      okrDescription: "",
-      keyResults: Array(5).fill(""),
-      quarters: [
-        { percent: "", comment: "" },
-        { percent: "", comment: "" },
-        { percent: "", comment: "" },
-        { percent: "", comment: "" },
-      ],
-    };
+    const newFields = createEmptyOKRFields();
     setFields(newFields);
+    setOkrs([]);
     setIsDirty(false);
     pristineRef.current = JSON.stringify(newFields);
   };
@@ -141,10 +130,19 @@ const OKRWorkspaceLevel1 = () => {
 
   const resetForm = () => {
     const newFields = createEmptyOKRFields();
-
+  
     setFields(newFields);
+    setSelectedOkrId(null);
+    setSelectedOkrCode("");
+    setOkrs([]);
+    setCanClose(false);
     setIsDirty(false);
+  
     pristineRef.current = JSON.stringify(newFields);
+  
+    if (firstInputRef.current) {
+      firstInputRef.current.focus();
+    }
   };
 
   const firstInputRef = useRef(null);
@@ -202,6 +200,8 @@ const OKRWorkspaceLevel1 = () => {
       userId: fields.userId, 
       empName: fields.employeeName,
       okrDate: fields.okrDate,
+      okrQuarter: fields.okrQuarter,
+      okrYear: fields.okrYear,
       okrDesc: fields.okrDescription,
       kr1: fields.keyResults[0] || '',
       kr2: fields.keyResults[1] || '',
@@ -222,21 +222,20 @@ const OKRWorkspaceLevel1 = () => {
     try {
       if (selectedOkrCode && selectedOkrCode !== 'NEW') {
         await updateLevel1OKR(selectedOkrCode, payload);
-        toast.send('OKR updated successfully.', 'success');
+
+        toast.send("OKR updated successfully.", "success");
+
         await fetchOkrsForEmployee();
-        setCanClose(true);
-        setIsDirty(false);
+
+        resetForNew();
       } else {
-        const res = await createLevel1OKR(payload);
-        const created = res && res.data ? res.data : null;
-        toast.send('OKR created successfully.', 'success');
+        await createLevel1OKR(payload);
+
         await fetchOkrsForEmployee();
-        setCanClose(true);
-        setIsDirty(false);
-        if (created) {
-          // keep created record visible and mark Closed state; no auto-clear or navigation
-          setFields(prev => ({ ...prev, okrCode: created.level1OkrCode || prev.okrCode }));
-        }
+        
+        toast.send("OKR created successfully.", "success");
+        
+        resetForNew();
       }
     } catch (err) {
       toast.send('Network error while saving OKR', 'error');
@@ -373,19 +372,26 @@ const OKRWorkspaceLevel1 = () => {
                 className="border px-2 py-2 w-full"
               >
                 <option value="">Select OKR</option>
-                <option value="NEW">New</option>
-                {okrs
-                  .filter(
-                    (v, i, a) =>
-                      a.findIndex(
-                        (t) =>
-                          String(t.level1OkrCode) === String(v.level1OkrCode),
-                      ) === i,
-                  )
-                  .map((o) => (
-                    <option key={o._id} value={String(o.level1OkrCode)}>
-                      {o.okrDesc?.slice(0, 50) || String(o.level1OkrCode)}
-                    </option>
+
+                  <option value="NEW">
+                    New
+                  </option>
+
+                  {okrs
+                    .filter(
+                      (v, i, a) =>
+                        a.findIndex(
+                          (t) =>
+                            String(t.level1OkrCode) === String(v.level1OkrCode)
+                        ) === i
+                    )
+                    .map((okr) => (
+                      <option
+                        key={okr.level1OkrCode}
+                        value={okr.level1OkrCode}
+                      >
+                        {okr.okrDesc}
+                      </option>
                   ))}
               </select>
             </div>

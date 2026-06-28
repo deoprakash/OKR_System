@@ -9,33 +9,45 @@ import Employee from "../models/employee.js";
 
 // Get all OKRs for an employee (for dropdown list)
 export async function getEmployeeOKRs(req, res) {
-  const { empCode } = req.params;
+  const { userId } = req.params;
   
   try {
-    const empCodeNum = Number(empCode);
-    const employee = await Employee.findOne({ empCode: empCodeNum });
-    if (!employee) return res.status(404).json({ error: "Employee not found" });
+
+    const employee = await Employee.findOne({
+      userId
+    });
+    
+    if (!employee) {
+      return res.status(404).json({
+        error: "Employee not found"
+      });
+    }
 
     if (!req.user?.isAdmin) {
       const userLevel = Number(req.user?.empLevel || 0);
       const targetLevel = Number(employee.empLevel || 0);
+    
       const canView =
-        Number(req.user?.empCode) === empCodeNum ||
-        (targetLevel >= userLevel - 1 && targetLevel <= userLevel);
+        req.user?.userId === userId ||
+        (targetLevel >= userLevel - 1 &&
+          targetLevel <= userLevel);
+    
       if (!canView) {
-        return res.status(403).json({ error: "You can only view your level and one lower level employee OKRs" });
+        return res.status(403).json({
+          error: "You can only view your level and one lower level employee OKRs"
+        });
       }
     }
     
     // Fetch all OKRs for this employee based on their level
     const [level1, level2, level3, level4, level5, level6, level7] = await Promise.all([
-      Level1OKR.find({ empCode: empCodeNum }).select('level1OkrCode okrDesc empLevel').sort({ createdAt: -1 }),
-      Level2OKR.find({ empCode: empCodeNum }).select('level2OkrCode okrDesc empLevel level1OkrCode').sort({ createdAt: -1 }),
-      Level3OKR.find({ empCode: empCodeNum }).select('level3OkrCode okrDesc empLevel level2OkrCode').sort({ createdAt: -1 }),
-      Level4OKR.find({ empCode: empCodeNum }).select('level4OkrCode okrDesc empLevel level3OkrCode').sort({ createdAt: -1 }),
-      Level5OKR.find({ empCode: empCodeNum }).select('level5OkrCode okrDesc empLevel level4OkrCode').sort({ createdAt: -1 }),
-      Level6OKR.find({ empCode: empCodeNum }).select('level6OkrCode okrDesc empLevel level5OkrCode').sort({ createdAt: -1 }),
-      Level7OKR.find({ empCode: empCodeNum }).select('level7OkrCode okrDesc empLevel level6OkrCode').sort({ createdAt: -1 })
+      Level1OKR.find({ userId }),
+      Level2OKR.find({ userId }),
+      Level3OKR.find({ userId }),
+      Level4OKR.find({ userId }),
+      Level5OKR.find({ userId }),
+      Level6OKR.find({ userId }),
+      Level7OKR.find({ userId })
     ]);
 
     const okrs = [

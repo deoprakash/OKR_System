@@ -16,6 +16,7 @@ import level7Routes from "./routes/level7.js";
 import performanceRoutes from "./routes/performance.js";
 import authRoutes from "./routes/auth.js";
 import setupRoutes from "./routes/setup.js";
+import analyticsRoutes from "./routes/analytics.js"
 
 dns.setDefaultResultOrder("ipv4first");
 
@@ -69,6 +70,7 @@ app.use("/api/level5", level5Routes);
 app.use("/api/level6", level6Routes);
 app.use("/api/level7", level7Routes);
 app.use("/api/performance", performanceRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not Found" });

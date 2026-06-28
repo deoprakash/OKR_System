@@ -18,6 +18,7 @@ import ChangePassword from './pages/ChangePassword';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { useAuth } from './context/useAuth';
+import Analytics from "./pages/Analytics";
 
 function Protected({ children, adminOnly = false }) {
   const auth = useAuth();
@@ -114,6 +115,7 @@ function App() {
         <Route path="/okr-workspace-level-6" element={<ProtectedLevel level={6}><OKRWorkspaceLevel6 /></ProtectedLevel>} />
         <Route path="/okr-workspace-level-7" element={<ProtectedLevel level={7}><OKRWorkspaceLevel7 /></ProtectedLevel>} />
         <Route path="/okr-performance" element={<Protected><OKRPerformance /></Protected>} />
+        <Route path="/analytics" element={ <Protected> <Analytics /> </Protected>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

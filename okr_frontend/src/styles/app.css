@@ -451,11 +451,29 @@ td {
   box-shadow: 0 0 0 6px rgba(24, 160, 143, 0.13);
 }
 
+.objecto-title {
+  color: var(--ink);
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.objecto-title-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 1rem;
+  padding-bottom: 3rem;
+}
+
 .hero-title {
   max-width: 13ch;
   color: var(--ink);
   font-size: clamp(2.7rem, 6.5vw, 5.7rem);
-  font-weight: 800;
+  font-weight: 400;
   line-height: 0.96;
   letter-spacing: 0;
 }
@@ -598,7 +616,7 @@ td {
 }
 
 .section {
-  padding: clamp(3.25rem, 6vw, 6rem) 0;
+  padding: clamp(1rem, 2vw, 2rem) 0 4rem;
 }
 
 /* Utility compatibility after removing Tailwind from the build */

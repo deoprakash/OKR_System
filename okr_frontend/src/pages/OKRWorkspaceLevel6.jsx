@@ -57,6 +57,7 @@ const OKRWorkspaceLevel6 = () => {
   const [level6All, setLevel6All] = useState([]);
   const [canClose, setCanClose] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const pristineRef = useRef(null);
   const initRef = useRef(false);
   useEffect(() => {
@@ -262,7 +263,7 @@ const OKRWorkspaceLevel6 = () => {
       if (fields.okrCode === 'NEW' || fields.okrCode === '' || fields.okrCode == null) {
         const res = await createLevel6OKR(payload);
         const created = res.data;
-        toast.send('Created OKR with code: ' + (created.level6OkrCode || created._id), 'success');
+        toast.send('Updated OKR successfully', 'success');
         const l6 = await listLevel6OKRs(); setLevel6All(l6.data || []);
         if (created) {
           resetForm();

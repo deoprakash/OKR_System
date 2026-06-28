@@ -251,7 +251,7 @@ const OKRWorkspaceLevel2 = () => {
         // create
         const res = await createLevel2OKR(payload);
         const created = res.data;
-        toast.send('Created OKR with code: ' + (created.level2OkrCode || created._id), 'success');
+        toast.send('Updated OKR successfully', 'success');
         // refresh list
         const l2 = await listLevel2OKRs();
         setLevel2OkrsAll(l2.data || []);

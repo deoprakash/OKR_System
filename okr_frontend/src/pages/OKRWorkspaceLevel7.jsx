@@ -273,7 +273,7 @@ const OKRWorkspaceLevel7 = () => {
       if (fields.okrCode === 'NEW' || fields.okrCode === '' || fields.okrCode == null) {
         const res = await createLevel7OKR(payload);
         const created = res.data;
-        toast.send('Created OKR with code: ' + (created.level7OkrCode || created._id), 'success');
+        toast.send('Updated OKR successfully', 'success');
         const l7 = await listLevel7OKRs(); setLevel7All(l7.data || []);
         if (created) {
           resetForm();

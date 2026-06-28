@@ -28,8 +28,8 @@ export default function OKRPerformance() {
   }
 
   async function handleEmployeeSelect(e) {
-    const empCode = e.target.value;
-    const emp = employees.find(e => e.empCode === Number(empCode));
+    const userId = e.target.value;
+    const emp = employees.find(e => e.userId === userId);
     setSelectedEmployee(emp || null);
     setEmployeeOKRs([]);
     setSelectedOKR(null);
@@ -39,7 +39,7 @@ export default function OKRPerformance() {
     if (emp) {
       // Load OKRs for this employee
       try {
-        const res = await getEmployeeOKRs(emp.empCode);
+        const res = await getEmployeeOKRs(emp.userId);
         setEmployeeOKRs(res.data || []);
       } catch (err) {
         console.error("Failed to load employee OKRs", err);
@@ -125,14 +125,19 @@ export default function OKRPerformance() {
               </label>
               <select
                 className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--text) focus:outline-none focus:border-white/30 transition-colors"
-                value={selectedEmployee?.empCode || ""}
+                value={selectedEmployee?.userId || ""}
                 onChange={handleEmployeeSelect}
               >
                 <option value="">Select Employee</option>
-                {employees.map(emp => (
-                  <option key={emp.empCode} value={emp.empCode}>
-                    {emp.empName} (Level {emp.empLevel})
-                  </option>
+                {employees
+                  .filter(emp => emp.userId)
+                  .map(emp => (
+                    <option
+                      key={emp.userId}
+                      value={emp.userId}
+                    >
+                      {emp.empName}
+                    </option>
                 ))}
               </select>
             </div>
@@ -156,7 +161,7 @@ export default function OKRPerformance() {
               <input
                 type="text"
                 className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--muted) cursor-not-allowed"
-                value={selectedEmployee?.empCode || ""}
+                value={selectedEmployee?.userId || ""}
                 readOnly
               />
             </div>

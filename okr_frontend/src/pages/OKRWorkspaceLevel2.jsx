@@ -279,9 +279,15 @@ const OKRWorkspaceLevel2 = () => {
     }
   };
 
-  const handleCancel = () => {
-    // behave like Back/Close: navigate immediately to main menu
-    navigate('/');
+  const handleCancel = (e) => {
+    e.preventDefault();
+  
+    if (!isDirty || canClose) {
+      navigate("/");
+      return;
+    }
+  
+    resetForm();
   };
 
   useEffect(() => {
@@ -293,6 +299,10 @@ const OKRWorkspaceLevel2 = () => {
     }
     setIsDirty(JSON.stringify(fields) !== pristineRef.current);
   }, [fields]);
+
+  const hasStarted =
+  fields.employeeCode ||
+  isDirty;
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12">
@@ -500,9 +510,28 @@ const OKRWorkspaceLevel2 = () => {
           {/* {percentSum > 100 && (
             <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
           )} */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8 sm:mt-10">
-            <OKRActionButton disabled={isUpdating} onClick={(e) => { e.preventDefault(); handleUpdateOKR(); }}>{isUpdating ? 'Updating...' : 'Update OKR'}</OKRActionButton>
-            <OKRActionButton onClick={(e) => { e.preventDefault(); navigate('/'); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
+          <div className="flex justify-center items-center gap-6 mt-8">
+
+            <div className="w-48">
+              <OKRActionButton
+                type="button"
+                onClick={handleUpdateOKR }
+                className="btn btn-primary w-full"
+              >
+                Update OKR
+              </OKRActionButton>
+            </div>
+
+            <div className="w-48">
+              <OKRActionButton
+                type="button"
+                onClick={handleCancel}
+                className="btn btn-ghost w-full"
+              >
+                {canClose || !hasStarted ? "Close" : "Reset"}
+              </OKRActionButton>
+            </div>
+
           </div>
         </form>
       </div>

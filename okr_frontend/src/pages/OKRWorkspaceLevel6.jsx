@@ -286,9 +286,15 @@ const OKRWorkspaceLevel6 = () => {
     }
   };
 
-  const handleCancel = () => {
-    // behave like Back/Close: navigate immediately to main menu
-    navigate('/');
+  const handleCancel = (e) => {
+    e.preventDefault();
+  
+    if (canClose || !hasStarted) {
+      navigate("/");
+      return;
+    }
+  
+    resetForm();
   };
 
   useEffect(() => {
@@ -301,6 +307,10 @@ const OKRWorkspaceLevel6 = () => {
     setIsDirty(JSON.stringify(fields) !== pristineRef.current);
   }, [fields]);
 
+  const hasStarted =
+  fields.employeeCode ||
+  isDirty;
+
   return (
     <div className="min-h-screen flex items-center justify-center py-12">
       <div className="absolute top-6 left-6">
@@ -309,7 +319,7 @@ const OKRWorkspaceLevel6 = () => {
       <div className="card w-[95%] max-w-6xl p-8 overflow-hidden">
         <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 6</h1>
         <form>
-          <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-6">
               <div className="flex flex-col gap-2 min-w-0">
                 <label className="font-semibold">Employee</label>
                 <select value={fields.employeeCode} onChange={handleSelectEmployee} className="border px-2 py-2 w-full bg-white">
@@ -503,18 +513,28 @@ const OKRWorkspaceLevel6 = () => {
               {/* {percentSum > 100 && (
                 <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
               )} */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8 sm:mt-10">
+              <div className="flex justify-center items-center gap-6 mt-8">
+
+            <div className="w-48">
               <OKRActionButton
-                disabled={isUpdating}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleUpdateOKR();
-                }}
+                type="button"
+                onClick={handleUpdateOKR}
+                className="btn btn-primary w-full"
               >
-                {isUpdating ? "Updating..." : "Update OKR"}
+                Update OKR
               </OKRActionButton>
-                  <OKRActionButton onClick={(e) => { e.preventDefault(); navigate('/'); }}>{(!isDirty || canClose) ? 'Close' : 'Cancel OKR'}</OKRActionButton>
-              </div>
+            </div>
+
+            <div className="w-48">
+              <OKRActionButton
+                type="button"
+                onClick={handleCancel}
+                className="btn btn-ghost w-full"
+              >
+                {canClose || !hasStarted ? "Close" : "Reset"}
+              </OKRActionButton>
+            </div>
+          </div>
         </form>
       </div>
     </div>

@@ -22,6 +22,14 @@ const EmployeeMaster = () => {
   const [isAdmin, setIsAdmin] = useState('No');
   const [isRecordAdded, setIsRecordAdded] = useState(false);
 
+  const hasChanges =
+  name.trim() ||
+  designation.trim() ||
+  level ||
+  emailId.trim() ||
+  cellNumber.trim() ||
+  isAdmin !== "No";
+
   const resetForm = () => {
     setUserId("");
     setName("");
@@ -67,7 +75,7 @@ const EmployeeMaster = () => {
         resetForm();
         setUserId("");
         // mark record as added and lock the form; user must Close or Back to modify again
-        setIsRecordAdded(false);
+        setIsRecordAdded(true);
       }
       const message = { type: 'info', title: 'Employee Master', message: 'Record has been updated successfully' };
       if (window.__electron && typeof window.__electron.showMessage === 'function') {
@@ -82,9 +90,15 @@ const EmployeeMaster = () => {
       toast.send('Failed to update: ' + (err.message || err), 'error');
     }
   };
-  const handleCancel = () => {
-    // behave like Back/Close: navigate to main screen
-    navigate('/');
+  const handleCancel = (e) => {
+    e.preventDefault();
+  
+    if (isRecordAdded || !hasChanges) {
+      navigate("/");
+      return;
+    }
+  
+    resetForm();
   };
 
   return (
@@ -171,9 +185,27 @@ const EmployeeMaster = () => {
               </select>
             </LabelInput>
 
-            <div className="flex flex-row gap-6 mt-8 justify-start">
-              <ActionButton onClick={handleUpdate} disabled={isRecordAdded} className="btn btn-primary">Update Record</ActionButton>
-              <ActionButton onClick={(e) => { e.preventDefault(); navigate('/'); }} className="btn btn-ghost">{isRecordAdded ? 'Close' : 'Cancel'}</ActionButton>
+            <div className="flex justify-center items-center gap-6 mt-8">
+
+            <div className="w-48">
+              <ActionButton
+                onClick={handleUpdate}
+                disabled={isRecordAdded}
+                className="btn btn-primary w-full"
+              >
+                Update Record
+              </ActionButton>
+            </div>
+
+            <div className="w-48">
+              <ActionButton
+                onClick={handleCancel}
+                className="btn btn-ghost w-full"
+              >
+                {isRecordAdded || !hasChanges ? "Close" : "Reset"}
+              </ActionButton>
+            </div>
+
             </div>
           </form>
         </div>

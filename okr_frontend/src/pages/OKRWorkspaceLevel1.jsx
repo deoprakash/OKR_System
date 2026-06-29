@@ -94,11 +94,30 @@ const OKRWorkspaceLevel1 = () => {
 
   const resetForNew = () => {
     setSelectedOkrId(null);
-    setSelectedOkrCode("");
+    setSelectedOkrCode("NEW");
     setCanClose(false);
-    const newFields = createEmptyOKRFields();
+  
+    const newFields = {
+      ...fields, // Keep employee information
+  
+      okrCode: "",
+      okrDate: today,
+      okrYear: new Date().getFullYear(),
+      okrQuarter: "Q1",
+  
+      okrDescription: "",
+  
+      keyResults: Array(5).fill(""),
+  
+      quarters: [
+        { percent: "", comment: "" },
+        { percent: "", comment: "" },
+        { percent: "", comment: "" },
+        { percent: "", comment: "" },
+      ],
+    };
+  
     setFields(newFields);
-    setOkrs([]);
     setIsDirty(false);
     pristineRef.current = JSON.stringify(newFields);
   };
@@ -242,9 +261,15 @@ const OKRWorkspaceLevel1 = () => {
     }
   };
 
-  const handleCancel = () => {
-    // behave like Back/Close: navigate immediately to main menu
-    navigate('/');
+  const handleCancel = (e) => {
+    e.preventDefault();
+  
+    if (!isDirty || canClose) {
+      navigate("/");
+      return;
+    }
+  
+    resetForNew();
   };
 
   // track dirty state by comparing to a pristine snapshot
@@ -285,6 +310,10 @@ const OKRWorkspaceLevel1 = () => {
       return { ...prev, quarters };
     });
   };
+
+  const hasStarted =
+  fields.employeeCode ||
+  isDirty;
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12">
@@ -526,19 +555,28 @@ const OKRWorkspaceLevel1 = () => {
           {/* {percentSum > 100 && (
             <div className="text-red-600 font-semibold text-center">Sum of Q1–Q4 percentages must not exceed 100% (current: {percentSum}%).</div>
           )} */}
-          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-8 sm:mt-10">
-            <OKRActionButton type="button" onClick={handleSave}>
-              Update OKR
-            </OKRActionButton>
-            <OKRActionButton
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/");
-              }}
-            >
-              {!isDirty || canClose ? "Close" : "Cancel OKR"}
-            </OKRActionButton>
+          <div className="flex justify-center items-center gap-6 mt-8">
+
+            <div className="w-48">
+              <OKRActionButton
+                type="button"
+                onClick={handleSave}
+                className="btn btn-primary w-full"
+              >
+                Update OKR
+              </OKRActionButton>
+            </div>
+
+            <div className="w-48">
+              <OKRActionButton
+                type="button"
+                onClick={handleCancel}
+                className="btn btn-ghost w-full"
+              >
+                {canClose || !hasStarted ? "Close" : "Reset"}
+              </OKRActionButton>
+            </div>
+
           </div>
         </form>
       </div>

@@ -9,7 +9,7 @@ import OKRActionButton from '../components/OKRActionButton';
 import OKRLevelSection from '../components/OKRLevelSection';
 import SectionTitle from '../components/SectionTitle';
 import Box from '../components/Box';
-import { listEmployees, listLevel5OKRs, listLevel6OKRs, createLevel6OKR, updateLevel6OKR } from '../lib/api';
+import { listEmployees, listLevel5OKRs, listLevel6OKRs, getLevel5OKR, createLevel6OKR, updateLevel6OKR } from '../lib/api';
 import { useToast } from '../components/ToastProvider';
 import {
   createEmptyOKRFields,
@@ -155,10 +155,35 @@ const OKRWorkspaceLevel6 = () => {
   const handleSelectEmployee = (e) => {
     const code = Number(e.target.value) || '';
     const emp = employeeOptions.find(x => Number(x.empCode) === code);
-    setFields(f => ({ ...f, employeeCode: code, employeeName: emp ? emp.empName : '', userId: emp ? emp.userId : '', employeeLevel: emp ? String(emp.empLevel) : '', okrCode: '' }));
+    setFields(f => ({
+      ...f,
+    
+      employeeCode: code,
+      employeeName: emp ? emp.empName : "",
+      userId: emp ? emp.userId : "",
+      employeeLevel: emp ? String(emp.empLevel) : "",
+    
+      okrCode: "",
+      okrDescription: "",
+      keyResults: Array(5).fill(""),
+      quarters: [
+        { percent: "", comment: "" },
+        { percent: "", comment: "" },
+        { percent: "", comment: "" },
+        { percent: "", comment: "" },
+      ],
+    
+      level5EmployeeCode: "",
+      level5EmployeeName: "",
+      level5userId: "",
+      level5OkrCode: "",
+      level5OKRDescription: "",
+    }));
+    
+    setLevel5OKRDescriptions([]);
   };
 
-  const handleSelectOKRCode = (e) => {
+  const handleSelectOKRCode = async (e) => {
     const val = e.target.value;
     if (val === 'NEW') {
       const newFields = { ...fields, okrCode: 'NEW', okrDescription: '', keyResults: Array(5).fill(''), quarters: [ { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' } ], okrDate: getLocalDateString() };
@@ -170,8 +195,55 @@ const OKRWorkspaceLevel6 = () => {
     const num = Number(val);
     const okr = level6All.find(x => Number(x.level6OkrCode) === num || Number(x._id) === num);
     if (!okr) return;
+
+    let parent = null;
+
+    try {
+    
+      const parentRes = await getLevel5OKR(
+        okr.level5OkrCode
+      );
+    
+      parent = parentRes.data;
+    
+      const allRes = await listLevel5OKRs();
+    
+      const descriptions = (allRes.data || [])
+        .filter(
+          x =>
+            Number(x.empCode) ===
+            Number(parent.empCode)
+        )
+        .map(x => ({
+          level5OkrCode: x.level5OkrCode,
+          okrDesc: x.okrDesc,
+        }));
+    
+      setLevel5OKRDescriptions(descriptions);
+    
+    } catch (err) {
+    
+      console.error(err);
+    
+    }
     const newFields = {
       ...fields,
+
+      level5EmployeeCode:
+      parent?.empCode || "",
+    
+    level5EmployeeName:
+      parent?.empName || "",
+    
+    level5userId:
+      parent?.userId || "",
+    
+    level5OkrCode:
+      parent?.level5OkrCode || "",
+    
+    level5OKRDescription:
+      parent?.okrDesc || "",
+
       okrCode: okr.level6OkrCode,
       okrDate: okr.okrDate ? getLocalDateString(okr.okrDate) : fields.okrDate,
       okrYear: okr.okrYear || new Date().getFullYear(),
@@ -317,7 +389,7 @@ const OKRWorkspaceLevel6 = () => {
         <BackButton onClick={() => navigate('/')} />
       </div>
       <div className="card w-[95%] max-w-6xl p-8 overflow-hidden">
-        <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 6</h1>
+        <h1 className="text-3xl font-bold text-center text-slate-900 mb-8">OKR Workspace - Level 6</h1>
         <form>
           <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-6">
               <div className="flex flex-col gap-2 min-w-0">

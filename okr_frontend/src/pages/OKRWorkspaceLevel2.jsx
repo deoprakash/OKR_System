@@ -8,7 +8,7 @@ import QuarterInput from '../components/QuarterInput';
 import OKRActionButton from '../components/OKRActionButton';
 import SectionTitle from '../components/SectionTitle';
 import Box from '../components/Box';
-import api, { listEmployees, listLevel1OKRs, listLevel2OKRs, createLevel2OKR, updateLevel2OKR } from '../lib/api';
+import api, { listEmployees, listLevel1OKRs, listLevel2OKRs, getLevel1OKR, createLevel2OKR, updateLevel2OKR } from '../lib/api';
 import { useToast } from '../components/ToastProvider';
 import { createEmptyOKRFields, YEAR_OPTIONS, QUARTER_OPTIONS } from "../lib/okrDefaults";
 
@@ -130,6 +130,7 @@ const OKRWorkspaceLevel2 = () => {
     level2OKRValue: EMPLOYEE_LEVELS[0],
   };
     setFields(newFields);
+    console.log(newFields);
     setIsDirty(false);
     pristineRef.current = JSON.stringify(newFields);
   };
@@ -139,20 +140,43 @@ const OKRWorkspaceLevel2 = () => {
   const handleSelectEmployee = (e) => {
     const code = Number(e.target.value) || '';
     const emp = employeeOptions.find(x => Number(x.empCode) === code);
+
     setFields(f => ({
       ...f,
+    
       employeeCode: code,
-      employeeName: emp ? emp.empName : '',
-      userId: emp ? emp.userId : '',
-      employeeLevel: emp ? String(emp.empLevel) : '',
-      okrCode: '',
+      employeeName: emp ? emp.empName : "",
+      userId: emp ? emp.userId : "",
+      employeeLevel: emp ? String(emp.empLevel) : "",
+    
+      // Reset Level 2 selection
+      okrCode: "",
+      okrDescription: "",
+      keyResults: Array(5).fill(""),
+      quarters: [
+        { percent: "", comment: "" },
+        { percent: "", comment: "" },
+        { percent: "", comment: "" },
+        { percent: "", comment: "" },
+      ],
+    
+      // Reset Level 1 section
+      level1EmployeeCode: "",
+      level1EmployeeName: "",
+      level1userId: "",
+      level1OkrCode: "",
+      level1OKRDescription: "",
     }));
+    
+    // Clear Level-1 OKR dropdown
+    setLevel1OKRDescriptions([]);
+    
     // filter level2 okrs for this employee
     const filtered = level2OkrsAll.filter(o => Number(o.empCode) === Number(code));
     setLevel2OkrsAll(prev => prev); // keep all, dropdown will compute options
   };
 
-  const handleSelectOKRCode = (e) => {
+  const handleSelectOKRCode = async (e) => {
     const val = e.target.value;
     if (val === 'NEW') {
       // new record, clear OKR-specific fields
@@ -166,7 +190,59 @@ const OKRWorkspaceLevel2 = () => {
     const num = Number(val);
     const okr = level2OkrsAll.find(x => Number(x.level2OkrCode) === num || Number(x._id) === num);
     if (!okr) return;
-    const newFields = { ...fields, 
+
+    // Load linked Level-1 OKR
+
+    let parent = null;
+
+    try {
+
+      const parentRes = await getLevel1OKR(
+        okr.level1OkrCode
+      );
+    
+      parent = parentRes.data;
+    
+      const allRes = await listLevel1OKRs();
+    
+      const descriptions = (allRes.data || [])
+        .filter(
+          x =>
+            Number(x.empCode) ===
+            Number(parent.empCode)
+        )
+        .map(x => ({
+          level1OkrCode: x.level1OkrCode,
+          okrDesc: x.okrDesc,
+        }));
+    
+      setLevel1OKRDescriptions(descriptions);
+    
+    } catch (err) {
+    
+      console.error(err);
+    
+    }
+
+    const newFields = { 
+      
+      ...fields, 
+
+      level1EmployeeCode:
+        parent?.empCode || "",
+
+      level1EmployeeName:
+          parent?.empName || "",
+
+      level1userId:
+          parent?.userId || "",
+
+      level1OkrCode:
+          parent?.level1OkrCode || "",
+
+      level1OKRDescription:
+          parent?.okrDesc || "",
+
       okrCode: okr.level2OkrCode, 
       okrDate: okr.okrDate ? getLocalDateString(okr.okrDate) : fields.okrDate, 
       
@@ -282,7 +358,7 @@ const OKRWorkspaceLevel2 = () => {
   const handleCancel = (e) => {
     e.preventDefault();
   
-    if (!isDirty || canClose) {
+    if (!hasStarted|| canClose) {
       navigate("/");
       return;
     }
@@ -310,7 +386,7 @@ const OKRWorkspaceLevel2 = () => {
         <BackButton onClick={() => navigate('/')} />
       </div>
       <div className="bg-white rounded-lg shadow-2xl w-[95%] max-w-6xl p-8 overflow-hidden professional-panel">
-        <h1 className="text-3xl font-bold mb-6 text-center">OKR Workspace - Level 2</h1>
+        <h1 className="text-3xl font-bold text-center text-slate-900 mb-8">OKR Workspace - Level 2</h1>
         <form>
           <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2 xl:grid-cols-6">
             <div className="flex flex-col gap-2 min-w-0">

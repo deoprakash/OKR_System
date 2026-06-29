@@ -135,3 +135,20 @@ export const searchAnalytics = (userId, year) =>
       userId
     )}&year=${encodeURIComponent(year)}`
   );
+
+  export const getLevel1OKR = (id) =>
+    request(`/api/level1/${id}`);
+  export const getLevel2OKR = (id) =>
+    request(`/api/level2/${id}`);
+
+export const getLevel3OKR = (id) =>
+    request(`/api/level3/${id}`);
+
+export const getLevel4OKR = (id) =>
+    request(`/api/level4/${id}`);
+
+export const getLevel5OKR = (id) =>
+    request(`/api/level5/${id}`);
+
+export const getLevel6OKR = (id) =>
+    request(`/api/level6/${id}`);

@@ -154,7 +154,6 @@ const OKRWorkspaceLevel1 = () => {
     setSelectedOkrId(null);
     setSelectedOkrCode("");
     setOkrs([]);
-    setCanClose(false);
     setIsDirty(false);
   
     pristineRef.current = JSON.stringify(newFields);
@@ -245,8 +244,9 @@ const OKRWorkspaceLevel1 = () => {
         toast.send("OKR updated successfully.", "success");
 
         await fetchOkrsForEmployee();
-
-        resetForNew();
+    
+        resetForm();
+        setCanClose(true);
       } else {
         await createLevel1OKR(payload);
 
@@ -254,7 +254,8 @@ const OKRWorkspaceLevel1 = () => {
         
         toast.send("OKR created successfully.", "success");
         
-        resetForNew();
+        resetForm();
+        setCanClose(true);
       }
     } catch (err) {
       toast.send('Network error while saving OKR', 'error');
@@ -264,7 +265,7 @@ const OKRWorkspaceLevel1 = () => {
   const handleCancel = (e) => {
     e.preventDefault();
   
-    if (canClose) {
+    if (canClose || !hasStarted) {
       navigate("/");
       return;
     }
@@ -321,7 +322,7 @@ const OKRWorkspaceLevel1 = () => {
         <BackButton onClick={() => navigate("/")} />
       </div>
       <div className="card w-[95%] max-w-5xl p-8 overflow-hidden">
-        <h1 className="text-3xl font-bold mb-6 text-center">
+        <h1 className="text-3xl font-bold text-center text-slate-900 mb-8">
           OKR Workspace - Level 1
         </h1>
         <form>

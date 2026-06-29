@@ -264,12 +264,12 @@ const OKRWorkspaceLevel1 = () => {
   const handleCancel = (e) => {
     e.preventDefault();
   
-    if (!isDirty || canClose) {
+    if (canClose) {
       navigate("/");
       return;
     }
   
-    resetForNew();
+    resetForm();
   };
 
   // track dirty state by comparing to a pristine snapshot

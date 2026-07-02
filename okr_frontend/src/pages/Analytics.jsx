@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   getAnalyticsEmployees,
+  getAnalyticsOKRs,
   searchAnalytics,
 } from "../lib/api";
 
@@ -20,22 +21,21 @@ import {
   Tooltip,
 } from "recharts";
 
-export default function Analytics() {
+const Analytics = () => {
   const [employees, setEmployees] = useState([]);
-
-  const years = Array.from(
-    { length: 51 },
-    (_, index) => 2050 - index
-  );
+  const [okrOptions, setOkrOptions] = useState([]);
+  const [years, setYears] = useState([]);
+  const [allOkrs, setAllOkrs] = useState([]);
 
   const [filters, setFilters] = useState({
     userId: "",
     year: "",
+    selectedOKR:"ALL",
   });
 
   const [employee, setEmployee] = useState(null);
 
-  const [performance, setPerformance] = useState(null);
+  const [performances, setPerformances] = useState([]);
 
   const [loading, setLoading] = useState(false);
 
@@ -43,17 +43,40 @@ export default function Analytics() {
     loadEmployees();
   }, []);
 
-  const average =
-performance
-? (
-    (
-        performance.q1_percentage +
-        performance.q2_percentage +
-        performance.q3_percentage +
-        performance.q4_percentage
-    ) / 4
-).toFixed(1)
-: 0;
+  async function loadOKRs(userId) {
+
+    if (!userId) {
+      setYears([]);
+      setAllOkrs([]);
+      setOkrOptions([]);
+      return;
+    }
+  
+    try {
+  
+      const data = await getAnalyticsOKRs(userId);
+  
+      setYears(["ALL", ...(data.years || [])]);
+  
+      setAllOkrs(data.okrs || []);
+  
+      setOkrOptions([]);
+  
+      setFilters(prev => ({
+        ...prev,
+        year: "",
+        selectedOKR: "ALL",
+      }));
+  
+    } catch (err) {
+      console.error(err);
+    }
+  
+  }
+
+  useEffect(() => {
+    loadOKRs(filters.userId);
+  }, [filters.userId]);
 
   async function loadEmployees() {
     try {
@@ -66,6 +89,7 @@ performance
   }
 
   async function handleSearch() {
+    
     if (!filters.userId) {
       alert("Please select employee.");
       return;
@@ -76,21 +100,24 @@ performance
   
       // Clear previous result while loading
       setEmployee(null);
-      setPerformance(null);
+      setPerformances([]);
   
       const result = await searchAnalytics(
         filters.userId,
-        filters.year
+        filters.year,
+        filters.selectedOKR
       );
-  
+      console.log(result);
+      
       setEmployee(result.employee || null);
-      setPerformance(result.performance || null);
+
+      setPerformances(result.performances || []);
   
     } catch (error) {
       console.error(error);
   
       setEmployee(null);
-      setPerformance(null);
+      setPerformances([]);
   
       alert(error.message);
     } finally {
@@ -98,34 +125,27 @@ performance
     }
   }
 
-  const chartData = [
-    {
-      quarter: "Q1",
-      percentage: performance?.q1_percentage ?? 0,
-    },
-    {
-      quarter: "Q2",
-      percentage: performance?.q2_percentage ?? 0,
-    },
-    {
-      quarter: "Q3",
-      percentage: performance?.q3_percentage ?? 0,
-    },
-    {
-      quarter: "Q4",
-      percentage: performance?.q4_percentage ?? 0,
-    },
-  ];
-
   function handleReset() {
     setFilters({
       userId: "",
       year: "",
+      selectedOKR: "ALL",
     });
   
     setEmployee(null);
-    setPerformance(null);
+    setPerformances([]);
   }
+
+  const groupedPerformances = performances.reduce((acc, item) => {
+    if (!acc[item.okrYear]) {
+      acc[item.okrYear] = [];
+    }
+  
+    acc[item.okrYear].push(item);
+  
+    return acc;
+  }, {});
+  
   return (
     <div className="min-h-screen flex flex-col bg-transparent">
       <NavBar />
@@ -136,8 +156,8 @@ performance
           </h1>
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-6 mb-6">
+            <div className="">
               <label className="block text-(--text) font-semibold mb-2">
                 Employee
               </label>
@@ -166,45 +186,86 @@ performance
               <select
                 className="w-full px-4 py-2 border border-white/10 rounded-lg bg-white/5 text-(--text) focus:outline-none focus:border-white/30 transition-colors"
                 value={filters.year}
-                onChange={(e) =>
-                  setFilters({ ...filters, year: Number(e.target.value) })
-                }
+                onChange={(e) => {
+                  const selectedYear = e.target.value;
+
+                  setFilters((prev) => ({
+                    ...prev,
+                    year: selectedYear,
+                    selectedOKR: "ALL",
+                  }));
+
+                  if (selectedYear === "ALL") {
+                    setOkrOptions(allOkrs);
+                  } else if (selectedYear) {
+                    setOkrOptions(
+                      allOkrs.filter(
+                        (okr) => okr.okrYear === selectedYear
+                      )
+                    );
+                  } else {
+                    setOkrOptions([]);
+                  }
+                }}
               >
-                  <option value="">
-                    Select Year
-                  </option>
+                <option value="">Select Year</option>
+
                 {years.map((year) => (
                   <option key={year} value={year}>
-                    {year}
+                    {year === "ALL" ? "All Years" : year}
                   </option>
                 ))}
               </select>
-            </div>
+              </div>
+              <div>
+                <label className="block text-(--text) font-semibold mb-2">Selected OKR</label>
+                <select
+                    value={filters.selectedOKR}
+                    onChange={(e) =>
+                      setFilters({
+                        ...filters,
+                        selectedOKR: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="ALL">Show All</option>
+
+                    {okrOptions.map((okr) => (
+                      <option
+                      key={okr.okrId}
+                      value={okr.okrId}
+                    >
+                      {okr.okrDesc}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            
           </div>
 
           {/* Search Buttons */}
 
-<div className="flex justify-center gap-4 mb-8">
+            <div className="flex justify-center gap-4 mb-8">
 
-<button
-  type="button"
-  className="btn btn-primary min-w-[140px]"
-  disabled={!filters.userId || !filters.year || loading}
-  onClick={handleSearch}
->
-  {loading ? "Searching..." : "Search"}
-</button>
+            <button
+              type="button"
+              className="btn btn-primary min-w-[140px]"
+              disabled={!filters.userId || loading}
+              onClick={handleSearch}
+            >
+              {loading ? "Searching..." : "Search"}
+            </button>
 
-<button
-  type="button"
-  className="btn btn-secondary min-w-[140px]"
-  disabled={loading}
-  onClick={handleReset}
->
-  Reset
-</button>
+            <button
+              type="button"
+              className="btn btn-secondary min-w-[140px]"
+              disabled={loading}
+              onClick={handleReset}
+            >
+              Reset
+            </button>
 
-</div>
+            </div>
 
           {/* Loading */}
           {loading && (
@@ -240,103 +301,153 @@ performance
                 </div>
               </div>
             </div>
-          )}
+          )}  
+          
+          {/* OKR Title */}
 
-          {/* Overall Performance */}
-          {employee && !loading && (
-            <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-5 sm:p-6 text-center">
-              <p className="text-(--muted) text-sm mb-2">Overall Performance</p>
-              <p className="text-5xl font-bold text-(--accent)">{average}%</p>
-            </div>
-          )}
+                {Object.entries(groupedPerformances)
+                  .sort((a, b) => Number(b[0]) - Number(a[0]))
+                  .map(([year, okrs]) => (
+                    <div key={year}>
 
-          {/* Quarter Wise Performance Chart */}
-          {performance && !loading && (
-            <div className="mb-6 rounded-xl border border-white/10 overflow-hidden">
-              <div className="bg-white/5 border-b border-white/10 px-4 sm:px-6 py-3">
-                <h2 className="text-base font-semibold text-(--text) text-center">
-                  Quarter Wise Performance ({filters.year})
-                </h2>
-              </div>
-              <div className="p-5 sm:p-8 flex justify-center">
-                <div style={{ width: "90%", height: 420 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                      <XAxis dataKey="quarter" stroke="var(--muted)" tick={{ fill: "var(--text)" }} />
-                      <YAxis domain={[0, 100]} stroke="var(--muted)" tick={{ fill: "var(--text)" }} />
-                      <Tooltip
-                        formatter={(value) => [`${value}%`, "Completion"]}
-                        contentStyle={{
-                          background: "rgba(255,255,255,0.05)",
-                          border: "1px solid rgba(255,255,255,0.1)",
-                          borderRadius: "8px",
-                          color: "var(--text)",
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="percentage"
-                        stroke="var(--accent)"
-                        strokeWidth={4}
-                        dot={{ r: 7 }}
-                        activeDot={{ r: 9 }}
-                      >
-                        <LabelList
-                          dataKey="percentage"
-                          position="top"
-                          style={{ fill: "var(--text)", fontSize: 13 }}
-                        />
-                      </Line>
-                    </LineChart>
-                  </ResponsiveContainer>
+                      <h2 className="text-2xl font-bold mb-6 text-center">
+                        Year : {year}
+                      </h2>
+
+            {okrs.map((performance, index, year) => {
+            const average = (
+              (
+                Number(performance.q1_percentage || 0) +
+                Number(performance.q2_percentage || 0) +
+                Number(performance.q3_percentage || 0) +
+                Number(performance.q4_percentage || 0)
+              ) / 4
+            ).toFixed(1);
+
+            const chartData = [
+              { quarter: "Q1", percentage: performance.q1_percentage },
+              { quarter: "Q2", percentage: performance.q2_percentage },
+              { quarter: "Q3", percentage: performance.q3_percentage },
+              { quarter: "Q4", percentage: performance.q4_percentage },
+            ];
+
+            return (
+              <div key={performance.okrId} className="mb-10">
+
+                {/* OKR Title */}
+
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-4">
+                  <h2 className="text-xl font-bold text-left">
+                   {index + 1}. {performance.okrDesc}
+                  </h2>
                 </div>
-              </div>
-            </div>
-          )}
 
-          {/* Quarter Comments */}
-          {performance && !loading && (
-            <div className="mb-6 rounded-xl border border-white/10 overflow-hidden">
-              <div className="bg-white/5 border-b border-white/10 px-4 sm:px-6 py-3">
-                <h2 className="text-base font-semibold text-(--text) text-center">
-                  Quarter Comments
-                </h2>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-white/5 border-b border-white/10">
-                      <th className="border-r border-white/10 px-4 py-3 text-left text-(--text) font-semibold w-28">
-                        Quarter
-                      </th>
-                      <th className="px-4 py-3 text-left text-(--text) font-semibold">
-                        Comment
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {["q1", "q2", "q3", "q4"].map((q, i) => (
-                      <tr
-                        key={q}
-                        className={`hover:bg-white/5 transition-colors ${i < 3 ? "border-b border-white/10" : ""}`}
+                {/* Overall */}
+
+                <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-5 text-center">
+                  <p className="text-sm text-(--muted)">
+                    Overall Performance
+                  </p>
+
+                  <p className="text-5xl font-bold text-(--accent)">
+                    {average}%
+                  </p>
+                </div>
+
+                {/* Chart */}
+
+                <div className="mb-6 rounded-xl border border-white/10 overflow-hidden">
+                  <div className="bg-white/5 border-b border-white/10 px-6 py-3">
+                    <h2 className="text-base font-semibold text-center">
+                      Quarter Wise Performance ({performance.okrYear})
+                    </h2>
+                  </div>
+
+                  <div className="p-6">
+
+                    <ResponsiveContainer width="100%" height={400}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="quarter" />
+                        <YAxis domain={[0, 100]} />
+                        <Tooltip />
+
+                        <Line
+                          dataKey="percentage"
+                          stroke="var(--accent)"
+                        >
+                          <LabelList
+                            dataKey="percentage"
+                            position="top"
+                          />
+                        </Line>
+
+                      </LineChart>
+                    </ResponsiveContainer>
+
+                  </div>
+                </div>
+
+                {/* Comments */}
+
+                <div className="mb-8 rounded-xl border border-white/10 overflow-hidden">
+                  <div className="bg-white/5 border-b border-white/10 px-6 py-3">
+                    <h2 className="text-lg font-semibold text-center text-(--text)">
+                      Quarter Comments
+                    </h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 p-6">
+
+                    {[
+                      {
+                        quarter: "Q1",
+                        comment: performance.q1_comment,
+                      },
+                      {
+                        quarter: "Q2",
+                        comment: performance.q2_comment,
+                      },
+                      {
+                        quarter: "Q3",
+                        comment: performance.q3_comment,
+                      },
+                      {
+                        quarter: "Q4",
+                        comment: performance.q4_comment,
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.quarter}
+                        className="rounded-xl border border-white/10 bg-white/5 p-5 shadow-sm hover:shadow-md transition-all"
                       >
-                        <td className="border-r border-white/10 px-4 py-3 text-(--text) font-semibold">
-                          {q.toUpperCase()}
-                        </td>
-                        <td className="px-4 py-3 text-(--muted) text-sm">
-                          {performance[`${q}_comment`] || "-"}
-                        </td>
-                      </tr>
+                        <h3 className="text-lg font-bold text-(--accent) mb-3 text-center">
+                          {item.quarter}
+                        </h3>
+
+                        <div className="min-h-[90px] flex items-center justify-center text-center">
+                          <p className="text-(--muted)">
+                            {item.comment?.trim()
+                              ? item.comment
+                              : "No comments available"}
+                          </p>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+
+                  </div>
+                </div>
+
               </div>
-            </div>
-          )}
+             );
+            })}
+          </div>
+      ))}
         </div>
       </div>
       <Footer />
     </div>
-  );
+)
 }
+
+export default Analytics;

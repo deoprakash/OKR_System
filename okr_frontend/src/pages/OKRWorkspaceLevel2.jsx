@@ -178,12 +178,36 @@ const OKRWorkspaceLevel2 = () => {
 
   const handleSelectOKRCode = async (e) => {
     const val = e.target.value;
-    if (val === 'NEW') {
-      // new record, clear OKR-specific fields
-      const newFields = { ...fields, okrCode: 'NEW', okrDescription: '', keyResults: Array(5).fill(''), quarters: [ { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' } ], okrDate: getLocalDateString() };
+    if (val === "NEW") {
+
+      setLevel1OKRDescriptions([]);
+    
+      const newFields = {
+        ...fields,
+    
+        okrCode: "NEW",
+        okrDate: getLocalDateString(),
+        okrDescription: "",
+        keyResults: Array(5).fill(""),
+        quarters: [
+          { percent: "", comment: "" },
+          { percent: "", comment: "" },
+          { percent: "", comment: "" },
+          { percent: "", comment: "" },
+        ],
+    
+        // Clear Level-1 mapping
+        level1EmployeeCode: "",
+        level1EmployeeName: "",
+        level1userId: "",
+        level1OkrCode: "",
+        level1OKRDescription: "",
+      };
+    
       setFields(newFields);
       setIsDirty(false);
       pristineRef.current = JSON.stringify(newFields);
+    
       return;
     }
     // find selected OKR

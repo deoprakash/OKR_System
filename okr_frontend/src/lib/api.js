@@ -129,12 +129,27 @@ export const getSetupStatus = () => request('/api/setup');
 export const getAnalyticsEmployees = () =>
   request("/api/analytics/employees");
 
-export const searchAnalytics = (userId, year) =>
+export const getAnalyticsOKRs = (userId, year) =>
   request(
-    `/api/analytics/search?userId=${encodeURIComponent(
+    `/api/analytics/okrs?userId=${encodeURIComponent(
       userId
     )}&year=${encodeURIComponent(year)}`
   );
+
+  export const searchAnalytics = (
+    userId,
+    year,
+    selectedOKR = "ALL"
+  ) =>
+    request(
+      `/api/analytics/search?userId=${encodeURIComponent(
+        userId
+      )}&year=${encodeURIComponent(
+        year
+      )}&selectedOKR=${encodeURIComponent(
+        selectedOKR
+      )}`
+    );
 
   export const getLevel1OKR = (id) =>
     request(`/api/level1/${id}`);

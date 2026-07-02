@@ -186,17 +186,38 @@ const OKRWorkspaceLevel4 = () => {
 
   const handleSelectOKRCode = async (e) => {
     const val = e.target.value;
-    if (val === 'NEW') {
-      const newFields = { ...fields, 
-        okrCode: 'NEW', 
-        okrDescription: '', 
-        keyResults: Array(5).fill(''), 
-        quarters: [ { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' }, { percent: '', comment: '' } ], okrDate: getLocalDateString() };
+    if (val === "NEW") {
+
+      setLevel3OKRDescriptions([]);
+    
+      const newFields = {
+        ...fields,
+    
+        okrCode: "NEW",
+        okrDate: getLocalDateString(),
+        okrDescription: "",
+        keyResults: Array(5).fill(""),
+        quarters: [
+          { percent: "", comment: "" },
+          { percent: "", comment: "" },
+          { percent: "", comment: "" },
+          { percent: "", comment: "" },
+        ],
+    
+        level3EmployeeCode: "",
+        level3EmployeeName: "",
+        level3userId: "",
+        level3OkrCode: "",
+        level3OKRDescription: "",
+      };
+    
       setFields(newFields);
       setIsDirty(false);
       pristineRef.current = JSON.stringify(newFields);
+    
       return;
     }
+    
     const num = Number(val);
     const okr = level4All.find(x => Number(x.level4OkrCode) === num || Number(x._id) === num);
     if (!okr) return;

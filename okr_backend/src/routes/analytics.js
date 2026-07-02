@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getEmployees,
+  getOKRs,
   searchAnalytics,
 } from "../controllers/analyticsController.js";
 
@@ -25,6 +26,12 @@ router.get(
 | Employee Analytics
 |--------------------------------------------------------------------------
 */
+
+router.get(
+  "/okrs",
+  requireAuth,
+  getOKRs
+);
 
 router.get(
   "/search",

@@ -367,16 +367,16 @@ const OKRWorkspaceLevel6 = () => {
           setCanClose(false);
         }
       } else {
-        await updateLevel5OKR(fields.okrCode, payload);
+        await updateLevel6OKR(fields.okrCode, payload);
 
         toast.send("OKR updated", "success");
 
-        const l5 = await listLevel5OKRs();
-        setLevel5All(l5.data || []);
+        const l6 = await listLevel6OKRs();
+        setLevel6All(l6.data || []);
 
         resetForm();
         setCanClose(false);
-              }
+      }
     } catch (err) { console.error(err); toast.send('Save failed: ' + (err.message || err), 'error'); }
     finally {
       setIsUpdating(false);

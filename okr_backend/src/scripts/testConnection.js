@@ -3,7 +3,9 @@ import mongoose from 'mongoose';
 
 dotenv.config();
 
-const uri = process.env.MONGODB_URI;
+const uri = process.env.NODE_ENV === 'production' 
+  ? process.env.MONGODB_URI 
+  : (process.env.LOCAL_MONGODB_URI || process.env.MONGODB_URI);
 
 if (!uri) {
   console.error('MONGODB_URI not set in environment');

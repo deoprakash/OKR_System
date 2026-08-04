@@ -69,3 +69,17 @@ node_modules_cache/
 # Ignore npm/yarn lock if you prefer (uncomment to enable)
 # package-lock.json
 # yarn.lock
+
+# Unnecessary doc and markdown files
+*.doc
+*.docx
+*.md
+!README.md
+!readme.md
+
+# Unnecessary archives and generated files
+*.zip
+*.tar
+*.gz
+*.rar
+*.7z

@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import mongoose from "mongoose";
+import Employee from "./models/employee.js";
 import employeeRoutes from "./routes/employees.js";
 // note: generic okr routes removed (using level1..level7 routes instead)
 import level1Routes from "./routes/level1.js";
@@ -27,7 +28,9 @@ const CLIENT_ORIGINS = (process.env.CLIENT_ORIGIN || "http://localhost:5173")
   .map((origin) => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 const ALLOW_NULL_ORIGIN = (process.env.ALLOW_NULL_ORIGIN || "true").toLowerCase() === "true";
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.NODE_ENV === 'production' 
+  ? process.env.MONGODB_URI 
+  : (process.env.LOCAL_MONGODB_URI || process.env.MONGODB_URI);
 
 app.use(morgan("dev"));
 app.use(cors({
@@ -83,6 +86,24 @@ async function start() {
     });
     console.log("Connected to MongoDB");
 
+    try {
+      const adminEmail = "gridseventech@gmail.com";
+      const existingAdmin = await Employee.findOne({ emailId: adminEmail });
+      if (!existingAdmin) {
+        const admin = new Employee({
+          empName: "Master Admin",
+          emailId: adminEmail,
+          cellNumber: "0000000000",
+          isAdmin: true
+        });
+        admin.setPassword("admin@123");
+        await admin.save();
+        console.log("Master admin seeded successfully.");
+      }
+    } catch (seedErr) {
+      console.error("Error seeding master admin:", seedErr);
+    }
+
     app.listen(PORT, () => {
       console.log(`OKR backend listening on port ${PORT}`);
     });
@@ -91,5 +112,6 @@ async function start() {
     process.exit(1);
   }
 }
+
 
 start();

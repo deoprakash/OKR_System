@@ -9,9 +9,12 @@ async function main() {
     process.exit(2);
   }
 
-  const MONGODB_URI = process.env.MONGODB_URI;
+  const MONGODB_URI = process.env.NODE_ENV === 'production' 
+    ? process.env.MONGODB_URI 
+    : (process.env.LOCAL_MONGODB_URI || process.env.MONGODB_URI);
+
   if (!MONGODB_URI) {
-    console.error('MONGODB_URI must be set in .env');
+    console.error('MONGODB_URI or LOCAL_MONGODB_URI must be set in .env');
     process.exit(2);
   }
 

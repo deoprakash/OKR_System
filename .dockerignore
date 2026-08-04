@@ -1,0 +1,7 @@
+node_modules
+okr_backend/node_modules
+okr_frontend/node_modules
+npm-debug.log
+.env
+.git
+.gitignore

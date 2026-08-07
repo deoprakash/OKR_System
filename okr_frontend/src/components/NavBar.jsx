@@ -1,144 +1,650 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import Button from "./ui/Button";
 
 export default function NavBar() {
   const navigate = useNavigate();
   const auth = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
   const profileMenuRef = useRef(null);
-  const profileInitial = (auth.user?.empName || '?').trim().charAt(0).toUpperCase() || '?';
+  const mobileMenuRef = useRef(null);
+  const profileInitial = (auth.user?.empName || "?")
+    .trim()
+    .charAt(0)
+    .toUpperCase();
+  const userName = auth.user?.empName || "";
+  const userEmail = auth.user?.emailId || "";
   const userLevel = Number(auth.user?.empLevel || 0);
   const location = useLocation();
 
-  const smartMenuItems = [];
-  if (auth.isAuthenticated) {
-    if (auth.isAdmin) {
-      smartMenuItems.push({ label: "Employee Master", path: "/employee-master" });
-      for (let level = 1; level <= 7; level += 1) {
-        smartMenuItems.push({ label: `Level ${level} OKR Designer`, path: `/okr-workspace-level-${level}` });
-      }
-    } else if (userLevel >= 1 && userLevel <= 7) {
-      smartMenuItems.push({ label: `Level ${userLevel} OKR Designer`, path: `/okr-workspace-level-${userLevel}` });
-    }
-  }
+  const userRoleLabel = auth.isAdmin
+    ? "Administrator"
+    : userLevel >= 1 && userLevel <= 7
+      ? `Level ${userLevel} Contributor`
+      : "Team Member";
 
-  // Close dropdown on outside click
-  React.useEffect(() => {
+  const smartMenuSections = useMemo(() => {
+    if (!auth.isAuthenticated) return [];
+
+    if (auth.isAdmin) {
+      return [
+        {
+          title: "Administration",
+          description: "Manage users and access",
+          items: [
+            {
+              label: "Employee Master",
+              description: "Maintain employee records and level assignments.",
+              path: "/employee-master",
+              icon: "👤",
+            },
+          ],
+        },
+        {
+          title: "Workspace levels",
+          description: "Jump into any OKR designer level",
+          items: Array.from({ length: 7 }, (_, index) => {
+            const level = index + 1;
+            return {
+              label: `Level ${level} OKR Designer`,
+              description: `Build and review objectives for level ${level}.`,
+              path: `/okr-workspace-level-${level}`,
+              icon: `L${level}`,
+            };
+          }),
+        },
+      ];
+    }
+
+    if (userLevel >= 1 && userLevel <= 7) {
+      return [
+        {
+          title: "Your workspace",
+          description: "Open the OKR designer assigned to you",
+          items: [
+            {
+              label: `Level ${userLevel} OKR Designer`,
+              description: `Manage objectives and key results for level ${userLevel}.`,
+              path: `/okr-workspace-level-${userLevel}`,
+              icon: `L${userLevel}`,
+            },
+          ],
+        },
+      ];
+    }
+
+    return [];
+  }, [auth.isAdmin, auth.isAuthenticated, userLevel]);
+
+  const primaryNavItems = useMemo(() => {
+    const items = [
+      { label: "Home", path: "/", description: "Dashboard and overview" },
+    ];
+
+    if (auth.isAuthenticated) {
+      items.push({
+        label: "OKR Performance",
+        path: "/okr-performance",
+        description: "Review results and trends",
+      });
+    }
+
+    if (auth.isAdmin) {
+      items.push({
+        label: "Analytics",
+        path: "/analytics",
+        description: "See team-level analytics",
+      });
+      items.push({
+        label: "User Management",
+        path: "/admin-users",
+        description: "Manage access and roles",
+      });
+    }
+
+    return items;
+  }, [auth.isAdmin, auth.isAuthenticated]);
+
+  const currentPath = location.pathname;
+
+  useEffect(() => {
     function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target))
         setDropdownOpen(false);
-      }
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      )
         setProfileMenuOpen(false);
-      }
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target)
+      )
+        setMobileMenuOpen(false);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  return (
-    <nav className="w-full mb-2 site-nav flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 relative">
-      <div className="brand cursor-pointer" onClick={() => navigate("/")}>
-        <span className="brand-text">Objecto<span className="tm">™</span></span>
-      </div>
-      <ul className="nav-center absolute left-1/2 transform -translate-x-1/2 flex gap-4 lg:gap-6 text-sm lg:text-lg items-center">
-        <li className={`nav-link transition cursor-pointer ${location.pathname === '/' ? 'active' : ''}`} onClick={() => navigate("/")}>Home</li>
-        {auth.isAdmin && (
-          <li
-          className={`nav-link transition cursor-pointer ${
-            location.pathname === "/analytics" ? "active" : ""
-          }`}
-          onClick={() => navigate("/analytics")}
+  useEffect(() => {
+    function onKeyDown(event) {
+      if (event.key === "Escape") {
+        setDropdownOpen(false);
+        setProfileMenuOpen(false);
+        setMobileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    function handlePopState() {
+      setDropdownOpen(false);
+      setProfileMenuOpen(false);
+      setMobileMenuOpen(false);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const isActive = (path) => currentPath === path;
+
+  const closeMenus = () => {
+    setDropdownOpen(false);
+    setProfileMenuOpen(false);
+    setMobileMenuOpen(false);
+  };
+
+  const navLinkClass = (path) =>
+    [
+      "group relative inline-flex items-center rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-out cursor-pointer select-none hover:-translate-y-0.5 hover:text-brand-primary hover:shadow-sm",
+      isActive(path) ? "text-brand-primary" : "text-neutral-600",
+    ].join(" ");
+
+  const renderNavUnderline = (path) => (
+    <span
+      className={[
+        "absolute inset-x-4 -bottom-0.5 h-0.5 origin-left rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-transform duration-200 ease-out",
+        isActive(path) ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+      ].join(" ")}
+    />
+  );
+
+  const handleNavigate = (path) => {
+    closeMenus();
+    navigate(path);
+  };
+
+  const renderSmartItem = (item) => (
+    <button
+      key={item.path}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={() => handleNavigate(item.path)}
+      className={[
+        "group flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition-all duration-200 ease-out",
+        isActive(item.path)
+          ? "bg-blue-50/80 text-brand-primary shadow-sm"
+          : "text-neutral-700 hover:-translate-y-0.5 hover:bg-white/75 hover:shadow-sm",
+      ].join(" ")}
+    >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 text-[10px] font-bold text-white shadow-sm">
+        {item.icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold leading-5 text-neutral-900">
+          {item.label}
+        </span>
+        <span className="mt-0.5 block text-xs leading-5 text-neutral-500">
+          {item.description}
+        </span>
+      </span>
+      <span className="mt-1 text-neutral-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand-primary">
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          Analytics
-        </li>
-        )}
-        {smartMenuItems.length > 0 && (
-          <li className="relative" ref={dropdownRef}>
-            <span
-              className="nav-link transition cursor-pointer select-none"
-              onClick={() => setDropdownOpen((open) => !open)}
-            >
-              Smart OKR Designer
-              <svg className="inline ml-1 w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-            </span>
-            {dropdownOpen && (
-              <div className="absolute left-0 mt-2 z-20 dropdown-panel py-3 px-3 min-w-65 flex flex-col gap-2">
-                {smartMenuItems.map((item) => (
-                  <button
-                    key={item.path}
-                    className={`text-left px-3 py-2 rounded-lg hover:bg-slate-50 font-medium transition text-base nav-link ${location.pathname === item.path ? 'active' : ''}`}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      navigate(item.path);
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </li>
-        )}
-        {auth.isAuthenticated && (
-          <li className={`nav-link transition cursor-pointer ${location.pathname === '/okr-performance' ? 'active' : ''}`} onClick={() => navigate('/okr-performance')}>OKR Performance</li>
-        )}
-        {auth.isAdmin && (
-          <li className={`nav-link transition cursor-pointer ${location.pathname === '/admin-users' ? 'active' : ''}`} onClick={() => navigate('/admin-users')}>User Management</li>
-        )}
-      </ul>
-      <div className="flex items-center gap-2">
-        {auth.isAuthenticated && auth.user?.empName ? (
-          <div className="relative" ref={profileMenuRef}>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </span>
+    </button>
+  );
+
+  return (
+    <>
+      <header className="sticky top-4 z-50 px-3 sm:px-4 lg:px-6">
+        <div className="mx-auto max-w-screen-xl rounded-[24px] border border-white/70 bg-white/72 px-4 sm:px-5 lg:px-6 shadow-[0_20px_60px_rgba(37,99,235,0.14)] backdrop-blur-2xl">
+          <div className="flex h-[70px] items-center justify-between gap-4">
             <button
-              className="avatar"
+              className="group flex shrink-0 items-center gap-3"
               onMouseDown={(e) => e.preventDefault()}
-              onClick={() => setProfileMenuOpen((open) => !open)}
-              title="Profile options"
-              aria-label="Profile options"
+              onClick={() => handleNavigate("/")}
             >
-              {profileInitial}
-            </button>
-            {profileMenuOpen && (
-              <div className="absolute right-0 mt-2 z-20 dropdown-panel py-2 px-2 min-w-40 flex flex-col gap-1">
-                <button
-                  className="text-left px-3 py-2 rounded-lg hover:bg-slate-50 font-medium transition text-sm nav-link"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    navigate('/my-profile');
-                  }}
-                >
-                  My Profile
-                </button>
-                <button
-                  className="text-left px-3 py-2 rounded-lg hover:bg-slate-50 font-medium transition text-sm nav-link"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={async () => {
-                    setProfileMenuOpen(false);
-                    await auth.logout();
-                    navigate('/login');
-                  }}
-                >
-                  Logout
-                </button>
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 text-sm font-bold text-white shadow-sm transition-all duration-200 ease-out group-hover:-translate-y-0.5 group-hover:shadow-md">
+                O
               </div>
-            )}
+              <span className="flex flex-col leading-none text-left">
+                <span className="text-display text-[16px] font-extrabold tracking-tight text-neutral-900 transition-colors duration-200 group-hover:text-brand-primary">
+                  Objecto
+                  <sup className="ml-0.5 align-super text-[8px] font-semibold tracking-normal">
+                    TM
+                  </sup>
+                </span>
+                <span className="mt-1 text-[11px] font-medium uppercase tracking-[0.22em] text-neutral-500">
+                  OKR System
+                </span>
+              </span>
+            </button>
+
+            <nav className="hidden items-center gap-2 md:flex lg:gap-3">
+              {primaryNavItems.map((item) => (
+                <button
+                  key={item.path}
+                  className={navLinkClass(item.path)}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => handleNavigate(item.path)}
+                >
+                  <span className="relative z-10">{item.label}</span>
+                  {renderNavUnderline(item.path)}
+                </button>
+              ))}
+
+              {smartMenuSections.length > 0 && (
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    className={[
+                      navLinkClass("/okr-workspace-level-1"),
+                      "gap-2",
+                    ].join(" ")}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setDropdownOpen((o) => !o)}
+                    aria-expanded={dropdownOpen}
+                    aria-haspopup="menu"
+                  >
+                    <span className="relative z-10">Smart OKR Designer</span>
+                    <svg
+                      className={`h-4 w-4 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2.5"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                    <span
+                      className={[
+                        "absolute inset-x-4 -bottom-0.5 h-0.5 origin-left rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-transform duration-200 ease-out",
+                        dropdownOpen
+                          ? "scale-x-100"
+                          : "scale-x-0 group-hover:scale-x-100",
+                      ].join(" ")}
+                    />
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="absolute left-0 top-full mt-3 w-[320px] overflow-hidden rounded-[24px] border border-white/70 bg-white/85 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.16)] backdrop-blur-2xl animate-fade-slide-up">
+                      <div className="max-h-[380px] space-y-3 overflow-y-auto px-1 pb-1 scrollbar-thin">
+                        {smartMenuSections.map((section) => (
+                          <div
+                            key={section.title}
+                            className="rounded-2xl bg-white/60 p-2"
+                          >
+                            <div className="mb-2 px-1 pt-1">
+                              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+                                {section.title}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              {section.items.map(renderSmartItem)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </nav>
+
+            <div className="flex items-center gap-2">
+              <button
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white/70 text-neutral-700 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white hover:text-brand-primary hover:shadow-md md:hidden"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setMobileMenuOpen((open) => !open)}
+                aria-label="Open menu"
+                aria-expanded={mobileMenuOpen}
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d={
+                      mobileMenuOpen
+                        ? "M6 18L18 6M6 6l12 12"
+                        : "M4 6h16M4 12h16M4 18h16"
+                    }
+                  />
+                </svg>
+              </button>
+
+              {auth.isAuthenticated && auth.user?.empName ? (
+                <div className="relative" ref={profileMenuRef}>
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setProfileMenuOpen((o) => !o)}
+                    className="group flex items-center gap-3 rounded-[22px] border border-white/70 bg-white/70 px-2 py-2 text-left shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+                    title={userName}
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[18px] bg-gradient-to-br from-blue-500 to-cyan-400 text-[13px] font-medium text-white shadow-sm">
+                      {profileInitial}
+                    </div>
+                    <div className="hidden min-w-0 flex-col md:flex">
+                      <span className="truncate text-sm font-semibold leading-5 text-neutral-900">
+                        {userName}
+                      </span>
+                      <span className="truncate text-[11px] font-medium uppercase tracking-[0.16em] text-neutral-500">
+                        {userRoleLabel}
+                      </span>
+                    </div>
+                    <svg
+                      className={`h-4 w-4 text-neutral-400 transition-transform duration-200 ${profileMenuOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  {profileMenuOpen && (
+                    <div className="absolute right-0 top-full mt-3 w-[300px] overflow-hidden rounded-[24px] border border-white/70 bg-white/98 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.16)] backdrop-blur-2xl animate-fade-slide-up">
+                      <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 text-base font-bold text-white shadow-sm">
+                            {profileInitial}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold text-neutral-900">
+                              {userName}
+                            </p>
+                            <p className="truncate text-xs font-medium uppercase tracking-[0.18em] text-neutral-500">
+                              {userRoleLabel}
+                            </p>
+                            <p className="mt-1 truncate text-xs leading-5 text-neutral-500">
+                              {userEmail}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 py-2">
+                        <button
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => handleNavigate("/my-profile")}
+                          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-neutral-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/70 hover:text-neutral-900"
+                        >
+                          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-sm">
+                            <svg
+                              className="h-4 w-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                              />
+                            </svg>
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block">My Profile</span>
+                            <span className="block text-xs font-normal text-neutral-500">
+                              View your account details and activity
+                            </span>
+                          </span>
+                          <svg
+                            className="h-4 w-4 text-neutral-300 transition-transform duration-200 group-hover:translate-x-0.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={async () => {
+                            closeMenus();
+                            await auth.logout();
+                            navigate("/login");
+                          }}
+                          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-danger transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-red-50/70"
+                        >
+                          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-danger shadow-sm">
+                            <svg
+                              className="h-4 w-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                              />
+                            </svg>
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block">Sign out</span>
+                            <span className="block text-xs font-normal text-neutral-500">
+                              End your current session
+                            </span>
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleNavigate("/login")}
+                >
+                  Sign in
+                </Button>
+              )}
+            </div>
           </div>
-        ) : (
-          <button
-            className="login-button px-5 py-2 rounded-full"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => navigate('/login')}
+        </div>
+      </header>
+
+      {mobileMenuOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-[2px] md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div
+            ref={mobileMenuRef}
+            className="fixed right-3 top-[92px] z-50 w-[min(88vw,360px)] overflow-hidden rounded-[24px] border border-white/70 bg-white/98 p-2 shadow-[0_24px_70px_rgba(37,99,235,0.22)] backdrop-blur-2xl md:hidden animate-fade-slide-up"
           >
-            Login
-          </button>
-        )}
-      </div>
-    </nav>
+            <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 px-4 py-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+                Navigation
+              </p>
+              <p className="mt-1 text-sm font-medium text-neutral-700">
+                Quick access to the main sections
+              </p>
+            </div>
+
+            <div className="space-y-1 py-2">
+              {primaryNavItems.map((item) => (
+                <button
+                  key={item.path}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => handleNavigate(item.path)}
+                  className={[
+                    "flex w-full items-start gap-3 rounded-2xl px-4 py-3 text-left transition-all duration-200 ease-out",
+                    isActive(item.path)
+                      ? "bg-blue-50/80 text-brand-primary shadow-sm"
+                      : "text-neutral-700 hover:-translate-y-0.5 hover:bg-white/75 hover:shadow-sm",
+                  ].join(" ")}
+                >
+                  <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-sm">
+                    {item.label.charAt(0)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-neutral-900">
+                      {item.label}
+                    </span>
+                    <span className="block text-xs leading-5 text-neutral-500">
+                      {item.description}
+                    </span>
+                  </span>
+                </button>
+              ))}
+
+              {smartMenuSections.map((section) => (
+                <div
+                  key={section.title}
+                  className="rounded-2xl bg-white/65 p-2"
+                >
+                  <div className="px-2 pb-2 pt-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+                      {section.title}
+                    </p>
+                    <p className="mt-1 text-[11px] leading-5 text-neutral-500">
+                      {section.description}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    {section.items.map((item) => (
+                      <button
+                        key={item.path}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleNavigate(item.path)}
+                        className={[
+                          "flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition-all duration-200 ease-out",
+                          isActive(item.path)
+                            ? "bg-blue-50/80 text-brand-primary shadow-sm"
+                            : "text-neutral-700 hover:-translate-y-0.5 hover:bg-white/75 hover:shadow-sm",
+                        ].join(" ")}
+                      >
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 text-[10px] font-bold text-white shadow-sm">
+                          {item.icon}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[13px] font-semibold text-neutral-900">
+                            {item.label}
+                          </span>
+                          <span className="block text-xs leading-5 text-neutral-500">
+                            {item.description}
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {auth.isAuthenticated && auth.user?.empName ? (
+                <div className="rounded-2xl bg-white/65 p-2">
+                  <div className="px-2 pb-2 pt-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+                      Profile
+                    </p>
+                  </div>
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleNavigate("/my-profile")}
+                    className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-neutral-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/75 hover:text-neutral-900"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 text-white shadow-sm">
+                      {profileInitial}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold text-neutral-900">
+                        {userName}
+                      </span>
+                      <span className="block text-xs leading-5 text-neutral-500">
+                        {userRoleLabel}
+                      </span>
+                    </span>
+                  </button>
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={async () => {
+                      closeMenus();
+                      await auth.logout();
+                      navigate("/login");
+                    }}
+                    className="mt-1 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-danger transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-red-50/70"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-danger shadow-sm">
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        />
+                      </svg>
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold">Sign out</span>
+                      <span className="block text-xs leading-5 text-neutral-500">
+                        End your current session
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 }

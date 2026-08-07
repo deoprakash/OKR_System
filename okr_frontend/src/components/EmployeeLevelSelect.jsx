@@ -1,17 +1,25 @@
-import React from 'react';
+import React from "react";
+import Select from "./ui/Select";
 
-const EmployeeLevelSelect = ({ value, onChange, options, disabled = false }) => (
-  <select
-    className={`w-full p-2 border border-gray-300 rounded text-lg ${disabled ? 'bg-gray-100' : ''}`}
+const EmployeeLevelSelect = ({
+  value,
+  onChange,
+  options,
+  disabled = false,
+}) => (
+  <Select
+    className="text-lg"
     value={value}
     onChange={onChange}
     disabled={disabled}
   >
     <option value="">Select Level</option>
     {options.map((opt, idx) => (
-      <option key={idx} value={opt}>{opt}</option>
+      <option key={idx} value={opt}>
+        {opt}
+      </option>
     ))}
-  </select>
+  </Select>
 );
 
 export default EmployeeLevelSelect;

@@ -1,30 +1,34 @@
-import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import EmployeeMaster from './pages/EmployeeMaster';
-import AdminUsers from './pages/AdminUsers';
-import OKRWorkspaceLevel1 from './pages/OKRWorkspaceLevel1';
-import OKRWorkspaceLevel2 from './pages/OKRWorkspaceLevel2';
-import OKRWorkspaceLevel3 from './pages/OKRWorkspaceLevel3';
-import OKRWorkspaceLevel4 from './pages/OKRWorkspaceLevel4';
-import OKRWorkspaceLevel5 from './pages/OKRWorkspaceLevel5';
-import OKRWorkspaceLevel6 from './pages/OKRWorkspaceLevel6';
-import OKRWorkspaceLevel7 from './pages/OKRWorkspaceLevel7';
-import OKRPerformance from './pages/OKRPerformance';
-import MyProfile from './pages/MyProfile';
-import Setup from './pages/Setup';
-import ChangePassword from './pages/ChangePassword';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import { useAuth } from './context/useAuth';
+import {
+  BrowserRouter,
+  HashRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { useEffect } from "react";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import EmployeeMaster from "./pages/EmployeeMaster";
+import AdminUsers from "./pages/AdminUsers";
+import OKRWorkspace from "./pages/OKRWorkspace";
+import OKRPerformance from "./pages/OKRPerformance";
+import MyProfile from "./pages/MyProfile";
+import Setup from "./pages/Setup";
+import ChangePassword from "./pages/ChangePassword";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import { useAuth } from "./context/useAuth";
 import Analytics from "./pages/Analytics";
 
 function Protected({ children, adminOnly = false }) {
   const auth = useAuth();
 
   if (auth.loading) {
-    return <div className="min-h-screen flex items-center justify-center"><div className="card p-6">Loading…</div></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="card p-6">Loading…</div>
+      </div>
+    );
   }
 
   if (!auth.isAuthenticated) {
@@ -42,7 +46,11 @@ function ProtectedLevel({ children, level }) {
   const auth = useAuth();
 
   if (auth.loading) {
-    return <div className="min-h-screen flex items-center justify-center"><div className="card p-6">Loading…</div></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="card p-6">Loading…</div>
+      </div>
+    );
   }
 
   if (!auth.isAuthenticated) {
@@ -57,42 +65,98 @@ function ProtectedLevel({ children, level }) {
 }
 
 function App() {
-  const Router = window && window.location && window.location.protocol === 'file:'
-    ? HashRouter
-    : BrowserRouter;
+  const Router =
+    window && window.location && window.location.protocol === "file:"
+      ? HashRouter
+      : BrowserRouter;
   // Ensure clicks on inputs re-focus the window (helps Electron when window loses focus)
   useEffect(() => {
+    const revealSelector = ".scroll-reveal, [data-reveal], .glass-card, .card";
+
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.14,
+        rootMargin: "0px 0px -8% 0px",
+      },
+    );
+
+    const observeReveals = (root = document) => {
+      root.querySelectorAll(revealSelector).forEach((element) => {
+        if (element.dataset.revealObserved === "true") return;
+        element.dataset.revealObserved = "true";
+        revealObserver.observe(element);
+      });
+    };
+
+    observeReveals();
+
+    const mutationObserver = new MutationObserver(() => {
+      observeReveals();
+    });
+
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
     function ensureFocusForTarget(t) {
       try {
-        const isInput = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT');
+        const isInput =
+          t &&
+          (t.tagName === "INPUT" ||
+            t.tagName === "TEXTAREA" ||
+            t.tagName === "SELECT");
         if (!isInput) return;
-        if (typeof document.hasFocus === 'function' && !document.hasFocus() && typeof window.focus === 'function') {
-          try { window.focus(); } catch (err) { void err; }
+        if (
+          typeof document.hasFocus === "function" &&
+          !document.hasFocus() &&
+          typeof window.focus === "function"
+        ) {
+          try {
+            window.focus();
+          } catch (err) {
+            void err;
+          }
         }
         setTimeout(() => {
           try {
-            if (t && typeof t.focus === 'function') t.focus();
-          } catch (err) { void err; }
+            if (t && typeof t.focus === "function") t.focus();
+          } catch (err) {
+            void err;
+          }
         }, 10);
-      } catch (err) { void err; }
+      } catch (err) {
+        void err;
+      }
     }
     function onMouseDown(e) {
       try {
         const t = e.target;
         ensureFocusForTarget(t);
-      } catch (err) { void err; }
+      } catch (err) {
+        void err;
+      }
     }
     function onFocusIn(e) {
       try {
         const t = e.target;
         ensureFocusForTarget(t);
-      } catch (err) { void err; }
+      } catch (err) {
+        void err;
+      }
     }
-    document.addEventListener('mousedown', onMouseDown, true);
-    document.addEventListener('focusin', onFocusIn, true);
+    document.addEventListener("mousedown", onMouseDown, true);
+    document.addEventListener("focusin", onFocusIn, true);
     return () => {
-      document.removeEventListener('mousedown', onMouseDown, true);
-      document.removeEventListener('focusin', onFocusIn, true);
+      mutationObserver.disconnect();
+      revealObserver.disconnect();
+      document.removeEventListener("mousedown", onMouseDown, true);
+      document.removeEventListener("focusin", onFocusIn, true);
     };
   }, []);
   return (
@@ -104,18 +168,103 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<Home />} />
-        <Route path="/my-profile" element={<Protected><MyProfile /></Protected>} />
-        <Route path="/employee-master" element={<Protected adminOnly><EmployeeMaster /></Protected>} />
-        <Route path="/admin-users" element={<Protected adminOnly><AdminUsers /></Protected>} />
-        <Route path="/okr-workspace-level-1" element={<ProtectedLevel level={1}><OKRWorkspaceLevel1 /></ProtectedLevel>} />
-        <Route path="/okr-workspace-level-2" element={<ProtectedLevel level={2}><OKRWorkspaceLevel2 /></ProtectedLevel>} />
-        <Route path="/okr-workspace-level-3" element={<ProtectedLevel level={3}><OKRWorkspaceLevel3 /></ProtectedLevel>} />
-        <Route path="/okr-workspace-level-4" element={<ProtectedLevel level={4}><OKRWorkspaceLevel4 /></ProtectedLevel>} />
-        <Route path="/okr-workspace-level-5" element={<ProtectedLevel level={5}><OKRWorkspaceLevel5 /></ProtectedLevel>} />
-        <Route path="/okr-workspace-level-6" element={<ProtectedLevel level={6}><OKRWorkspaceLevel6 /></ProtectedLevel>} />
-        <Route path="/okr-workspace-level-7" element={<ProtectedLevel level={7}><OKRWorkspaceLevel7 /></ProtectedLevel>} />
-        <Route path="/okr-performance" element={<Protected><OKRPerformance /></Protected>} />
-        <Route path="/analytics" element={ <Protected> <Analytics /> </Protected>} />
+        <Route
+          path="/my-profile"
+          element={
+            <Protected>
+              <MyProfile />
+            </Protected>
+          }
+        />
+        <Route
+          path="/employee-master"
+          element={
+            <Protected adminOnly>
+              <EmployeeMaster />
+            </Protected>
+          }
+        />
+        <Route
+          path="/admin-users"
+          element={
+            <Protected adminOnly>
+              <AdminUsers />
+            </Protected>
+          }
+        />
+        <Route
+          path="/okr-workspace-level-1"
+          element={
+            <ProtectedLevel level={1}>
+              <OKRWorkspace level={1} />
+            </ProtectedLevel>
+          }
+        />
+        <Route
+          path="/okr-workspace-level-2"
+          element={
+            <ProtectedLevel level={2}>
+              <OKRWorkspace level={2} />
+            </ProtectedLevel>
+          }
+        />
+        <Route
+          path="/okr-workspace-level-3"
+          element={
+            <ProtectedLevel level={3}>
+              <OKRWorkspace level={3} />
+            </ProtectedLevel>
+          }
+        />
+        <Route
+          path="/okr-workspace-level-4"
+          element={
+            <ProtectedLevel level={4}>
+              <OKRWorkspace level={4} />
+            </ProtectedLevel>
+          }
+        />
+        <Route
+          path="/okr-workspace-level-5"
+          element={
+            <ProtectedLevel level={5}>
+              <OKRWorkspace level={5} />
+            </ProtectedLevel>
+          }
+        />
+        <Route
+          path="/okr-workspace-level-6"
+          element={
+            <ProtectedLevel level={6}>
+              <OKRWorkspace level={6} />
+            </ProtectedLevel>
+          }
+        />
+        <Route
+          path="/okr-workspace-level-7"
+          element={
+            <ProtectedLevel level={7}>
+              <OKRWorkspace level={7} />
+            </ProtectedLevel>
+          }
+        />
+        <Route
+          path="/okr-performance"
+          element={
+            <Protected>
+              <OKRPerformance />
+            </Protected>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <Protected>
+              {" "}
+              <Analytics />{" "}
+            </Protected>
+          }
+        />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

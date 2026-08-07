@@ -1,154 +1,230 @@
-
 import React from "react";
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import { motion } from "framer-motion";
+import NavBar from "../components/NavBar";
+import Footer from "../components/Footer";
+import Button from "../components/ui/Button";
+import Badge from "../components/ui/Badge";
 
-const highlights = [
-  { value: "92%", label: "Objectives on track", desc: "See progress across teams in one live view." },
-  { value: "4.8x", label: "Faster alignment", desc: "Cascade company goals into team and individual OKRs." },
-  { value: "1,200+", label: "Key results tracked", desc: "Monitor confidence, ownership, and weekly reviews." },
+const STATS = [
+  { label: "Active OKRs", value: "1,240+", color: "text-brand-primary" },
+  { label: "Org Levels", value: "7", color: "text-brand-accent" },
+  { label: "Avg Completion", value: "87%", color: "text-success" },
+  { label: "Quarters Tracked", value: "4", color: "text-warning" },
 ];
 
-const pillars = [
-  { title: "Set direction", text: "Translate strategy into measurable outcomes and visible priorities." },
-  { title: "Cascade clearly", text: "Align every department, team, and employee with a shared focus." },
-  { title: "Review weekly", text: "Track signals, update confidence, and remove blockers early." },
-  { title: "Adjust fast", text: "Use performance data to refine plans without losing momentum." },
-];
-
-const features = [
-  "Live objective health and key result tracking",
-  "Role-based OKR workspaces for levels 1–7",
-  "Weekly check-ins, confidence scoring, and comment history",
-  "Visibility for managers, admins, and cross-functional teams",
-  "Performance analytics that surface progress and risk",
-  "A clean workflow for planning, reviewing, and closing cycles",
-];
-
-const cycleSteps = [
-  { step: "01", title: "Plan", text: "Define clear objectives with measurable results and owners." },
-  { step: "02", title: "Cascade", text: "Distribute goals through leadership, departments, and contributors." },
-  { step: "03", title: "Track", text: "Update progress, comments, and confidence scores each week." },
-  { step: "04", title: "Improve", text: "Learn from outcomes and roll insights into the next cycle." },
+const FEATURES = [
+  {
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    ),
+    title: "Real-time Analytics",
+    desc: "Track progress with live dashboards and performance graphs across all 7 organizational levels.",
+    color: "bg-brand-light text-brand-primary",
+  },
+  {
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+    title: "Smart OKR Designer",
+    desc: "Define objectives and key results with a guided, step-by-step stepper workflow for every level.",
+    color: "bg-brand-accent-light text-brand-accent",
+  },
+  {
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+    title: "Hierarchy Alignment",
+    desc: "Visualize how L1 objectives cascade down to L7, ensuring every team is aligned to the mission.",
+    color: "bg-success-light text-success-text",
+  },
 ];
 
 export default function Home() {
   const navigate = useNavigate();
   const auth = useAuth();
   const userLevel = Number(auth.user?.empLevel || 1);
-
   const designerPath = auth.isAdmin
     ? "/okr-workspace-level-1"
     : `/okr-workspace-level-${Math.min(Math.max(userLevel, 1), 7)}`;
-
   const primaryAction = auth.isAuthenticated ? designerPath : "/login";
-  const secondaryAction = auth.isAuthenticated ? "/okr-performance" : "#okr-flow";
+  const secondaryAction = auth.isAuthenticated ? "/okr-performance" : "/login";
 
   return (
-    <div className="min-h-screen flex flex-col bg-transparent">
+    <div className="min-h-screen flex flex-col bg-surface-base">
       <NavBar />
-      
-      <main className="flex-1">
-        <section className="hero-shell section shift-bg">
-          <div className="objecto-title-wrapper">
-            <h1 className="objecto-title">
-              Objecto<span className="tm">™</span>
-            </h1>
-          </div>
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
-              <div className="rise-in">
-                <div className="hero-badge mb-6">
-                  <span className="badge-dot" />
-                  Goal alignment platform
-                </div>
 
-                <h1 className="hero-title">
-                  Align goals,
-                  <br />
-                  track outcomes,
-                  <br />
-                  move faster.
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="relative overflow-hidden py-20 md:py-28">
+          {/* Mesh gradient background */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply blur-3xl opacity-30 animate-pulse-soft" />
+            <div className="absolute top-10 right-1/4 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply blur-3xl opacity-25 animate-pulse-soft" style={{ animationDelay: '1s' }} />
+            <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply blur-3xl opacity-30" />
+          </div>
+
+          <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+              {/* Left: Headline */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="max-w-xl"
+              >
+                <Badge variant="blue" className="mb-6">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-primary inline-block" />
+                  Goal alignment platform
+                </Badge>
+
+                <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-neutral-900 leading-[1.15] mb-6">
+                  Align goals,<br />
+                  track outcomes,<br />
+                  <span className="text-brand-primary">move faster.</span>
                 </h1>
 
-                <p className="hero-copy mt-6">
-                  OKR System helps leaders define priorities, connect teams to strategy, and review progress with precision.
-                  Build clear objectives, measurable key results, and a cadence that keeps every cycle visible.
+                <p className="text-lg text-neutral-500 leading-relaxed mb-8 max-w-md">
+                  Objecto helps leaders define priorities, connect teams to strategy, and review progress with precision across all 7 organizational levels.
                 </p>
 
-                <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                  <button onMouseDown={(e) => e.preventDefault()} className="hero-primary" onClick={() => navigate(primaryAction)}>
-                    {auth.isAuthenticated ? "Open workspace" : "Get started"}
-                  </button>
-                  <a className="hero-secondary inline-flex items-center justify-center" href={secondaryAction}>
-                    {auth.isAuthenticated ? "View performance" : "Explore OKR flow"}
-                  </a>
+                <div className="flex flex-wrap gap-3">
+                  <Button variant="primary" size="lg" onClick={() => navigate(primaryAction)}>
+                    {auth.isAuthenticated ? "Open Workspace" : "Get started free"}
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Button>
+                  <Button variant="secondary" size="lg" onClick={() => navigate(secondaryAction)}>
+                    {auth.isAuthenticated ? "View Performance" : "See how it works"}
+                  </Button>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="relative">
-                <div className="floating-orb w-40 h-40 -top-6 -left-8" />
-                <div className="floating-orb w-28 h-28 top-16 right-4" style={{ animationDelay: '1.3s' }} />
+              {/* Right: Preview card */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96, y: 16 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.15, ease: "easeOut" }}
+                className="relative"
+              >
+                {/* Glow effect behind card */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl blur-2xl opacity-50 scale-95 translate-y-4" />
 
-                <div className="hero-panel p-5 sm:p-6 lg:p-8 relative z-10">
-                  <div className="flex items-center justify-between gap-4 mb-6">
+                <div className="relative bg-white rounded-2xl border border-neutral-200 shadow-card-lg overflow-hidden">
+                  {/* Card header */}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
                     <div>
-                      <p className="metric-label">Current cycle</p>
-                      <h2 className="mt-2 text-2xl font-bold">Q2 OKR command center</h2>
+                      <p className="text-xs font-semibold text-neutral-400 uppercase tracking-widest mb-0.5">Current Cycle</p>
+                      <h2 className="text-lg font-bold text-neutral-900">Q2 OKR Command Center</h2>
                     </div>
-                    <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs uppercase tracking-[0.24em] text-(--accent)">
+                    <Badge variant="green">
+                      <span className="w-1.5 h-1.5 rounded-full bg-success inline-block" />
                       Live
-                    </div>
+                    </Badge>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="preview-card p-4 pulse-soft">
+                  <div className="p-6 space-y-4">
+                    {/* Progress section */}
+                    <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100">
                       <div className="flex items-center justify-between mb-3">
-                        <span className="info-pill">Objective health</span>
-                        <span className="text-xs text-(--muted)">87% complete</span>
+                        <span className="text-sm font-semibold text-neutral-700">Objective Health</span>
+                        <span className="text-sm font-bold text-brand-primary">87% complete</span>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
-                        <div className="h-full w-[87%] rounded-full bg-linear-to-r from-cyan-400 to-blue-500" />
+                      <div className="w-full h-2 rounded-full bg-neutral-200 overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-accent"
+                          initial={{ width: 0 }}
+                          animate={{ width: '87%' }}
+                          transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
+                        />
                       </div>
-                      <p className="mt-4 text-sm">Priority objective: improve customer adoption across core business units.</p>
+                      <p className="text-xs text-neutral-500 mt-2">Improve customer adoption across core business units.</p>
                     </div>
 
-                    <div className="preview-card p-4">
-                      <p className="metric-label mb-2">Next review</p>
-                      <div className="text-3xl font-bold text-white">Thursday</div>
-                      <p className="mt-2 text-sm">Weekly check-ins with owners, blockers, and confidence updates.</p>
-                    </div>
-
-                    <div className="preview-card p-4 sm:col-span-2">
-                      <div className="flex items-center justify-between gap-3 mb-4">
-                        <div>
-                          <p className="metric-label">Example key results</p>
-                          <h3 className="mt-2 text-xl font-semibold">Quarterly target dashboard</h3>
+                    {/* Stats row */}
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { label: "OKRs Active", value: "24" },
+                        { label: "Levels", value: "7" },
+                        { label: "Next Review", value: "Thu" },
+                      ].map((stat) => (
+                        <div key={stat.label} className="p-3 rounded-xl bg-neutral-50 border border-neutral-100 text-center">
+                          <div className="text-xl font-bold text-neutral-900">{stat.value}</div>
+                          <div className="text-xs text-neutral-500 mt-0.5">{stat.label}</div>
                         </div>
-                        <span className="info-pill">Aligned</span>
-                      </div>
-                      <div className="grid gap-3 sm:grid-cols-3">
-                        {[
-                          ["Increase active users", "76%"],
-                          ["Ship release milestones", "62%"],
-                          ["Improve NPS", "+12"],
-                        ].map(([label, value]) => (
-                          <div key={label} className="rounded-2xl border border-white/8 bg-white/3 p-4">
-                            <div className="text-sm text-(--muted)">{label}</div>
-                            <div className="mt-2 text-2xl font-bold text-white">{value}</div>
-                          </div>
-                        ))}
-                      </div>
+                      ))}
                     </div>
+
+                    {/* Level indicators */}
+                    <div className="flex gap-2">
+                      {[1,2,3,4,5,6,7].map(level => (
+                        <div
+                          key={level}
+                          className={`flex-1 h-1.5 rounded-full ${level <= 4 ? 'bg-brand-primary' : level <= 6 ? 'bg-brand-accent' : 'bg-neutral-200'}`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xs text-neutral-400 text-center">7 levels of OKR alignment active</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
+            </div>
+
+            {/* Stats bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.45 }}
+              className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4"
+            >
+              {STATS.map((s, i) => (
+                <div key={i} className="bg-white rounded-2xl border border-neutral-200 shadow-card px-6 py-5 text-center">
+                  <div className={`text-3xl font-bold mb-1 ${s.color}`}>{s.value}</div>
+                  <div className="text-sm text-neutral-500 font-medium">{s.label}</div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Features */}
+        <section className="py-16 bg-white border-t border-neutral-100">
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl font-bold text-neutral-900 mb-3">Everything you need to run OKRs</h2>
+              <p className="text-neutral-500 max-w-lg mx-auto">From strategy to execution, Objecto covers the full OKR lifecycle for enterprise teams.</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {FEATURES.map((f, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.4 }}
+                  className="p-6 rounded-2xl border border-neutral-100 bg-surface-base hover:border-neutral-200 hover:shadow-card-md transition-all duration-200"
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${f.color}`}>
+                    {f.icon}
+                  </div>
+                  <h3 className="font-semibold text-neutral-900 mb-2">{f.title}</h3>
+                  <p className="text-sm text-neutral-500 leading-relaxed">{f.desc}</p>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>
       </main>
+
       <Footer />
     </div>
   );

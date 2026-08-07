@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createEmployee, getSetupStatus } from "../lib/api";
+import Card from "../components/ui/Card";
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
 
 export default function Setup() {
   const navigate = useNavigate();
@@ -54,86 +57,112 @@ export default function Setup() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="card max-w-md w-full p-6">
-        <h2 className="text-2xl font-bold mb-4">
-          Create Administrator Account
-        </h2>
-        {error && <div className="mb-3 text-red-600">{error}</div>}
-        {!setupEnabled && (
-          <div className="mb-3 text-yellow-700">
-            Admin already exists. Registration disabled.
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      
+      {/* Decorative background elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-primary rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+      <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
+      
+      <Card className="max-w-md w-full space-y-8 p-10 bg-white/80 backdrop-blur-md shadow-2xl border border-white z-10 relative rounded-2xl">
+        <div className="text-center">
+          <h2 className="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight">
+            Initial Setup
+          </h2>
+          <p className="mt-3 text-sm text-slate-500">
+            Create the primary administrator account
+          </p>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+            <div className="flex">
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
           </div>
         )}
-        {success && <div className="mb-3 text-green-600">{success}</div>}
+
+        {success && (
+          <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-md">
+            <div className="flex">
+              <div className="ml-3">
+                <p className="text-sm text-green-700">{success}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!setupEnabled && !success && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-md">
+            <div className="flex">
+              <div className="ml-3">
+                <p className="text-sm text-yellow-700">Admin already exists. Registration disabled.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {!success && setupEnabled && (
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Name</label>
-              <input
-                className="w-full border px-3 py-2 rounded"
+          <form className="mt-8 space-y-6" onSubmit={onSubmit}>
+            <div className="space-y-4">
+              <Input
+                label="Full Name"
+                type="text"
+                required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                required
+                placeholder="Jane Doe"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
-              <input
+              
+              <Input
+                label="Email Address"
                 type="email"
-                className="w-full border px-3 py-2 rounded"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                placeholder="admin@company.com"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Cell Number
-              </label>
-              <input
+
+              <Input
+                label="Cell Number"
                 type="text"
-                className="w-full border px-3 py-2 rounded"
+                required
                 value={cellNumber}
                 onChange={(e) => setCellNumber(e.target.value)}
-                placeholder="e.g. 919999999999"
-                required
+                placeholder="+1 234 567 890"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
-              <input
+
+              <Input
+                label="Password"
                 type="password"
-                className="w-full border px-3 py-2 rounded"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                placeholder="Create a strong password"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Confirm Password
-              </label>
-              <input
+
+              <Input
+                label="Confirm Password"
                 type="password"
-                className="w-full border px-3 py-2 rounded"
+                required
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                required
+                placeholder="Confirm your password"
               />
             </div>
-            <div className="flex items-center justify-between">
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn btn-primary"
-              >
-                {loading ? "Creating..." : "Create Administrator"}
-              </button>
-            </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full py-3 text-base shadow-md mt-6"
+              disabled={loading}
+            >
+              {loading ? "Creating Account..." : "Complete Setup"}
+            </Button>
           </form>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

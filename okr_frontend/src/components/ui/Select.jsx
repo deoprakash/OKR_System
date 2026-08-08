@@ -125,7 +125,7 @@ const Select = React.forwardRef(
           </button>
 
           {open && !disabled && (
-            <div className="absolute left-0 right-0 top-full z-40 mt-2 overflow-hidden rounded-[24px] border border-white/70 bg-white/88 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.16)] backdrop-blur-2xl animate-fade-slide-up">
+            <div className="absolute left-0 right-0 top-full z-40 mt-2 overflow-hidden rounded-[24px] border border-white/70 bg-white/88 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.32)] backdrop-blur-2xl animate-fade-slide-up">
               <div className="max-h-72 space-y-1 overflow-y-auto px-1 pb-1 scrollbar-thin">
                 {optionItems.map((option) => {
                   const isSelected = selectedValue === option.value;

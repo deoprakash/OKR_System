@@ -331,7 +331,7 @@ const OKRWorkspace = ({ level }) => {
                       return (
                         <>
                           <Select
-                            label={`Parent Employee — Level ${level - 1}`}
+                            label={`Reporting Manager - Level ${level - 1}`}
                             value={selectedParentEmpCode}
                             onChange={(e) => {
                               setSelectedParentEmpCode(e.target.value);
@@ -348,7 +348,7 @@ const OKRWorkspace = ({ level }) => {
 
                           {selectedParentEmpCode && (
                             <Select
-                              label={`Parent OKR — Level ${level - 1}`}
+                              label={`Aligned Objective - Level${level - 1}`}
                               value={selectedParentOkrCode}
                               onChange={(e) => setSelectedParentOkrCode(e.target.value)}
                             >

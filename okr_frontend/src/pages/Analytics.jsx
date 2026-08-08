@@ -95,7 +95,7 @@ const Analytics = () => {
           </div>
 
           {/* Filter card */}
-          <div className="bg-white rounded-2xl border border-neutral-200 shadow-card p-6 mb-6">
+          <div className="bg-white rounded-2xl border-2 border-neutral-200 shadow-card-md p-6 mb-6">
             <h2 className="text-sm font-semibold text-neutral-700 mb-4">Search Parameters</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
               <Select
@@ -154,7 +154,7 @@ const Analytics = () => {
                 className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6"
               >
                 {EMP_META.map((m, i) => (
-                  <div key={i} className="bg-white rounded-xl border border-neutral-200 shadow-card px-4 py-3">
+                  <div key={i} className="bg-white rounded-xl border-2 border-neutral-200 shadow-card-md px-4 py-3">
                     <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">{m.label}</p>
                     <p className="font-semibold text-neutral-800 text-sm truncate" title={m.value}>{m.value}</p>
                   </div>
@@ -173,7 +173,7 @@ const Analytics = () => {
 
           {/* Empty state */}
           {!loading && !employee && (
-            <div className="bg-white rounded-2xl border border-neutral-200 shadow-card">
+            <div className="bg-white rounded-2xl border-2 border-neutral-200 shadow-card-md">
               <EmptyState
                 icon={<svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
                 title="No data to display"
@@ -211,7 +211,7 @@ const Analytics = () => {
                   const avgColor = avgNum >= 75 ? 'text-success' : avgNum >= 50 ? 'text-warning' : 'text-danger';
 
                   return (
-                    <div key={perf.okrId} className="bg-white rounded-2xl border border-neutral-200 shadow-card overflow-hidden">
+                    <div key={perf.okrId} className="bg-white rounded-2xl border-2 border-neutral-200 shadow-card-md overflow-hidden">
                       {/* Card header */}
                       <div className="flex items-start justify-between px-6 py-5 border-b border-neutral-100">
                         <div>

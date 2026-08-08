@@ -119,7 +119,7 @@ export default function Home() {
                 {/* Glow effect behind card */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl blur-2xl opacity-50 scale-95 translate-y-4" />
 
-                <div className="relative bg-white rounded-2xl border border-neutral-200 shadow-card-lg overflow-hidden">
+                <div className="relative bg-white rounded-2xl border-2 border-neutral-200 shadow-card-lg overflow-hidden">
                   {/* Card header */}
                   <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
                     <div>
@@ -187,7 +187,7 @@ export default function Home() {
               className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4"
             >
               {STATS.map((s, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-neutral-200 shadow-card px-6 py-5 text-center">
+                <div key={i} className="bg-white rounded-2xl border-2 border-neutral-200 shadow-card-md px-6 py-5 text-center">
                   <div className={`text-3xl font-bold mb-1 ${s.color}`}>{s.value}</div>
                   <div className="text-sm text-neutral-500 font-medium">{s.label}</div>
                 </div>
@@ -211,7 +211,7 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1, duration: 0.4 }}
-                  className="p-6 rounded-2xl border border-neutral-100 bg-surface-base hover:border-neutral-200 hover:shadow-card-md transition-all duration-200"
+                  className="p-6 rounded-2xl border-2 border-neutral-200 bg-white shadow-card hover:shadow-card-md hover:border-neutral-300 transition-all duration-200"
                 >
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${f.color}`}>
                     {f.icon}

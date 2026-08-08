@@ -226,7 +226,7 @@ export default function NavBar() {
   return (
     <>
       <header className="sticky top-4 z-50 px-3 sm:px-4 lg:px-6">
-        <div className="mx-auto max-w-screen-xl rounded-[24px] border border-white/70 bg-white/72 px-4 sm:px-5 lg:px-6 shadow-[0_20px_60px_rgba(37,99,235,0.14)] backdrop-blur-2xl">
+        <div className="mx-auto max-w-screen-xl rounded-[24px] border border-white/70 bg-white/72 px-4 sm:px-5 lg:px-6 shadow-[0_20px_60px_rgba(37,99,235,0.28)] backdrop-blur-2xl">
           <div className="flex h-[70px] items-center justify-between gap-4">
             <button
               className="group flex shrink-0 items-center gap-3"
@@ -299,7 +299,7 @@ export default function NavBar() {
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute left-0 top-full mt-3 w-[320px] overflow-hidden rounded-[24px] border border-white/70 bg-white/85 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.16)] backdrop-blur-2xl animate-fade-slide-up">
+                    <div className="absolute left-0 top-full mt-3 w-[320px] overflow-hidden rounded-[24px] border border-white/70 bg-white/85 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.32)] backdrop-blur-2xl animate-fade-slide-up">
                       <div className="max-h-[380px] space-y-3 overflow-y-auto px-1 pb-1 scrollbar-thin">
                         {smartMenuSections.map((section) => (
                           <div
@@ -385,7 +385,7 @@ export default function NavBar() {
                   </button>
 
                   {profileMenuOpen && (
-                    <div className="absolute right-0 top-full mt-3 w-[300px] overflow-hidden rounded-[24px] border border-white/70 bg-white/98 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.16)] backdrop-blur-2xl animate-fade-slide-up">
+                    <div className="absolute right-0 top-full mt-3 w-[300px] overflow-hidden rounded-[24px] border border-white/70 bg-white/98 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.32)] backdrop-blur-2xl animate-fade-slide-up">
                       <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 px-4 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 text-base font-bold text-white shadow-sm">
@@ -503,7 +503,7 @@ export default function NavBar() {
           />
           <div
             ref={mobileMenuRef}
-            className="fixed right-3 top-[92px] z-50 w-[min(88vw,360px)] overflow-hidden rounded-[24px] border border-white/70 bg-white/98 p-2 shadow-[0_24px_70px_rgba(37,99,235,0.22)] backdrop-blur-2xl md:hidden animate-fade-slide-up"
+            className="fixed right-3 top-[92px] z-50 w-[min(88vw,360px)] overflow-hidden rounded-[24px] border border-white/70 bg-white/98 p-2 shadow-[0_24px_70px_rgba(37,99,235,0.38)] backdrop-blur-2xl md:hidden animate-fade-slide-up"
           >
             <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 px-4 py-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">

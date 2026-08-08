@@ -7,6 +7,15 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import Button from "../components/ui/Button";
@@ -23,45 +32,142 @@ const LEVEL_STYLES = {
     ring: "ring-blue-200",
     badge: "blue",
     node: "from-blue-500 to-cyan-400",
-    glow: "shadow-[0_18px_40px_rgba(37,99,235,0.18)]",
+    glow: "shadow-[0_18px_40px_rgba(37,99,235,0.32)]",
   },
   2: {
     ring: "ring-indigo-200",
     badge: "indigo",
     node: "from-indigo-500 to-blue-400",
-    glow: "shadow-[0_18px_40px_rgba(79,70,229,0.18)]",
+    glow: "shadow-[0_18px_40px_rgba(79,70,229,0.32)]",
   },
   3: {
     ring: "ring-emerald-200",
     badge: "green",
     node: "from-emerald-500 to-teal-400",
-    glow: "shadow-[0_18px_40px_rgba(16,185,129,0.18)]",
+    glow: "shadow-[0_18px_40px_rgba(16,185,129,0.32)]",
   },
   4: {
     ring: "ring-amber-200",
     badge: "yellow",
     node: "from-amber-500 to-orange-400",
-    glow: "shadow-[0_18px_40px_rgba(245,158,11,0.18)]",
+    glow: "shadow-[0_18px_40px_rgba(245,158,11,0.32)]",
   },
   5: {
     ring: "ring-purple-200",
     badge: "purple",
     node: "from-purple-500 to-fuchsia-400",
-    glow: "shadow-[0_18px_40px_rgba(168,85,247,0.18)]",
+    glow: "shadow-[0_18px_40px_rgba(168,85,247,0.32)]",
   },
   6: {
     ring: "ring-rose-200",
     badge: "red",
     node: "from-rose-500 to-pink-400",
-    glow: "shadow-[0_18px_40px_rgba(244,63,94,0.18)]",
+    glow: "shadow-[0_18px_40px_rgba(244,63,94,0.32)]",
   },
   7: {
     ring: "ring-slate-200",
     badge: "gray",
     node: "from-slate-500 to-slate-400",
-    glow: "shadow-[0_18px_40px_rgba(100,116,139,0.18)]",
+    glow: "shadow-[0_18px_40px_rgba(100,116,139,0.32)]",
   },
 };
+
+// ── Compact node-level sparkline ────────────────────────────────────────────
+function NodeOKRSparkline({ okrs }) {
+  // null = not yet fetched (loading)
+  if (okrs === null) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center rounded-2xl border-2 border-neutral-300 bg-white/80 backdrop-blur-sm animate-pulse shadow-[0_4px_20px_rgba(15,23,42,0.22)]"
+        style={{ width: 240, height: 150 }}
+      >
+        <div className="h-2 w-20 rounded bg-neutral-200 mb-2" />
+        <div className="h-1.5 w-14 rounded bg-neutral-100" />
+      </div>
+    );
+  }
+
+  // empty array = employee has no OKRs
+  if (okrs.length === 0) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 bg-white/80 backdrop-blur-sm shadow-[0_4px_20px_rgba(15,23,42,0.20)]"
+        style={{ width: 240, height: 150 }}
+      >
+        <p className="text-xs text-neutral-400 text-center px-3">No OKR data</p>
+      </div>
+    );
+  }
+
+  // Use the first OKR's quarterly percentages
+  const okr = okrs[0];
+  const data = [
+    { q: "Q1", pct: Number(okr.q1_percentage ?? 0) },
+    { q: "Q2", pct: Number(okr.q2_percentage ?? 0) },
+    { q: "Q3", pct: Number(okr.q3_percentage ?? 0) },
+    { q: "Q4", pct: Number(okr.q4_percentage ?? 0) },
+  ];
+
+  const maxPct = Math.max(...data.map((d) => d.pct));
+  const lineColor =
+    maxPct >= 75 ? "#10B981" : maxPct >= 50 ? "#F59E0B" : "#EF4444";
+
+  return (
+    <div
+      className="flex flex-col rounded-2xl border-2 border-neutral-300 bg-white shadow-[0_6px_24px_rgba(15,23,42,0.26)]"
+      style={{ width: 240, height: 150 }}
+    >
+      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400 text-center pt-2.5 pb-0">
+        OKR Performance
+      </p>
+      <div className="flex-1 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={data}
+            margin={{ top: 6, right: 12, left: -18, bottom: 4 }}
+          >
+            <XAxis
+              dataKey="q"
+              tick={{ fontSize: 10, fill: "#94a3b8" }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              domain={[0, 100]}
+              tick={{ fontSize: 10, fill: "#94a3b8" }}
+              tickFormatter={(v) => `${v}%`}
+              axisLine={false}
+              tickLine={false}
+              ticks={[0, 50, 100]}
+            />
+            <RechartsTooltip
+              contentStyle={{
+                fontSize: 11,
+                padding: "5px 10px",
+                borderRadius: 8,
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              }}
+              formatter={(val) => [`${val}%`, "Progress"]}
+              labelFormatter={(label) => label}
+            />
+            <ReferenceLine y={50} stroke="#e2e8f0" strokeDasharray="3 3" />
+            <Line
+              type="monotone"
+              dataKey="pct"
+              stroke={lineColor}
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: lineColor, strokeWidth: 0 }}
+              activeDot={{ r: 5.5, fill: lineColor }}
+              isAnimationActive={true}
+              animationDuration={600}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
 
 function CompletionRing({ value, size = 40 }) {
   const pct = value != null ? Math.min(100, Math.max(0, Number(value))) : null;
@@ -182,6 +288,8 @@ export default function OKRPerformance() {
   const [clickedNodeOKRs, setClickedNodeOKRs] = useState([]);
   const [clickedNodeOKRIndex, setClickedNodeOKRIndex] = useState("");
   const [visibleNodeIds, setVisibleNodeIds] = useState(null);
+  // Map<userId, OKR[]> — caches fetched OKRs for sparklines
+  const [nodeOKRData, setNodeOKRData] = useState(new Map());
 
   useEffect(() => {
     (async () => {
@@ -285,6 +393,32 @@ export default function OKRPerformance() {
     }
   }
 
+  // Batch-fetch OKRs for all visible nodes to populate sparklines
+  useEffect(() => {
+    if (!graphVisible || !visibleNodeIds || visibleNodeIds.size === 0) return;
+    const idsToFetch = [...visibleNodeIds].filter(
+      (uid) => !nodeOKRData.has(uid)
+    );
+    if (idsToFetch.length === 0) return;
+
+    Promise.allSettled(
+      idsToFetch.map((uid) =>
+        getEmployeeOKRs(uid).then((res) => ({ uid, okrs: res.data || [] }))
+      )
+    ).then((results) => {
+      setNodeOKRData((prev) => {
+        const next = new Map(prev);
+        results.forEach((result) => {
+          if (result.status === "fulfilled") {
+            next.set(result.value.uid, result.value.okrs);
+          }
+        });
+        return next;
+      });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [graphVisible, visibleNodeIds]);
+
   function handleClearSelection() {
     setGraphVisible(false);
     setDetailsCollapsed(false);
@@ -297,6 +431,7 @@ export default function OKRPerformance() {
     setHoveredNodeId(null);
     setTooltip(null);
     setError("");
+    setNodeOKRData(new Map());
   }
 
   function handleNodeClick(node) {
@@ -483,7 +618,7 @@ export default function OKRPerformance() {
             ].join(" ")}
           >
             <div className="space-y-6">
-              <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-card">
+              <div className="rounded-2xl border-2 border-neutral-200 bg-white p-6 shadow-card-md">
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                   <Select
                     label="Employee"
@@ -575,7 +710,7 @@ export default function OKRPerformance() {
                 )}
               </div>
 
-              <div className="rounded-3xl border border-neutral-200 bg-white p-4 shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+              <div className="rounded-3xl border-2 border-neutral-200 bg-white p-4 shadow-[0_8px_40px_rgba(15,23,42,0.28)]">
                 <div className="mb-4 flex items-center justify-between gap-3 px-2">
                   <div>
                     <h2 className="text-base font-bold text-neutral-900">
@@ -585,13 +720,12 @@ export default function OKRPerformance() {
                       Each row is one level, each node is one employee.
                     </p>
                   </div>
-                  <Badge variant="blue">{nodeCount} nodes</Badge>
                 </div>
 
                 {graphVisible ? (
                   <div
                     ref={graphWrapRef}
-                    className="relative overflow-auto rounded-[28px] border border-neutral-200 bg-[radial-gradient(circle_at_top,_rgba(219,234,254,0.7),_transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] p-6"
+                    className="relative overflow-auto rounded-[28px] border-2 border-neutral-200 bg-[radial-gradient(circle_at_top,_rgba(219,234,254,0.7),_transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] p-6"
                   >
                     <svg className="pointer-events-none absolute inset-0 h-full w-full">
                       {edgePaths.map((edge, index) => (
@@ -608,7 +742,7 @@ export default function OKRPerformance() {
                       ))}
                     </svg>
 
-                    <div className="relative space-y-10 min-w-[920px] pb-2 pt-2">
+                    <div className="relative space-y-14 min-w-[1100px] pb-4 pt-4">
                       {LEVELS.map((level) => {
                         const allItems = levelMap[level] || [];
                         const items = visibleNodeIds
@@ -629,7 +763,7 @@ export default function OKRPerformance() {
                               </div>
                             </div>
 
-                            <div className="flex flex-wrap items-start justify-center gap-5 xl:gap-6">
+                            <div className="flex flex-wrap items-start justify-center gap-6 xl:gap-8">
                               {items.length > 0 ? (
                                 items.map((employee) => {
                                   const isSelected =
@@ -638,71 +772,79 @@ export default function OKRPerformance() {
                                     hoveredNodeId === employee.userId;
                                   const graphNode = graphNodes.find(n => n.id === employee.userId);
                                   const managerName = graphNode ? graphNode.parentName : getManagerName(levelMap, employee);
+                                  const empOKRs = nodeOKRData.get(employee.userId) || null;
 
                                   return (
-                                    <button
+                                    <div
                                       key={employee.userId}
-                                      ref={(node) => {
-                                        if (node)
-                                          nodeRefs.current.set(
-                                            employee.userId,
-                                            node,
-                                          );
-                                        else
-                                          nodeRefs.current.delete(
-                                            employee.userId,
-                                          );
-                                      }}
-                                      type="button"
-                                      onClick={() =>
-                                        handleNodeClick({
-                                          employee,
-                                          parentName: managerName,
-                                        })
-                                      }
-                                      onMouseEnter={() =>
-                                        setHoveredNodeId(employee.userId)
-                                      }
-                                      onMouseLeave={() =>
-                                        setHoveredNodeId(null)
-                                      }
-                                      className={[
-                                        "relative inline-flex min-h-[110px] w-auto min-w-[220px] max-w-[320px] flex-col justify-between rounded-[22px] border px-4 py-3 text-left transition-all duration-200 ease-out",
-                                        "border-neutral-200 bg-white/95 text-neutral-900 backdrop-blur-sm hover:-translate-y-0.5 hover:bg-white/60 hover:shadow-[0_18px_40px_rgba(37,99,235,0.08)]",
-                                        isSelected
-                                          ? `${levelStyle.glow} ring-2 ${levelStyle.ring} bg-white`
-                                          : "shadow-sm",
-                                        isHovered
-                                          ? "scale-[1.02] border-white/70 bg-white/55"
-                                          : "",
-                                      ].join(" ")}
+                                      className="flex items-center gap-5"
                                     >
-                                      <div className="flex items-start gap-3">
-                                        <div className="min-w-0 flex-1">
-                                          <div className="flex items-center gap-2">
-                                            <span className="break-words text-sm font-semibold leading-5 text-neutral-900">
-                                              {employee.empName}
-                                            </span>
-                                            <span className="rounded-full border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-700">
-                                              L{level}
-                                            </span>
+                                      <button
+                                        ref={(node) => {
+                                          if (node)
+                                            nodeRefs.current.set(
+                                              employee.userId,
+                                              node,
+                                            );
+                                          else
+                                            nodeRefs.current.delete(
+                                              employee.userId,
+                                            );
+                                        }}
+                                        type="button"
+                                        onClick={() =>
+                                          handleNodeClick({
+                                            employee,
+                                            parentName: managerName,
+                                          })
+                                        }
+                                        onMouseEnter={() =>
+                                          setHoveredNodeId(employee.userId)
+                                        }
+                                        onMouseLeave={() =>
+                                          setHoveredNodeId(null)
+                                        }
+                                        className={[
+                                          "relative inline-flex min-h-[150px] w-auto min-w-[280px] max-w-[400px] flex-col justify-between rounded-[24px] border-2 px-5 py-4 text-left transition-all duration-200 ease-out",
+                                          "border-neutral-300 bg-white text-neutral-900 shadow-[0_6px_24px_rgba(15,23,42,0.22)] hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(37,99,235,0.30)]",
+                                          isSelected
+                                            ? `${levelStyle.glow} ring-2 ${levelStyle.ring} border-transparent bg-white`
+                                            : "",
+                                          isHovered
+                                            ? "scale-[1.02] border-blue-200 shadow-[0_16px_40px_rgba(37,99,235,0.28)]"
+                                            : "",
+                                        ].join(" ")}
+                                      >
+                                        <div className="flex items-start gap-3">
+                                          <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                              <span className="break-words text-base font-bold leading-6 text-neutral-900">
+                                                {employee.empName}
+                                              </span>
+                                              <span className="rounded-full border border-neutral-200 bg-neutral-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-700">
+                                                L{level}
+                                              </span>
+                                            </div>
+                                            <p className="mt-1.5 break-words text-sm leading-5 text-neutral-500">
+                                              {employee.empDesignation ||
+                                                "Unassigned designation"}
+                                            </p>
                                           </div>
-                                          <p className="mt-1 break-words text-xs leading-5 text-neutral-500">
-                                            {employee.empDesignation ||
-                                              "Unassigned designation"}
-                                          </p>
                                         </div>
-                                      </div>
 
-                                      <div className="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.18em] text-neutral-500">
-                                        <span>
-                                          {isSelected ? "Selected" : "Employee"}
-                                        </span>
-                                        <span className="max-w-[58%] break-words text-right normal-case tracking-normal">
-                                          {managerName}
-                                        </span>
-                                      </div>
-                                    </button>
+                                        <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
+                                          <span>
+                                            {isSelected ? "Selected" : "Employee"}
+                                          </span>
+                                          <span className="max-w-[58%] break-words text-right text-sm normal-case tracking-normal font-medium text-neutral-600">
+                                            {managerName}
+                                          </span>
+                                        </div>
+                                      </button>
+
+                                      {/* OKR sparkline to the right of the node */}
+                                      <NodeOKRSparkline okrs={empOKRs} />
+                                    </div>
                                   );
                                 })
                               ) : (
@@ -724,7 +866,7 @@ export default function OKRPerformance() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 8, scale: 0.98 }}
                           transition={{ duration: 0.15 }}
-                          className="pointer-events-none fixed z-50 w-[240px] rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-neutral-900 shadow-[0_18px_50px_rgba(15,23,42,0.18)]"
+                          className="pointer-events-none fixed z-50 w-[240px] rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-neutral-900 shadow-[0_18px_50px_rgba(15,23,42,0.32)]"
                           style={{
                             left: tooltip.x,
                             top: tooltip.y,
@@ -748,7 +890,7 @@ export default function OKRPerformance() {
                     </AnimatePresence>
                   </div>
                 ) : (
-                  <div className="rounded-[28px] border border-dashed border-neutral-200 bg-neutral-50 px-6 py-10 text-center text-sm text-neutral-500">
+                  <div className="rounded-[28px] border-2 border-dashed border-neutral-200 bg-neutral-50 px-6 py-10 text-center text-sm text-neutral-500">
                     Select an employee and click Show OKR to render the graph.
                   </div>
                 )}
@@ -758,7 +900,7 @@ export default function OKRPerformance() {
             {!detailsCollapsed && (
             <div className="space-y-6">
               <div className="sticky top-24 space-y-6">
-                <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-card transition-all duration-200">
+                <div className="rounded-3xl border-2 border-neutral-200 bg-white p-5 shadow-card-md transition-all duration-200">
                   <div className="flex items-center justify-between gap-3 border-b border-neutral-100 pb-4">
                     <div className="min-w-0">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-neutral-400">
@@ -823,7 +965,7 @@ export default function OKRPerformance() {
                         value={clickedNode.userId || "—"}
                       />
 
-                      <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+                      <div className="rounded-2xl border-2 border-neutral-200 bg-neutral-50 p-4">
                         <div className="flex items-center justify-between gap-3 mb-3">
                           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
                             OKR
@@ -863,7 +1005,7 @@ export default function OKRPerformance() {
                                   return (
                                     <div
                                       key={quarter}
-                                      className="rounded-xl border border-white bg-white px-3 py-3 shadow-sm"
+                                      className="rounded-xl border-2 border-neutral-200 bg-white px-3 py-3 shadow-card"
                                     >
                                       <div className="flex items-center justify-between gap-3">
                                         <div className="flex items-center gap-2">
@@ -898,14 +1040,14 @@ export default function OKRPerformance() {
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-4 rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 px-4 py-5 text-sm text-neutral-500">
+                    <div className="mt-4 rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50 px-4 py-5 text-sm text-neutral-500">
                       Click any employee node to inspect name, level, email,
                       designation, manager, OKR, and quarterly progress.
                     </div>
                   )}
                 </div>
 
-                <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-card">
+                <div className="rounded-3xl border-2 border-neutral-200 bg-white p-5 shadow-card-md">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-neutral-400">

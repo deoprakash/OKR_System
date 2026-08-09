@@ -79,7 +79,7 @@ app.use((req, res) => {
   res.status(404).json({ error: "Not Found" });
 });
 
-async function start() {
+async function connectDB() {
   try {
     await mongoose.connect(MONGODB_URI, {
       // use unifiedTopology and useNewUrlParser are default now in mongoose v7+
@@ -103,15 +103,19 @@ async function start() {
     } catch (seedErr) {
       console.error("Error seeding master admin:", seedErr);
     }
-
-    app.listen(PORT, () => {
-      console.log(`OKR backend listening on port ${PORT}`);
-    });
   } catch (err) {
     console.error("Failed to connect to MongoDB", err);
-    process.exit(1);
   }
 }
 
+if (process.env.NODE_ENV !== "production") {
+  connectDB().then(() => {
+    app.listen(PORT, () => {
+      console.log(`OKR backend listening on port ${PORT}`);
+    });
+  });
+} else {
+  connectDB();
+}
 
-start();
+export default app;

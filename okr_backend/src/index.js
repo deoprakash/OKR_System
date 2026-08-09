@@ -54,6 +54,47 @@ app.use(cors({
 }));
 app.use(express.json());
 
+let isConnected = false;
+async function connectDB() {
+  if (isConnected) return;
+  if (!MONGODB_URI) {
+    console.error("MONGODB_URI is not defined");
+    throw new Error("MONGODB_URI is not defined");
+  }
+  await mongoose.connect(MONGODB_URI);
+  isConnected = true;
+  console.log("Connected to MongoDB");
+
+  try {
+    const adminEmail = "gridseventech@gmail.com";
+    const existingAdmin = await Employee.findOne({ emailId: adminEmail });
+    if (!existingAdmin) {
+      const admin = new Employee({
+        empName: "Master Admin",
+        emailId: adminEmail,
+        cellNumber: "0000000000",
+        isAdmin: true
+      });
+      admin.setPassword("admin@123");
+      await admin.save();
+      console.log("Master admin seeded successfully.");
+    }
+  } catch (seedErr) {
+    console.error("Error seeding master admin:", seedErr);
+  }
+}
+
+if (process.env.NODE_ENV === "production") {
+  app.use(async (req, res, next) => {
+    try {
+      await connectDB();
+      next();
+    } catch (err) {
+      res.status(500).json({ error: "Database connection failed", details: err.message });
+    }
+  });
+}
+
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
@@ -79,43 +120,14 @@ app.use((req, res) => {
   res.status(404).json({ error: "Not Found" });
 });
 
-async function connectDB() {
-  try {
-    await mongoose.connect(MONGODB_URI, {
-      // use unifiedTopology and useNewUrlParser are default now in mongoose v7+
-    });
-    console.log("Connected to MongoDB");
-
-    try {
-      const adminEmail = "gridseventech@gmail.com";
-      const existingAdmin = await Employee.findOne({ emailId: adminEmail });
-      if (!existingAdmin) {
-        const admin = new Employee({
-          empName: "Master Admin",
-          emailId: adminEmail,
-          cellNumber: "0000000000",
-          isAdmin: true
-        });
-        admin.setPassword("admin@123");
-        await admin.save();
-        console.log("Master admin seeded successfully.");
-      }
-    } catch (seedErr) {
-      console.error("Error seeding master admin:", seedErr);
-    }
-  } catch (err) {
-    console.error("Failed to connect to MongoDB", err);
-  }
-}
-
 if (process.env.NODE_ENV !== "production") {
   connectDB().then(() => {
     app.listen(PORT, () => {
       console.log(`OKR backend listening on port ${PORT}`);
     });
+  }).catch(err => {
+    console.error("Failed to connect to MongoDB on startup", err);
   });
-} else {
-  connectDB();
 }
 
 export default app;

@@ -1,5 +1,6 @@
 // const deployedBaseUrl = 'https://okr-backend-bbbbfyckfmcrdfbj.canadacentral-01.azurewebsites.net';
-const deployedBaseUrl = "https://okrsystem-production-b1ec.up.railway.app";
+// const deployedBaseUrl = "https://okrsystem-production-b1ec.up.railway.app";
+const deployedBaseUrl = "https://okr-system-psi.vercel.app";
 const localBaseUrl = "http://localhost:5000";
 const isPackagedElectron =
   typeof window !== "undefined" &&

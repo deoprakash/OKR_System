@@ -207,7 +207,22 @@ const Analytics = () => {
 
               <div className="space-y-5">
                 {okrs.map((perf, index) => {
-                  const avg = ((Number(perf.q1_percentage || 0) + Number(perf.q2_percentage || 0) + Number(perf.q3_percentage || 0) + Number(perf.q4_percentage || 0)) / 4).toFixed(1);
+                  let lastQValue = 0;
+                  let lastQName = "Q1";
+                  if (perf.q4_percentage > 0) {
+                    lastQValue = perf.q4_percentage;
+                    lastQName = "Q4";
+                  } else if (perf.q3_percentage > 0) {
+                    lastQValue = perf.q3_percentage;
+                    lastQName = "Q3";
+                  } else if (perf.q2_percentage > 0) {
+                    lastQValue = perf.q2_percentage;
+                    lastQName = "Q2";
+                  } else if (perf.q1_percentage > 0) {
+                    lastQValue = perf.q1_percentage;
+                    lastQName = "Q1";
+                  }
+                  const displayValue = Number(lastQValue).toFixed(1);
                   const chartData = [
                     { quarter: "Q1", percentage: perf.q1_percentage > 0 ? perf.q1_percentage : null, predicted_percentage: null },
                     { quarter: "Q2", percentage: perf.q2_percentage > 0 ? perf.q2_percentage : null, predicted_percentage: null },
@@ -227,8 +242,8 @@ const Analytics = () => {
                       }
                     }
                   }
-                  const avgNum = parseFloat(avg);
-                  const avgColor = avgNum >= 75 ? 'text-success' : avgNum >= 50 ? 'text-warning' : 'text-danger';
+                  const valNum = parseFloat(displayValue);
+                  const valColor = valNum >= 75 ? 'text-success' : valNum >= 50 ? 'text-warning' : 'text-danger';
 
                   return (
                     <div key={perf.okrId} className="bg-white rounded-2xl border-2 border-neutral-200 shadow-card-md overflow-hidden">
@@ -240,8 +255,8 @@ const Analytics = () => {
                         </div>
                         <div className="text-right shrink-0 ml-4 flex flex-col items-end gap-2">
                           <div>
-                            <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">Avg Completion</p>
-                            <p className={`text-3xl font-bold ${avgColor}`}>{avg}%</p>
+                            <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">{lastQName} Completion</p>
+                            <p className={`text-3xl font-bold ${valColor}`}>{displayValue}%</p>
                           </div>
                           {perf.forecastTarget === 'Q1_NEXT' && perf.forecastValue !== null && (
                             <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 mt-1">

@@ -32,15 +32,19 @@ myenv/
 okr_backend/myenv/
 .venv/
 venv/
+okr_ml/venv/
 __pycache__/
 **/__pycache__/
+okr_ml/__pycache__/
 *.py[cod]
 *.pyo
 .pytest_cache/
 .mypy_cache/
-.venv/
 .eggs/
 *.egg-info/
+
+# Vercel
+.vercel/
 
 # Editor and OS files
 .vscode/

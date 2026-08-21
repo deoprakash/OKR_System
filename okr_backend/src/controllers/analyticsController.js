@@ -230,29 +230,71 @@ export async function searchAnalytics(req, res) {
     |--------------------------------------------------------------------------
     */
 
+    const performances = await Promise.all(okrs.map(async (okr) => {
+      const q1 = okr.q1_percentage || 0;
+      const q2 = okr.q2_percentage || 0;
+      const q3 = okr.q3_percentage || 0;
+      const q4 = okr.q4_percentage || 0;
+      
+      let dataToForecast = [];
+      let forecastTarget = null;
+      
+      if (q1 > 0 && q2 === 0 && q3 === 0 && q4 === 0) {
+          dataToForecast = [q1];
+          forecastTarget = 'Q2';
+      } else if (q1 > 0 && q2 > 0 && q3 === 0 && q4 === 0) {
+          dataToForecast = [q1, q2];
+          forecastTarget = 'Q3';
+      } else if (q1 > 0 && q2 > 0 && q3 > 0 && q4 === 0) {
+          dataToForecast = [q1, q2, q3];
+          forecastTarget = 'Q4';
+      } else if (q1 > 0 && q2 > 0 && q3 > 0 && q4 > 0) {
+          dataToForecast = [q1, q2, q3, q4];
+          forecastTarget = 'Q1_NEXT';
+      }
+
+      let forecastValue = null;
+      if (forecastTarget) {
+          try {
+              const mlUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+              const response = await fetch(`${mlUrl}/forecast`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ data: dataToForecast })
+              });
+              
+              if (response.ok) {
+                  const result = await response.json();
+                  forecastValue = result.forecast;
+              } else {
+                  console.error("ML service returned status:", response.status);
+              }
+          } catch (err) {
+              console.error("ML service error:", err.message);
+          }
+      }
+
+      return {
+          okrYear: okr.okrYear,
+          okrId: okr[codeField],
+          okrDesc: okr.okrDesc,
+          q1_percentage: q1,
+          q2_percentage: q2,
+          q3_percentage: q3,
+          q4_percentage: q4,
+          q1_comment: okr.q1_comment || "",
+          q2_comment: okr.q2_comment || "",
+          q3_comment: okr.q3_comment || "",
+          q4_comment: okr.q4_comment || "",
+          forecastTarget,
+          forecastValue
+      };
+    }));
+
     return res.json({
       success: true,
-
       employee,
-
-      performances: okrs.map((okr) => ({
-        okrYear: okr.okrYear,
-
-        okrId: okr[codeField],
-      
-        okrDesc: okr.okrDesc,
-      
-        q1_percentage: okr.q1_percentage || 0,
-        q2_percentage: okr.q2_percentage || 0,
-        q3_percentage: okr.q3_percentage || 0,
-        q4_percentage: okr.q4_percentage || 0,
-      
-        q1_comment: okr.q1_comment || "",
-        q2_comment: okr.q2_comment || "",
-        q3_comment: okr.q3_comment || "",
-        q4_comment: okr.q4_comment || "",
-      
-      })),
+      performances,
     });
 
   } catch (error) {

@@ -21,8 +21,19 @@ services:
       - PORT=5000
       - MONGODB_URI=mongodb://mongodb:27017/okr_system
       - CLIENT_ORIGIN=http://localhost:5173
+      - ML_SERVICE_URL=http://ml_service:8000
     depends_on:
       - mongodb
+      - ml_service
+    restart: unless-stopped
+
+  ml_service:
+    build:
+      context: .
+      dockerfile: okr_ml/Dockerfile
+    container_name: okr_ml_service
+    ports:
+      - "8000:8000"
     restart: unless-stopped
 
 volumes:

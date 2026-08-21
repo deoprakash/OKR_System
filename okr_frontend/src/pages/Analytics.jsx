@@ -13,9 +13,16 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl shadow-card-md px-4 py-3 text-sm">
-      <p className="font-semibold text-neutral-700 mb-1">{label}</p>
-      <p className="text-brand-primary font-bold">{payload[0]?.value ?? 0}%</p>
+    <div className="bg-white border border-neutral-200 rounded-xl shadow-card-md px-4 py-3 text-sm flex flex-col gap-1">
+      <p className="font-semibold text-neutral-700">{label}</p>
+      {payload.map((p, i) => {
+        if (p.dataKey === 'predicted_percentage' && !p.payload.isForecast) return null;
+        return (
+          <p key={i} className="font-bold" style={{ color: p.color }}>
+            {p.dataKey === 'percentage' ? 'Actual' : 'Forecast'}: {p.value}%
+          </p>
+        );
+      })}
     </div>
   );
 };
@@ -202,11 +209,24 @@ const Analytics = () => {
                 {okrs.map((perf, index) => {
                   const avg = ((Number(perf.q1_percentage || 0) + Number(perf.q2_percentage || 0) + Number(perf.q3_percentage || 0) + Number(perf.q4_percentage || 0)) / 4).toFixed(1);
                   const chartData = [
-                    { quarter: "Q1", percentage: perf.q1_percentage },
-                    { quarter: "Q2", percentage: perf.q2_percentage },
-                    { quarter: "Q3", percentage: perf.q3_percentage },
-                    { quarter: "Q4", percentage: perf.q4_percentage },
+                    { quarter: "Q1", percentage: perf.q1_percentage > 0 ? perf.q1_percentage : null, predicted_percentage: null },
+                    { quarter: "Q2", percentage: perf.q2_percentage > 0 ? perf.q2_percentage : null, predicted_percentage: null },
+                    { quarter: "Q3", percentage: perf.q3_percentage > 0 ? perf.q3_percentage : null, predicted_percentage: null },
+                    { quarter: "Q4", percentage: perf.q4_percentage > 0 ? perf.q4_percentage : null, predicted_percentage: null },
                   ];
+
+                  if (perf.forecastTarget && perf.forecastValue !== null) {
+                    const qIndex = parseInt(perf.forecastTarget.replace('Q', '')) - 1;
+                    if (qIndex >= 0 && qIndex < 4) {
+                      chartData[qIndex].predicted_percentage = perf.forecastValue;
+                      chartData[qIndex].predicted_label = perf.forecastValue;
+                      chartData[qIndex].isForecast = true;
+                      if (qIndex > 0) {
+                        chartData[qIndex - 1].predicted_percentage = chartData[qIndex - 1].percentage;
+                        chartData[qIndex - 1].isForecast = false;
+                      }
+                    }
+                  }
                   const avgNum = parseFloat(avg);
                   const avgColor = avgNum >= 75 ? 'text-success' : avgNum >= 50 ? 'text-warning' : 'text-danger';
 
@@ -218,9 +238,17 @@ const Analytics = () => {
                           <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">Objective {index + 1}</p>
                           <h3 className="text-base font-bold text-neutral-900 max-w-xl">{perf.okrDesc}</h3>
                         </div>
-                        <div className="text-right shrink-0 ml-4">
-                          <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">Avg Completion</p>
-                          <p className={`text-3xl font-bold ${avgColor}`}>{avg}%</p>
+                        <div className="text-right shrink-0 ml-4 flex flex-col items-end gap-2">
+                          <div>
+                            <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">Avg Completion</p>
+                            <p className={`text-3xl font-bold ${avgColor}`}>{avg}%</p>
+                          </div>
+                          {perf.forecastTarget === 'Q1_NEXT' && perf.forecastValue !== null && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 mt-1">
+                              <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Next Yr Q1 Forecast</p>
+                              <p className="text-lg font-bold text-amber-700">{perf.forecastValue}%</p>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -232,8 +260,21 @@ const Analytics = () => {
                             <XAxis dataKey="quarter" axisLine={false} tickLine={false} dy={10} tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 600 }} />
                             <YAxis domain={[0, 100]} axisLine={false} tickLine={false} dx={-5} tick={{ fill: '#94A3B8', fontSize: 11 }} />
                             <Tooltip content={<CustomTooltip />} />
-                            <Line type="monotone" dataKey="percentage" stroke="#2563EB" strokeWidth={2.5} dot={{ r: 4, fill: '#2563EB', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#2563EB' }}>
+                            <Line connectNulls type="monotone" dataKey="percentage" stroke="#2563EB" strokeWidth={2.5} dot={{ r: 4, fill: '#2563EB', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#2563EB' }}>
                               <LabelList dataKey="percentage" position="top" offset={10} fill="#64748B" fontSize={11} fontWeight="600" />
+                            </Line>
+                            <Line connectNulls type="monotone" dataKey="predicted_percentage" stroke="#F59E0B" strokeWidth={2.5} strokeDasharray="5 5" 
+                              dot={(props) => {
+                                const { cx, cy, payload } = props;
+                                if (!payload.isForecast) return null;
+                                return <circle key={`dot-${payload.quarter}`} cx={cx} cy={cy} r={4} fill="#F59E0B" strokeWidth={0} />;
+                              }} 
+                              activeDot={(props) => {
+                                const { cx, cy, payload } = props;
+                                if (!payload.isForecast) return null;
+                                return <circle key={`activedot-${payload.quarter}`} cx={cx} cy={cy} r={6} fill="#F59E0B" strokeWidth={0} />;
+                              }}>
+                              <LabelList dataKey="predicted_label" position="bottom" offset={10} fill="#F59E0B" fontSize={11} fontWeight="600" formatter={(val) => `${val}% (Est)`} />
                             </Line>
                           </LineChart>
                         </ResponsiveContainer>

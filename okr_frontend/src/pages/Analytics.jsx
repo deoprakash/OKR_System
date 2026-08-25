@@ -245,8 +245,28 @@ const Analytics = () => {
                   const valNum = parseFloat(displayValue);
                   const valColor = valNum >= 75 ? 'text-success' : valNum >= 50 ? 'text-warning' : 'text-danger';
 
+                  let warningMessage = null;
+                  let warningClasses = "";
+
+                  if (lastQName === "Q4" && valNum < 50) {
+                    warningMessage = "It may need either realignment of tasks and resource or detailed review is required.";
+                    warningClasses = "bg-danger-light text-danger-text border-danger-border animate-pulse-soft";
+                  } else {
+                    let ideal = 0;
+                    if (lastQName === "Q1") ideal = 25;
+                    if (lastQName === "Q2") ideal = 50;
+                    if (lastQName === "Q3") ideal = 75;
+                    if (lastQName === "Q4") ideal = 100;
+                    
+                    if (valNum < ideal) {
+                      warningMessage = "OKR needs a detailed review";
+                      warningClasses = "bg-warning-light text-warning-text border-warning-border animate-pulse-soft";
+                    }
+                  }
+
                   return (
-                    <div key={perf.okrId} className="bg-white rounded-2xl border-2 border-neutral-200 shadow-card-md overflow-hidden">
+                    <div key={perf.okrId} className="flex flex-col gap-3">
+                      <div className="bg-white rounded-2xl border-2 border-neutral-200 shadow-card-md overflow-hidden">
                       {/* Card header */}
                       <div className="flex items-start justify-between px-6 py-5 border-b border-neutral-100">
                         <div>
@@ -318,6 +338,12 @@ const Analytics = () => {
                         })}
                       </div>
                     </div>
+                    {warningMessage && (
+                      <div className={`px-4 py-3 rounded-xl border-2 shadow-sm flex items-center justify-center text-center ${warningClasses}`}>
+                        <span className="font-bold text-sm tracking-wide">{warningMessage}</span>
+                      </div>
+                    )}
+                  </div>
                   );
                 })}
               </div>

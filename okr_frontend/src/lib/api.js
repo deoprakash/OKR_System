@@ -230,3 +230,5 @@ export const getLevel4OKR = (id) => request(`/api/level4/${id}`);
 export const getLevel5OKR = (id) => request(`/api/level5/${id}`);
 
 export const getLevel6OKR = (id) => request(`/api/level6/${id}`);
+
+export const getDashboardStats = () => request("/api/analytics/dashboard-stats");

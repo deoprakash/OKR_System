@@ -50,7 +50,7 @@ export async function getEmployeeOKRs(req, res) {
       Level7OKR.find({ userId })
     ]);
 
-    const okrs = [
+    const rawOkrs = [
       ...level1.map(okr => ({ ...okr.toObject(), level: 1 })),
       ...level2.map(okr => ({ ...okr.toObject(), level: 2 })),
       ...level3.map(okr => ({ ...okr.toObject(), level: 3 })),
@@ -59,6 +59,55 @@ export async function getEmployeeOKRs(req, res) {
       ...level6.map(okr => ({ ...okr.toObject(), level: 6 })),
       ...level7.map(okr => ({ ...okr.toObject(), level: 7 }))
     ];
+
+    const okrs = await Promise.all(rawOkrs.map(async (okr) => {
+      const q1 = okr.q1_percentage || 0;
+      const q2 = okr.q2_percentage || 0;
+      const q3 = okr.q3_percentage || 0;
+      const q4 = okr.q4_percentage || 0;
+      
+      let dataToForecast = [];
+      let forecastTarget = null;
+      
+      if (q1 > 0 && q2 === 0 && q3 === 0 && q4 === 0) {
+          dataToForecast = [q1];
+          forecastTarget = 'Q2';
+      } else if (q1 > 0 && q2 > 0 && q3 === 0 && q4 === 0) {
+          dataToForecast = [q1, q2];
+          forecastTarget = 'Q3';
+      } else if (q1 > 0 && q2 > 0 && q3 > 0 && q4 === 0) {
+          dataToForecast = [q1, q2, q3];
+          forecastTarget = 'Q4';
+      } else if (q1 > 0 && q2 > 0 && q3 > 0 && q4 > 0) {
+          dataToForecast = [q1, q2, q3, q4];
+          forecastTarget = 'Q1_NEXT';
+      }
+
+      let forecastValue = null;
+      if (forecastTarget) {
+          try {
+              const mlUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+              const response = await fetch(`${mlUrl}/forecast`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ data: dataToForecast })
+              });
+              
+              if (response.ok) {
+                  const result = await response.json();
+                  forecastValue = result.forecast;
+              }
+          } catch (err) {
+              console.error("ML service error:", err.message);
+          }
+      }
+
+      return {
+        ...okr,
+        forecastTarget,
+        forecastValue
+      };
+    }));
 
     res.json({ data: okrs });
   } catch (err) {

@@ -3,6 +3,7 @@ import {
   getEmployees,
   getOKRs,
   searchAnalytics,
+  getDashboardStats
 } from "../controllers/analyticsController.js";
 
 import { requireAuth  } from "../middleware/auth.js";
@@ -37,6 +38,12 @@ router.get(
   "/search",
   requireAuth ,
   searchAnalytics
+);
+
+router.get(
+  "/dashboard-stats",
+  requireAuth,
+  getDashboardStats
 );
 
 export default router;

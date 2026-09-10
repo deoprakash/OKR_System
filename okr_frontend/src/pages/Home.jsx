@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { motion } from "framer-motion";
@@ -6,12 +6,13 @@ import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
+import { getDashboardStats } from "../lib/api";
 
-const STATS = [
-  { label: "Active OKRs", value: "1,240+", color: "text-brand-primary" },
-  { label: "Org Levels", value: "7", color: "text-brand-accent" },
-  { label: "Avg Completion", value: "87%", color: "text-success" },
-  { label: "Quarters Tracked", value: "4", color: "text-warning" },
+const INITIAL_STATS = [
+  { label: "Active OKRs", key: "activeOkrs", value: "0", color: "text-brand-primary" },
+  { label: "Org Levels", key: "orgLevels", value: "0", color: "text-brand-accent" },
+  { label: "Avg Completion", key: "avgCompletion", value: "0%", color: "text-success" },
+  { label: "Quarters Tracked", key: "quartersTracked", value: "0", color: "text-warning" },
 ];
 
 const FEATURES = [
@@ -56,6 +57,39 @@ export default function Home() {
     : `/okr-workspace-level-${Math.min(Math.max(userLevel, 1), 7)}`;
   const primaryAction = auth.isAuthenticated ? designerPath : "/login";
   const secondaryAction = auth.isAuthenticated ? "/okr-performance" : "/login";
+
+  const currentMonth = new Date().getMonth();
+  const currentQuarter = Math.floor(currentMonth / 3) + 1;
+  const commandCenterTitle = auth.isAdmin 
+    ? `Q${currentQuarter} Company OKR Overview` 
+    : `Q${currentQuarter} Personal OKR Dashboard`;
+
+  const [dashboardData, setDashboardData] = useState({
+    activeOkrs: 0,
+    orgLevels: 0,
+    avgCompletion: 0,
+    quartersTracked: 4,
+    nextReview: "Thu"
+  });
+
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      getDashboardStats()
+        .then(res => {
+          if (res.success && res.data) {
+            setDashboardData(res.data);
+          }
+        })
+        .catch(err => console.error("Failed to load dashboard stats", err));
+    }
+  }, [auth.isAuthenticated]);
+
+  const statsWithData = INITIAL_STATS.map(stat => ({
+    ...stat,
+    value: stat.key === 'avgCompletion' 
+      ? `${dashboardData[stat.key]}%` 
+      : `${dashboardData[stat.key]}`
+  }));
 
   return (
     <div className="min-h-screen flex flex-col bg-surface-base">
@@ -124,7 +158,7 @@ export default function Home() {
                   <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
                     <div>
                       <p className="text-xs font-semibold text-neutral-400 uppercase tracking-widest mb-0.5">Current Cycle</p>
-                      <h2 className="text-lg font-bold text-neutral-900">Q2 OKR Command Center</h2>
+                      <h2 className="text-lg font-bold text-neutral-900">{commandCenterTitle}</h2>
                     </div>
                     <Badge variant="green">
                       <span className="w-1.5 h-1.5 rounded-full bg-success inline-block" />
@@ -137,13 +171,13 @@ export default function Home() {
                     <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100">
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-sm font-semibold text-neutral-700">Objective Health</span>
-                        <span className="text-sm font-bold text-brand-primary">87% complete</span>
+                        <span className="text-sm font-bold text-brand-primary">{dashboardData.avgCompletion}% complete</span>
                       </div>
                       <div className="w-full h-2 rounded-full bg-neutral-200 overflow-hidden">
                         <motion.div
                           className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-accent"
                           initial={{ width: 0 }}
-                          animate={{ width: '87%' }}
+                          animate={{ width: `${dashboardData.avgCompletion}%` }}
                           transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
                         />
                       </div>
@@ -153,9 +187,9 @@ export default function Home() {
                     {/* Stats row */}
                     <div className="grid grid-cols-3 gap-3">
                       {[
-                        { label: "OKRs Active", value: "24" },
-                        { label: "Levels", value: "7" },
-                        { label: "Next Review", value: "Thu" },
+                        { label: "OKRs Active", value: dashboardData.activeOkrs },
+                        { label: "Levels", value: dashboardData.orgLevels },
+                        { label: "Next Review", value: dashboardData.nextReview },
                       ].map((stat) => (
                         <div key={stat.label} className="p-3 rounded-xl bg-neutral-50 border border-neutral-100 text-center">
                           <div className="text-xl font-bold text-neutral-900">{stat.value}</div>
@@ -186,7 +220,7 @@ export default function Home() {
               transition={{ delay: 0.35, duration: 0.45 }}
               className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4"
             >
-              {STATS.map((s, i) => (
+              {statsWithData.map((s, i) => (
                 <div key={i} className="bg-white rounded-2xl border-2 border-neutral-200 shadow-card-md px-6 py-5 text-center">
                   <div className={`text-3xl font-bold mb-1 ${s.color}`}>{s.value}</div>
                   <div className="text-sm text-neutral-500 font-medium">{s.label}</div>

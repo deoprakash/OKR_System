@@ -9,6 +9,7 @@ import Select from '../components/ui/Select';
 import Badge from '../components/ui/Badge';
 import Stepper from '../components/ui/Stepper';
 import { useToast } from '../components/ToastProvider';
+import { useAuth } from '../context/useAuth';
 import { createEmptyOKRFields, YEAR_OPTIONS, QUARTER_OPTIONS } from '../lib/okrDefaults';
 import {
   listEmployees,
@@ -57,6 +58,7 @@ const LEVEL_COLORS = ['blue', 'indigo', 'green', 'yellow', 'purple', 'red', 'gra
 const OKRWorkspace = ({ level }) => {
   const navigate = useNavigate();
   const toast = useToast();
+  const auth = useAuth();
   const today = new Date().toISOString().slice(0, 10);
   const okrCodeField = `level${level}OkrCode`;
 
@@ -80,14 +82,34 @@ const OKRWorkspace = ({ level }) => {
         const data = resp?.data || [];
         const normalize = e => ({ ...e, userId: e.userId || (e._id ? String(e._id) : '') });
         // Current-level employees
-        setEmployees(data.filter(e => String(e.empLevel) === String(level)).map(normalize));
+        let levelEmployees = data.filter(e => String(e.empLevel) === String(level)).map(normalize);
+        
+        if (!auth.isAdmin) {
+          levelEmployees = levelEmployees.filter(e => String(e.userId) === String(auth.user?.userId));
+        }
+        
+        setEmployees(levelEmployees);
+        
+        // Auto-select if there's only one employee (like for non-admins)
+        if (levelEmployees.length === 1 && !fields.employeeCode) {
+          const emp = levelEmployees[0];
+          setFields(prev => ({
+            ...prev,
+            employeeCode: emp.empCode,
+            employeeName: emp.empName,
+            employeeLevel: emp.empLevel,
+            userId: emp.userId
+          }));
+        }
+
         // Parent-level employees (unique from the DB — no dedup needed)
         if (level > 1) {
+          // Note: we don't filter parent employees by userId because they need to select their manager
           setParentEmployees(data.filter(e => String(e.empLevel) === String(level - 1)).map(normalize));
         }
       })
       .catch(() => { setEmployees([]); setParentEmployees([]); });
-  }, [level]);
+  }, [level, auth.isAdmin, auth.user?.userId]);
 
   // Load parent-level OKRs for level 2–7 so user can link this OKR to a parent
   useEffect(() => {
@@ -165,13 +187,13 @@ const OKRWorkspace = ({ level }) => {
       kr3: fields.keyResults[2] || '',
       kr4: fields.keyResults[3] || '',
       kr5: fields.keyResults[4] || '',
-      q1_percentage: fields.quarters[0].percent ? Number(fields.quarters[0].percent) : undefined,
+      q1_percentage: fields.quarters[0].percent !== "" && fields.quarters[0].percent != null ? Number(fields.quarters[0].percent) : null,
       q1_comment: fields.quarters[0].comment || '',
-      q2_percentage: fields.quarters[1].percent ? Number(fields.quarters[1].percent) : undefined,
+      q2_percentage: fields.quarters[1].percent !== "" && fields.quarters[1].percent != null ? Number(fields.quarters[1].percent) : null,
       q2_comment: fields.quarters[1].comment || '',
-      q3_percentage: fields.quarters[2].percent ? Number(fields.quarters[2].percent) : undefined,
+      q3_percentage: fields.quarters[2].percent !== "" && fields.quarters[2].percent != null ? Number(fields.quarters[2].percent) : null,
       q3_comment: fields.quarters[2].comment || '',
-      q4_percentage: fields.quarters[3].percent ? Number(fields.quarters[3].percent) : undefined,
+      q4_percentage: fields.quarters[3].percent !== "" && fields.quarters[3].percent != null ? Number(fields.quarters[3].percent) : null,
       q4_comment: fields.quarters[3].comment || '',
       // Attach parent OKR code for levels 2–7
       ...(parentField && selectedParentOkrCode
@@ -223,7 +245,7 @@ const OKRWorkspace = ({ level }) => {
                   <span className="text-sm text-neutral-500">OKR Designer</span>
                 </div>
                 <h1 className="text-xl font-bold text-neutral-900">
-                  {fields.employeeName ? `${fields.employeeName}'s Workspace` : 'Smart OKR Designer'}
+                  {fields.employeeName ? `${fields.employeeName}'s Workspace` : (auth.isAdmin ? 'Smart OKR Designer' : 'My OKR Workspace')}
                 </h1>
               </div>
             </div>

@@ -85,6 +85,9 @@ export async function create(req, res) {
 
     // Generate temporary password for newly created users (unless provided)
     function genTempPassword(len = 12) {
+      if (process.env.NODE_ENV !== "production") {
+        return "user123";
+      }
       const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
       const bytes = crypto.randomBytes(len);
       let out = "";

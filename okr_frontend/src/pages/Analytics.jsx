@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getAnalyticsEmployees, getAnalyticsOKRs, searchAnalytics } from "../lib/api";
+import { useAuth } from "../context/useAuth";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import Button from "../components/ui/Button";
@@ -36,6 +37,7 @@ const Analytics = () => {
   const [employee, setEmployee] = useState(null);
   const [performances, setPerformances] = useState([]);
   const [loading, setLoading] = useState(false);
+  const auth = useAuth();
 
   useEffect(() => { loadEmployees(); }, []);
 
@@ -53,7 +55,18 @@ const Analytics = () => {
   useEffect(() => { loadOKRs(filters.userId); }, [filters.userId]);
 
   async function loadEmployees() {
-    try { const data = await getAnalyticsEmployees(); setEmployees(data); }
+    try { 
+      const data = await getAnalyticsEmployees(); 
+      let filtered = data || [];
+      if (!auth.isAdmin) {
+        filtered = filtered.filter(e => String(e.userId) === String(auth.user?.userId));
+      }
+      setEmployees(filtered);
+
+      if (!auth.isAdmin && filtered.length > 0 && !filters.userId) {
+        setFilters(prev => ({ ...prev, userId: filtered[0].userId }));
+      }
+    }
     catch (error) { console.error(error); }
   }
 

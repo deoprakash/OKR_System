@@ -226,7 +226,7 @@ export default function NavBar() {
   return (
     <>
       <header className="sticky top-4 z-50 px-3 sm:px-4 lg:px-6">
-        <div className="mx-auto max-w-screen-xl rounded-[24px] border border-white/70 bg-white/72 px-4 sm:px-5 lg:px-6 shadow-[0_20px_60px_rgba(37,99,235,0.28)] backdrop-blur-2xl">
+        <div className="mx-auto max-w-screen-xl rounded-[24px] border border-white/70 bg-white px-4 sm:px-5 lg:px-6 shadow-[0_20px_60px_rgba(37,99,235,0.28)] backdrop-blur-2xl">
           <div className="flex h-[70px] items-center justify-between gap-4">
             <button
               className="group flex shrink-0 items-center gap-3"
@@ -263,63 +263,74 @@ export default function NavBar() {
               ))}
 
               {smartMenuSections.length > 0 && (
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    className={[
-                      navLinkClass("/okr-workspace-level-1"),
-                      "gap-2",
-                    ].join(" ")}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => setDropdownOpen((o) => !o)}
-                    aria-expanded={dropdownOpen}
-                    aria-haspopup="menu"
-                  >
-                    <span className="relative z-10">Smart OKR Designer</span>
-                    <svg
-                      className={`h-4 w-4 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2.5"
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                    <span
+                auth.isAdmin ? (
+                  <div className="relative" ref={dropdownRef}>
+                    <button
                       className={[
-                        "absolute inset-x-4 -bottom-0.5 h-0.5 origin-left rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-transform duration-200 ease-out",
-                        dropdownOpen
-                          ? "scale-x-100"
-                          : "scale-x-0 group-hover:scale-x-100",
+                        navLinkClass("/okr-workspace-level-1"),
+                        "gap-2",
                       ].join(" ")}
-                    />
-                  </button>
-
-                  {dropdownOpen && (
-                    <div className="absolute left-0 top-full mt-3 w-[320px] overflow-hidden rounded-[24px] border border-white/70 bg-white/85 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.32)] backdrop-blur-2xl animate-fade-slide-up">
-                      <div className="max-h-[380px] space-y-3 overflow-y-auto px-1 pb-1 scrollbar-thin">
-                        {smartMenuSections.map((section) => (
-                          <div
-                            key={section.title}
-                            className="rounded-2xl bg-white/60 p-2"
-                          >
-                            <div className="mb-2 px-1 pt-1">
-                              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
-                                {section.title}
-                              </p>
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setDropdownOpen((o) => !o)}
+                      aria-expanded={dropdownOpen}
+                      aria-haspopup="menu"
+                    >
+                      <span className="relative z-10">Smart OKR Designer</span>
+                      <svg
+                        className={`h-4 w-4 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2.5"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                      <span
+                        className={[
+                          "absolute inset-x-4 -bottom-0.5 h-0.5 origin-left rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-transform duration-200 ease-out",
+                          dropdownOpen
+                            ? "scale-x-100"
+                            : "scale-x-0 group-hover:scale-x-100",
+                        ].join(" ")}
+                      />
+                    </button>
+  
+                    {dropdownOpen && (
+                      <div className="absolute left-0 top-full mt-3 w-[320px] overflow-hidden rounded-[24px] border border-white/70 bg-white/85 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.32)] backdrop-blur-2xl animate-fade-slide-up">
+                        <div className="max-h-[380px] space-y-3 overflow-y-auto px-1 pb-1 scrollbar-thin">
+                          {smartMenuSections.map((section) => (
+                            <div
+                              key={section.title}
+                              className="rounded-2xl bg-white/60 p-2"
+                            >
+                              <div className="mb-2 px-1 pt-1">
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+                                  {section.title}
+                                </p>
+                              </div>
+                              <div className="space-y-1">
+                                {section.items.map(renderSmartItem)}
+                              </div>
                             </div>
-                            <div className="space-y-1">
-                              {section.items.map(renderSmartItem)}
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    className={navLinkClass(`/okr-workspace-level-${userLevel}`)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleNavigate(`/okr-workspace-level-${userLevel}`)}
+                  >
+                    <span className="relative z-10">OKR Workspace</span>
+                    {renderNavUnderline(`/okr-workspace-level-${userLevel}`)}
+                  </button>
+                )
               )}
             </nav>
 
@@ -385,7 +396,7 @@ export default function NavBar() {
                   </button>
 
                   {profileMenuOpen && (
-                    <div className="absolute right-0 top-full mt-3 w-[300px] overflow-hidden rounded-[24px] border border-white/70 bg-white/98 p-2 shadow-[0_22px_60px_rgba(37,99,235,0.32)] backdrop-blur-2xl animate-fade-slide-up">
+                    <div className="absolute right-0 top-full mt-3 w-[300px] overflow-hidden rounded-[24px] border border-slate-100 bg-white p-2 shadow-[0_22px_60px_rgba(37,99,235,0.32)] animate-fade-slide-up">
                       <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 px-4 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 text-base font-bold text-white shadow-sm">
@@ -409,9 +420,9 @@ export default function NavBar() {
                         <button
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => handleNavigate("/my-profile")}
-                          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-neutral-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/70 hover:text-neutral-900"
+                          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-neutral-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-slate-50 hover:text-neutral-900"
                         >
-                          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-sm">
+                          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-sm border border-slate-100">
                             <svg
                               className="h-4 w-4"
                               fill="none"
@@ -453,9 +464,9 @@ export default function NavBar() {
                             await auth.logout();
                             navigate("/login");
                           }}
-                          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-danger transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-red-50/70"
+                          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-danger transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-red-50"
                         >
-                          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-danger shadow-sm">
+                          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-danger shadow-sm border border-red-100">
                             <svg
                               className="h-4 w-4"
                               fill="none"
@@ -541,48 +552,73 @@ export default function NavBar() {
                 </button>
               ))}
 
-              {smartMenuSections.map((section) => (
-                <div
-                  key={section.title}
-                  className="rounded-2xl bg-white/65 p-2"
+              {!auth.isAdmin && auth.isAuthenticated && userLevel >= 1 && userLevel <= 7 ? (
+                <button
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => handleNavigate(`/okr-workspace-level-${userLevel}`)}
+                  className={[
+                    "flex w-full items-start gap-3 rounded-2xl px-4 py-3 text-left transition-all duration-200 ease-out",
+                    isActive(`/okr-workspace-level-${userLevel}`)
+                      ? "bg-blue-50/80 text-brand-primary shadow-sm"
+                      : "text-neutral-700 hover:-translate-y-0.5 hover:bg-white/75 hover:shadow-sm",
+                  ].join(" ")}
                 >
-                  <div className="px-2 pb-2 pt-1">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
-                      {section.title}
-                    </p>
-                    <p className="mt-1 text-[11px] leading-5 text-neutral-500">
-                      {section.description}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    {section.items.map((item) => (
-                      <button
-                        key={item.path}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => handleNavigate(item.path)}
-                        className={[
-                          "flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition-all duration-200 ease-out",
-                          isActive(item.path)
-                            ? "bg-blue-50/80 text-brand-primary shadow-sm"
-                            : "text-neutral-700 hover:-translate-y-0.5 hover:bg-white/75 hover:shadow-sm",
-                        ].join(" ")}
-                      >
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 text-[10px] font-bold text-white shadow-sm">
-                          {item.icon}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-[13px] font-semibold text-neutral-900">
-                            {item.label}
+                  <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-sm">
+                    O
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-neutral-900">
+                      OKR Workspace
+                    </span>
+                    <span className="block text-xs leading-5 text-neutral-500">
+                      Manage your objectives
+                    </span>
+                  </span>
+                </button>
+              ) : (
+                smartMenuSections.map((section) => (
+                  <div
+                    key={section.title}
+                    className="rounded-2xl bg-white/65 p-2"
+                  >
+                    <div className="px-2 pb-2 pt-1">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+                        {section.title}
+                      </p>
+                      <p className="mt-1 text-[11px] leading-5 text-neutral-500">
+                        {section.description}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      {section.items.map((item) => (
+                        <button
+                          key={item.path}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => handleNavigate(item.path)}
+                          className={[
+                            "flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition-all duration-200 ease-out",
+                            isActive(item.path)
+                              ? "bg-blue-50/80 text-brand-primary shadow-sm"
+                              : "text-neutral-700 hover:-translate-y-0.5 hover:bg-white/75 hover:shadow-sm",
+                          ].join(" ")}
+                        >
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 text-[10px] font-bold text-white shadow-sm">
+                            {item.icon}
                           </span>
-                          <span className="block text-xs leading-5 text-neutral-500">
-                            {item.description}
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-[13px] font-semibold text-neutral-900">
+                              {item.label}
+                            </span>
+                            <span className="block text-xs leading-5 text-neutral-500">
+                              {item.description}
+                            </span>
                           </span>
-                        </span>
-                      </button>
-                    ))}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
 
               {auth.isAuthenticated && auth.user?.empName ? (
                 <div className="rounded-2xl bg-white/65 p-2">

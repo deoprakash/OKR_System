@@ -306,3 +306,96 @@ export async function searchAnalytics(req, res) {
     });
   }
 }
+
+/*
+|--------------------------------------------------------------------------
+| Dashboard Stats
+|--------------------------------------------------------------------------
+*/
+export async function getDashboardStats(req, res) {
+  try {
+    const isAdmin = Boolean(req.user?.isAdmin);
+    const userId = req.user?.userId;
+    const empLevel = Number(req.user?.empLevel || 1);
+    
+    const currentYear = new Date().getFullYear();
+
+    const modelMap = {
+      1: Level1OKR,
+      2: Level2OKR,
+      3: Level3OKR,
+      4: Level4OKR,
+      5: Level5OKR,
+      6: Level6OKR,
+      7: Level7OKR,
+    };
+
+    let totalOkrs = 0;
+    let sumCompletion = 0;
+    let okrsWithDataCount = 0;
+
+    const processOkrs = (okrs) => {
+      okrs.forEach((okr) => {
+        totalOkrs++;
+        const q1 = okr.q1_percentage || 0;
+        const q2 = okr.q2_percentage || 0;
+        const q3 = okr.q3_percentage || 0;
+        const q4 = okr.q4_percentage || 0;
+        
+        let lastUpdated = 0;
+        if (q4 > 0) lastUpdated = q4;
+        else if (q3 > 0) lastUpdated = q3;
+        else if (q2 > 0) lastUpdated = q2;
+        else if (q1 > 0) lastUpdated = q1;
+        
+        if (lastUpdated > 0) {
+          sumCompletion += lastUpdated;
+          okrsWithDataCount++;
+        }
+      });
+    };
+
+    if (isAdmin) {
+      for (let i = 1; i <= 7; i++) {
+        const Model = modelMap[i];
+        if (Model) {
+          const okrs = await Model.find({ okrYear: currentYear }).lean();
+          processOkrs(okrs);
+        }
+      }
+    } else {
+      const Model = modelMap[empLevel];
+      if (Model) {
+        const okrs = await Model.find({ okrYear: currentYear, userId }).lean();
+        processOkrs(okrs);
+      }
+    }
+
+    const avgCompletion = okrsWithDataCount > 0 ? Math.round(sumCompletion / okrsWithDataCount) : 0;
+    
+    // Determine next review date (Next Friday)
+    const nextFriday = new Date();
+    nextFriday.setDate(nextFriday.getDate() + ((7 - nextFriday.getDay() + 5) % 7 || 7));
+    
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const nextReviewStr = `Fri, ${monthNames[nextFriday.getMonth()]} ${nextFriday.getDate()}`;
+
+    return res.json({
+      success: true,
+      data: {
+        activeOkrs: totalOkrs,
+        orgLevels: isAdmin ? 7 : 1,
+        avgCompletion: avgCompletion,
+        quartersTracked: 4,
+        nextReview: nextReviewStr
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to load dashboard stats.",
+    });
+  }
+}

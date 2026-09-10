@@ -18,6 +18,7 @@ import performanceRoutes from "./routes/performance.js";
 import authRoutes from "./routes/auth.js";
 import setupRoutes from "./routes/setup.js";
 import analyticsRoutes from "./routes/analytics.js"
+import agentRoutes from "./routes/agent.js";
 
 dns.setDefaultResultOrder("ipv4first");
 
@@ -28,8 +29,8 @@ const CLIENT_ORIGINS = (process.env.CLIENT_ORIGIN || "http://localhost:5173")
   .map((origin) => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 const ALLOW_NULL_ORIGIN = (process.env.ALLOW_NULL_ORIGIN || "true").toLowerCase() === "true";
-const MONGODB_URI = process.env.NODE_ENV === 'production' 
-  ? process.env.MONGODB_URI 
+const MONGODB_URI = process.env.NODE_ENV === 'production'
+  ? process.env.MONGODB_URI
   : (process.env.LOCAL_MONGODB_URI || process.env.MONGODB_URI);
 
 app.use(morgan("dev"));
@@ -115,6 +116,7 @@ app.use("/api/level6", level6Routes);
 app.use("/api/level7", level7Routes);
 app.use("/api/performance", performanceRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/agent", agentRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not Found" });

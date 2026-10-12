@@ -26,21 +26,15 @@
     color: #0f172a;
     line-height: 1.6;
     background:
-      radial-gradient(
-        circle at top left,
+      radial-gradient(circle at top left,
         rgba(96, 165, 250, 0.28),
-        transparent 28%
-      ),
-      radial-gradient(
-        circle at top right,
+        transparent 28%),
+      radial-gradient(circle at top right,
         rgba(191, 219, 254, 0.52),
-        transparent 24%
-      ),
-      radial-gradient(
-        circle at bottom center,
+        transparent 24%),
+      radial-gradient(circle at bottom center,
         rgba(147, 197, 253, 0.18),
-        transparent 35%
-      ),
+        transparent 35%),
       linear-gradient(180deg, #f9fcff 0%, #edf5ff 52%, #e6f0ff 100%);
     background-attachment: fixed;
   }
@@ -71,6 +65,7 @@
 }
 
 @layer components {
+
   .glass-card,
   .card {
     background: #ffffff;
@@ -181,28 +176,25 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: linear-gradient(
-      180deg,
-      rgba(59, 130, 246, 0.45),
-      rgba(96, 165, 250, 0.25)
-    );
+    background: linear-gradient(180deg,
+        rgba(59, 130, 246, 0.45),
+        rgba(96, 165, 250, 0.25));
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(
-      180deg,
-      rgba(59, 130, 246, 0.7),
-      rgba(96, 165, 250, 0.45)
-    );
+    background: linear-gradient(180deg,
+        rgba(59, 130, 246, 0.7),
+        rgba(96, 165, 250, 0.45));
     border: 2px solid transparent;
     background-clip: content-box;
   }
 }
 
 @keyframes float-soft {
+
   0%,
   100% {
     transform: translateY(0px);
@@ -230,4 +222,31 @@
 .animate-shimmer-soft {
   background-size: 200% 200%;
   animation: shimmer-soft 12s linear infinite;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm;
+  }
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  nav, footer, .no-print, button, input, select, [role="tooltip"] {
+    display: none !important;
+  }
+  #root > div > *:not(#okr-performance-print-report) {
+    display: none !important;
+  }
+  #okr-performance-print-report {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
 }

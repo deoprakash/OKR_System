@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ToastProvider';
 import { listEmployees, deleteEmployee, updateEmployee } from '../lib/api';
 import NavBar from '../components/NavBar';
@@ -30,11 +31,15 @@ function InlineEditor({ row, onSave, onCancel }) {
       <td className="px-4 py-3"><Input value={form.designation} onChange={e => u('designation', e.target.value)} /></td>
       <td className="px-4 py-3 text-center">
         <Select value={String(form.level)} onChange={e => u('level', e.target.value)}>
-          {[1,2,3,4,5,6,7].map(l => <option key={l} value={String(l)}>L{l}</option>)}
+          {[1, 2, 3, 4, 5, 6, 7].map(l => <option key={l} value={String(l)}>L{l}</option>)}
         </Select>
       </td>
       <td className="px-4 py-3"><Input value={form.email} onChange={e => u('email', e.target.value)} /></td>
-      <td className="px-4 py-3"><Input value={form.phone} onChange={e => u('phone', e.target.value)} /></td>
+      <td className="px-4 py-3"><Input value={form.phone} onChange={e => {
+        let v = e.target.value.replace(/[^\d+\s\-()]/g, '');
+        if (v.includes('+')) v = (v.startsWith('+') ? '+' : '') + v.replace(/\+/g, '');
+        u('phone', v.slice(0, 20));
+      }} maxLength={20} placeholder="e.g. +91 9876543210" /></td>
       <td className="px-4 py-3 text-center">
         <Select value={form.isAdmin} onChange={e => u('isAdmin', e.target.value)}>
           <option value="No">No</option>
@@ -55,6 +60,7 @@ function InlineEditor({ row, onSave, onCancel }) {
 }
 
 export default function AdminUsers() {
+  const navigate = useNavigate();
   const toast = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -155,7 +161,7 @@ export default function AdminUsers() {
                 {loading ? 'Loading...' : `${users.length} employee${users.length !== 1 ? 's' : ''} in the organization`}
               </p>
             </div>
-            <Button variant="primary" size="sm" onClick={() => window.location.href = '/employee-master'}>
+            <Button variant="primary" size="sm" onClick={() => navigate('/employee-master')}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>
@@ -242,6 +248,14 @@ export default function AdminUsers() {
                           icon={<svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
                           title={q ? "No matching employees" : "No employees yet"}
                           description={q ? `No results for "${q}". Try a different search.` : "Add your first employee to get started."}
+                          action={!q ? (
+                            <Button variant="primary" size="sm" onClick={() => navigate('/employee-master')}>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                              </svg>
+                              Add Employee
+                            </Button>
+                          ) : undefined}
                         />
                       </td>
                     </tr>

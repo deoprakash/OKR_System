@@ -20,7 +20,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         if (p.dataKey === 'predicted_percentage' && !p.payload.isForecast) return null;
         return (
           <p key={i} className="font-bold" style={{ color: p.color }}>
-            {p.dataKey === 'percentage' ? 'Actual' : 'Forecast'}: {p.value}%
+            {p.dataKey === 'percentage' ? 'Actual' : 'Projected Progress'}: {p.value}%
           </p>
         );
       })}
@@ -55,8 +55,8 @@ const Analytics = () => {
   useEffect(() => { loadOKRs(filters.userId); }, [filters.userId]);
 
   async function loadEmployees() {
-    try { 
-      const data = await getAnalyticsEmployees(); 
+    try {
+      const data = await getAnalyticsEmployees();
       let filtered = data || [];
       if (!auth.isAdmin) {
         filtered = filtered.filter(e => String(e.userId) === String(auth.user?.userId));
@@ -270,7 +270,7 @@ const Analytics = () => {
                     if (lastQName === "Q2") ideal = 50;
                     if (lastQName === "Q3") ideal = 75;
                     if (lastQName === "Q4") ideal = 100;
-                    
+
                     if (valNum < ideal) {
                       warningMessage = "OKR needs a detailed review";
                       warningClasses = "bg-warning-light text-warning-text border-warning-border animate-pulse-soft";
@@ -280,83 +280,83 @@ const Analytics = () => {
                   return (
                     <div key={perf.okrId} className="flex flex-col gap-3">
                       <div className="bg-white rounded-2xl border-2 border-neutral-200 shadow-card-md overflow-hidden">
-                      {/* Card header */}
-                      <div className="flex items-start justify-between px-6 py-5 border-b border-neutral-100">
-                        <div>
-                          <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">Objective {index + 1}</p>
-                          <h3 className="text-base font-bold text-neutral-900 max-w-xl">{perf.okrDesc}</h3>
-                        </div>
-                        <div className="text-right shrink-0 ml-4 flex flex-col items-end gap-2">
+                        {/* Card header */}
+                        <div className="flex items-start justify-between px-6 py-5 border-b border-neutral-100">
                           <div>
-                            <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">{lastQName} Completion</p>
-                            <p className={`text-3xl font-bold ${valColor}`}>{displayValue}%</p>
+                            <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">Objective {index + 1}</p>
+                            <h3 className="text-base font-bold text-neutral-900 max-w-xl">{perf.okrDesc}</h3>
                           </div>
-                          {perf.forecastTarget === 'Q1_NEXT' && perf.forecastValue !== null && (
-                            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 mt-1">
-                              <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Next Yr Q1 Forecast</p>
-                              <p className="text-lg font-bold text-amber-700">{perf.forecastValue}%</p>
+                          <div className="text-right shrink-0 ml-4 flex flex-col items-end gap-2">
+                            <div>
+                              <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-1">{lastQName} Completion</p>
+                              <p className={`text-3xl font-bold ${valColor}`}>{displayValue}%</p>
                             </div>
-                          )}
+                            {perf.forecastTarget === 'Q1_NEXT' && perf.forecastValue !== null && (
+                              <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 mt-1">
+                                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Next Yr Q1 Forecast</p>
+                                <p className="text-lg font-bold text-amber-700">{perf.forecastValue}%</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Chart */}
+                        <div className="px-6 py-5 bg-neutral-50/50 border-b border-neutral-100">
+                          <ResponsiveContainer width="100%" height={240}>
+                            <LineChart data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+                              <XAxis dataKey="quarter" axisLine={false} tickLine={false} dy={10} tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 600 }} />
+                              <YAxis domain={[0, 100]} axisLine={false} tickLine={false} dx={-5} tick={{ fill: '#94A3B8', fontSize: 11 }} />
+                              <Tooltip content={<CustomTooltip />} />
+                              <Line connectNulls type="monotone" dataKey="percentage" stroke="#2563EB" strokeWidth={2.5} dot={{ r: 4, fill: '#2563EB', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#2563EB' }}>
+                                <LabelList dataKey="percentage" position="top" offset={10} fill="#64748B" fontSize={11} fontWeight="600" />
+                              </Line>
+                              <Line connectNulls type="monotone" dataKey="predicted_percentage" stroke="#F59E0B" strokeWidth={2.5} strokeDasharray="5 5"
+                                dot={(props) => {
+                                  const { cx, cy, payload } = props;
+                                  if (!payload.isForecast) return null;
+                                  return <circle key={`dot-${payload.quarter}`} cx={cx} cy={cy} r={4} fill="#F59E0B" strokeWidth={0} />;
+                                }}
+                                activeDot={(props) => {
+                                  const { cx, cy, payload } = props;
+                                  if (!payload.isForecast) return null;
+                                  return <circle key={`activedot-${payload.quarter}`} cx={cx} cy={cy} r={6} fill="#F59E0B" strokeWidth={0} />;
+                                }}>
+                                <LabelList dataKey="predicted_label" position="bottom" offset={10} fill="#F59E0B" fontSize={11} fontWeight="600" formatter={(val) => `${val}% (Est)`} />
+                              </Line>
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        {/* Q insights */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-neutral-100">
+                          {[1, 2, 3, 4].map(qNum => {
+                            const comment = perf[`q${qNum}_comment`];
+                            const pct = perf[`q${qNum}_percentage`];
+                            return (
+                              <div key={qNum} className="bg-white px-5 py-4">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-xs font-bold text-neutral-700">Q{qNum} Insights</span>
+                                  {pct != null && (
+                                    <span className={`text-xs font-bold ${pct >= 75 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-danger'}`}>
+                                      {pct}%
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-neutral-500 leading-relaxed">
+                                  {comment?.trim() || <span className="italic text-neutral-300">No notes provided.</span>}
+                                </p>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
-
-                      {/* Chart */}
-                      <div className="px-6 py-5 bg-neutral-50/50 border-b border-neutral-100">
-                        <ResponsiveContainer width="100%" height={240}>
-                          <LineChart data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-                            <XAxis dataKey="quarter" axisLine={false} tickLine={false} dy={10} tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 600 }} />
-                            <YAxis domain={[0, 100]} axisLine={false} tickLine={false} dx={-5} tick={{ fill: '#94A3B8', fontSize: 11 }} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Line connectNulls type="monotone" dataKey="percentage" stroke="#2563EB" strokeWidth={2.5} dot={{ r: 4, fill: '#2563EB', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#2563EB' }}>
-                              <LabelList dataKey="percentage" position="top" offset={10} fill="#64748B" fontSize={11} fontWeight="600" />
-                            </Line>
-                            <Line connectNulls type="monotone" dataKey="predicted_percentage" stroke="#F59E0B" strokeWidth={2.5} strokeDasharray="5 5" 
-                              dot={(props) => {
-                                const { cx, cy, payload } = props;
-                                if (!payload.isForecast) return null;
-                                return <circle key={`dot-${payload.quarter}`} cx={cx} cy={cy} r={4} fill="#F59E0B" strokeWidth={0} />;
-                              }} 
-                              activeDot={(props) => {
-                                const { cx, cy, payload } = props;
-                                if (!payload.isForecast) return null;
-                                return <circle key={`activedot-${payload.quarter}`} cx={cx} cy={cy} r={6} fill="#F59E0B" strokeWidth={0} />;
-                              }}>
-                              <LabelList dataKey="predicted_label" position="bottom" offset={10} fill="#F59E0B" fontSize={11} fontWeight="600" formatter={(val) => `${val}% (Est)`} />
-                            </Line>
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-
-                      {/* Q insights */}
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-neutral-100">
-                        {[1, 2, 3, 4].map(qNum => {
-                          const comment = perf[`q${qNum}_comment`];
-                          const pct = perf[`q${qNum}_percentage`];
-                          return (
-                            <div key={qNum} className="bg-white px-5 py-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-bold text-neutral-700">Q{qNum} Insights</span>
-                                {pct != null && (
-                                  <span className={`text-xs font-bold ${pct >= 75 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-danger'}`}>
-                                    {pct}%
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-neutral-500 leading-relaxed">
-                                {comment?.trim() || <span className="italic text-neutral-300">No notes provided.</span>}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
+                      {warningMessage && (
+                        <div className={`px-4 py-3 rounded-xl border-2 shadow-sm flex items-center justify-center text-center ${warningClasses}`}>
+                          <span className="font-bold text-sm tracking-wide">{warningMessage}</span>
+                        </div>
+                      )}
                     </div>
-                    {warningMessage && (
-                      <div className={`px-4 py-3 rounded-xl border-2 shadow-sm flex items-center justify-center text-center ${warningClasses}`}>
-                        <span className="font-bold text-sm tracking-wide">{warningMessage}</span>
-                      </div>
-                    )}
-                  </div>
                   );
                 })}
               </div>

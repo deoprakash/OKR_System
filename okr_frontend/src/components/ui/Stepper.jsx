@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Stepper = ({ steps = [], currentStep = 0 }) => {
+const Stepper = ({ steps = [], currentStep = 0, onStepClick }) => {
   return (
     <nav aria-label="Progress" className="px-1">
       <ol className="flex items-center">
@@ -12,7 +12,10 @@ const Stepper = ({ steps = [], currentStep = 0 }) => {
           return (
             <li key={idx} className={`relative flex items-center ${idx < steps.length - 1 ? 'flex-1' : ''}`}>
               {/* Step circle */}
-              <div className="flex items-center gap-3 shrink-0">
+              <div
+                className={`flex items-center gap-3 shrink-0 ${onStepClick ? 'cursor-pointer select-none' : ''}`}
+                onClick={() => onStepClick && onStepClick(idx)}
+              >
                 <div
                   className={[
                     'flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold transition-all duration-200 border-2',

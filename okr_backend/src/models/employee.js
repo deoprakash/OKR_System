@@ -40,7 +40,7 @@ const EmployeeSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
-      match: [/^[0-9]{10,15}$/, "Invalid mobile format"]
+      maxlength: 25
     },
     isAdmin: { type: Boolean, default: false }
     ,

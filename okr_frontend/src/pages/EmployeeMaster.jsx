@@ -25,12 +25,25 @@ const EmployeeMaster = () => {
   const update = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
   const reset = () => setFormData({ userId: '', name: '', designation: '', level: '', emailId: '', cellNumber: '', isAdmin: 'No' });
 
+  const handlePhoneChange = (val) => {
+    let cleaned = val.replace(/[^\d+\s\-()]/g, '');
+    if (cleaned.includes('+')) {
+      cleaned = (cleaned.startsWith('+') ? '+' : '') + cleaned.replace(/\+/g, '');
+    }
+    update('cellNumber', cleaned.slice(0, 20));
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return toast.send('Employee Name is required', 'error');
     if (!formData.level) return toast.send('Employee Level is required', 'error');
     if (!formData.emailId.trim()) return toast.send('Email ID is required', 'error');
     if (!formData.cellNumber.trim()) return toast.send('Cell Number is required', 'error');
+
+    const phoneDigits = formData.cellNumber.replace(/\D/g, '');
+    if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+      return toast.send('Please enter a valid phone number (7-15 digits)', 'error');
+    }
 
     setSaving(true);
     try {
@@ -130,8 +143,10 @@ const EmployeeMaster = () => {
                   <Input
                     label="Cell Number"
                     value={formData.cellNumber}
-                    onChange={e => update('cellNumber', e.target.value)}
-                    placeholder="+1 234 567 890"
+                    onChange={e => handlePhoneChange(e.target.value)}
+                    placeholder="e.g. +91 9876543210 or 9876543210"
+                    maxLength={20}
+                    hint="Accepts country code (e.g. +1, +91) and phone number."
                     required
                   />
                 </div>

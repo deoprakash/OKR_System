@@ -27,6 +27,7 @@ async function request(path, options = {}) {
   const token = getToken();
   const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
   const res = await fetch(url, {
+    cache: "no-store",
     headers: { "Content-Type": "application/json", ...authHeader },
     ...options,
   });

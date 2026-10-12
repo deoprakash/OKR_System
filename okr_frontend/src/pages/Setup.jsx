@@ -129,8 +129,13 @@ export default function Setup() {
                 type="text"
                 required
                 value={cellNumber}
-                onChange={(e) => setCellNumber(e.target.value)}
-                placeholder="+1 234 567 890"
+                onChange={(e) => {
+                  let v = e.target.value.replace(/[^\d+\s\-()]/g, '');
+                  if (v.includes('+')) v = (v.startsWith('+') ? '+' : '') + v.replace(/\+/g, '');
+                  setCellNumber(v.slice(0, 20));
+                }}
+                placeholder="e.g. +91 9876543210"
+                maxLength={20}
               />
 
               <Input

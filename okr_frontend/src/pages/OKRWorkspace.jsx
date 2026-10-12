@@ -83,13 +83,13 @@ const OKRWorkspace = ({ level }) => {
         const normalize = e => ({ ...e, userId: e.userId || (e._id ? String(e._id) : '') });
         // Current-level employees
         let levelEmployees = data.filter(e => String(e.empLevel) === String(level)).map(normalize);
-        
+
         if (!auth.isAdmin) {
           levelEmployees = levelEmployees.filter(e => String(e.userId) === String(auth.user?.userId));
         }
-        
+
         setEmployees(levelEmployees);
-        
+
         // Auto-select if there's only one employee (like for non-admins)
         if (levelEmployees.length === 1 && !fields.employeeCode) {
           const emp = levelEmployees[0];
@@ -156,6 +156,8 @@ const OKRWorkspace = ({ level }) => {
       ...prev,
       okrCode: String(okr[okrCodeField]),
       okrDate: okr.okrDate ? new Date(okr.okrDate).toISOString().slice(0, 10) : today,
+      okrYear: okr.okrYear || prev.okrYear,
+      okrQuarter: okr.okrQuarter || prev.okrQuarter,
       okrDescription: okr.okrDesc || '',
       keyResults: [okr.kr1 || '', okr.kr2 || '', okr.kr3 || '', okr.kr4 || '', okr.kr5 || ''],
       quarters: [
@@ -210,6 +212,28 @@ const OKRWorkspace = ({ level }) => {
         await api.create(payload);
         toast.send('OKR created successfully.', 'success');
       }
+
+      // Immediately refresh the current employee's OKR list
+      if (fields.employeeCode) {
+        try {
+          const resp = await api.list();
+          const data = resp?.data || [];
+          setOkrs(data.filter(o => String(o.empCode) === String(fields.employeeCode)));
+        } catch {
+          // ignore
+        }
+      }
+
+      // Also refresh parent-level OKRs if level > 1
+      if (level > 1 && parentListMethods[level]) {
+        try {
+          const pResp = await parentListMethods[level]();
+          setParentOkrs(pResp?.data || []);
+        } catch {
+          // ignore
+        }
+      }
+
       resetForm();
     } catch (err) {
       toast.send('Error saving OKR: ' + (err.message || err), 'error');
@@ -256,7 +280,7 @@ const OKRWorkspace = ({ level }) => {
 
           {/* Stepper */}
           <div className="bg-white rounded-2xl border border-neutral-200 shadow-card px-6 py-5 mb-6">
-            <Stepper steps={STEPS} currentStep={currentStep} />
+            <Stepper steps={STEPS} currentStep={currentStep} onStepClick={idx => setCurrentStep(idx)} />
           </div>
 
           {/* Step Content */}
@@ -321,7 +345,7 @@ const OKRWorkspace = ({ level }) => {
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
-                      <Select 
+                      <Select
                         label="Year"
                         value={fields.okrYear}
                         onChange={e => setFields(f => ({ ...f, okrYear: Number(e.target.value) }))}
@@ -344,7 +368,7 @@ const OKRWorkspace = ({ level }) => {
                       placeholder="Describe the main objective for this period..."
                     />
 
-                                        {/* Parent-level selector — two dropdowns: employee then OKR */}
+                    {/* Parent-level selector — two dropdowns: employee then OKR */}
                     {level > 1 && (() => {
                       // OKRs belonging to the selected parent employee
                       const filteredParentOkrs = selectedParentEmpCode
@@ -356,8 +380,13 @@ const OKRWorkspace = ({ level }) => {
                             label={`Reporting Manager - Level ${level - 1}`}
                             value={selectedParentEmpCode}
                             onChange={(e) => {
-                              setSelectedParentEmpCode(e.target.value);
+                              const empCodeVal = e.target.value;
+                              setSelectedParentEmpCode(empCodeVal);
                               setSelectedParentOkrCode('');
+                              const listParent = parentListMethods[level];
+                              if (listParent) {
+                                listParent().then(resp => setParentOkrs(resp?.data || [])).catch(() => {});
+                              }
                             }}
                           >
                             <option value="">Select Level {level - 1} Employee</option>
@@ -556,26 +585,38 @@ const OKRWorkspace = ({ level }) => {
               ))}
             </div>
 
-            {currentStep < STEPS.length - 1 ? (
-              <Button
-                variant="primary"
-                onClick={() => setCurrentStep(c => c + 1)}
-              >
-                Next
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </Button>
-            ) : (
-              <Button variant="primary" onClick={handleSave} loading={saving}>
-                {saving ? 'Saving...' : 'Save OKR'}
-                {!saving && (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              {currentStep < STEPS.length - 1 ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={handleSave}
+                    loading={saving}
+                    disabled={!fields.employeeCode}
+                  >
+                    {selectedOkrCode && selectedOkrCode !== 'NEW' ? 'Update OKR' : 'Save OKR'}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => setCurrentStep(c => c + 1)}
+                  >
+                    Next
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Button>
+                </>
+              ) : (
+                <Button variant="primary" onClick={handleSave} loading={saving}>
+                  {saving ? 'Saving...' : (selectedOkrCode && selectedOkrCode !== 'NEW' ? 'Update OKR' : 'Save OKR')}
+                  {!saving && (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
 
         </div>

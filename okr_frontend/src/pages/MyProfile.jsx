@@ -123,7 +123,11 @@ export default function MyProfile() {
                     <Input label="Full Name" value={form.empName} onChange={e => setForm(p => ({ ...p, empName: e.target.value }))} />
                     <Input label="Designation" value={form.empDesignation} onChange={e => setForm(p => ({ ...p, empDesignation: e.target.value }))} />
                     <Input type="email" label="Email Address" value={form.emailId} onChange={e => setForm(p => ({ ...p, emailId: e.target.value }))} />
-                    <Input label="Cell Number" value={form.cellNumber} onChange={e => setForm(p => ({ ...p, cellNumber: e.target.value }))} />
+                    <Input label="Cell Number" value={form.cellNumber} onChange={e => {
+                      let v = e.target.value.replace(/[^\d+\s\-()]/g, '');
+                      if (v.includes('+')) v = (v.startsWith('+') ? '+' : '') + v.replace(/\+/g, '');
+                      setForm(p => ({ ...p, cellNumber: v.slice(0, 20) }));
+                    }} placeholder="e.g. +91 9876543210" maxLength={20} />
                   </div>
                 </div>
 

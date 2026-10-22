@@ -27,6 +27,7 @@ import { listEmployees, getEmployeeOKRs, getOKRHierarchy } from "../lib/api";
 import { useAuth } from "../context/useAuth";
 import NonAdminDashboard from "../components/NonAdminDashboard";
 import OKRInsightAgent from "../components/OKRInsightAgent";
+import { TrendyAIChatbotIcon } from "../components/TrendyAIChatbotIcon";
 
 const LEVELS = [1, 2, 3, 4, 5, 6, 7];
 
@@ -650,23 +651,14 @@ export default function OKRPerformance() {
         style={{ marginRight: agentOpen ? '500px' : '0' }}
       >
         <div className="mx-auto max-w-screen-2xl">
-          <div className="mb-8 flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-neutral-900 mb-1">
-                OKR Performance
-              </h1>
-              <p className="text-sm text-neutral-500">
-                Explore organizational performance as an interactive graph. Select
-                any employee node to inspect details on the right.
-              </p>
-            </div>
-            <button
-              onClick={() => setAgentOpen(!agentOpen)}
-              className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl shadow hover:shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <span className="text-lg">🤖</span>
-              <span className="font-bold text-sm tracking-wide">{agentOpen ? 'Close AI' : 'Ask AI'}</span>
-            </button>
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-neutral-900 mb-1">
+              OKR Performance
+            </h1>
+            <p className="text-sm text-neutral-500">
+              Explore organizational performance as an interactive graph. Select
+              any employee node to inspect details on the right.
+            </p>
           </div>
 
           <div
@@ -1223,11 +1215,13 @@ export default function OKRPerformance() {
       </div>
       <Footer />
       <OKRInsightAgent
-        okrs={[]}
+        okrs={clickedNode ? clickedNodeOKRs : (selectedEmployee ? employeeOKRs : [])}
         userName={auth.user?.empName || "Admin"}
-        targetUserName={selectedEmployee?.empName || "All Employees"}
+        targetUserName={clickedNode?.empName || selectedEmployee?.empName || "All Employees"}
         isOpen={agentOpen}
+        onOpen={() => setAgentOpen(true)}
         onClose={() => setAgentOpen(false)}
+        isAdmin={Boolean(auth.isAdmin)}
       />
 
       {/* Printable Executive PDF Report (displayed only when printing / saving as PDF) */}

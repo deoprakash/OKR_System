@@ -113,10 +113,11 @@ export function runLocalInsights(okrs) {
  * Quick-action suggestion chips shown in chat UI.
  */
 export const QUICK_ACTIONS = [
-  { id: "status",   label: "📊 My OKR Status",       prompt: "Give me a quick summary of my overall OKR performance status." },
-  { id: "risk",     label: "⚠️ What's at risk?",      prompt: "Which of my OKRs are at risk or behind target and why?" },
-  { id: "best",     label: "🏆 Best performing OKR",  prompt: "Which of my OKRs is performing the best?" },
-  { id: "improve",  label: "💡 How to improve?",      prompt: "What concrete actions can I take to improve my at-risk OKRs?" },
-  { id: "how-update", label: "📝 How to update OKRs", prompt: "How do I update my OKR progress in this application?" },
-  { id: "okr-help", label: "❓ What is an OKR?",      prompt: "Can you briefly explain what OKRs are and how the quarterly targets work?" },
+  { id: "key-results", label: "🎯 Key Results", prompt: "What are the exact real Key Results for this employee's OKRs? Please fetch and list them." },
+  { id: "manager", label: "👔 Reporting Manager", prompt: "Who is the reporting manager / senior for this employee?" },
+  { id: "quarterly-values", label: "📈 Q1-Q4 Values", prompt: "What are the exact Q1, Q2, Q3, and Q4 percentage values and comments for this employee's OKRs?" },
+  { id: "status",   label: "📊 OKR Status",          prompt: "Give me a quick summary of the overall OKR performance status." },
+  { id: "risk",     label: "⚠️ What's at risk?",      prompt: "Which OKRs are at risk or behind target and why?" },
+  { id: "best",     label: "🏆 Best performing OKR",  prompt: "Which OKR is performing the best?" },
+  { id: "improve",  label: "💡 How to improve?",      prompt: "What concrete actions can be taken to improve at-risk OKRs?" },
 ];

@@ -95,6 +95,11 @@ const createWindow = async () => {
     },
   });
 
+  win.once("ready-to-show", () => {
+    win.show();
+    win.focus();
+  });
+
   const env = process.env.NODE_ENV || "production";
   console.log(
     "Electron starting, NODE_ENV=",
@@ -107,10 +112,11 @@ const createWindow = async () => {
     const devUrl = process.env.VITE_DEV_SERVER_URL || "http://localhost:5173";
     try {
       console.log("Waiting for dev server:", devUrl);
-      const res = await waitForServer(devUrl, 20, 300);
+      const res = await waitForServer(devUrl, 30, 300);
       console.log("Dev server reachable, statusCode=", res && res.statusCode);
-      await win.loadURL(devUrl);
       win.show();
+      await win.loadURL(devUrl);
+      win.focus();
       // DevTools disabled on startup
     } catch (err) {
       console.error(

@@ -25,6 +25,7 @@ import Select from "./ui/Select";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
 import OKRInsightAgent from "./OKRInsightAgent";
+import { TrendyAIChatbotIcon } from "./TrendyAIChatbotIcon";
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4'];
 const VELOCITY_COLORS = ['#06b6d4', '#3b82f6', '#0ea5e9', '#6366f1', '#14b8a6', '#0284c7'];
@@ -296,18 +297,6 @@ export default function NonAdminDashboard({ userId, userName = "Employee" }) {
                   ))}
                 </Select>
               </div>
-              <button
-                onClick={() => setAgentOpen(prev => !prev)}
-                title="Open AI Coach"
-                className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 shadow-sm border ${
-                  agentOpen
-                    ? 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700'
-                    : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-400'
-                }`}
-              >
-                <span>🤖</span>
-                <span className="hidden sm:inline">{agentOpen ? 'Close AI' : 'AI Coach'}</span>
-              </button>
             </div>
           </div>
 
@@ -624,7 +613,9 @@ export default function NonAdminDashboard({ userId, userName = "Employee" }) {
         userName={userName}
         targetUserName={selectedUserName}
         isOpen={agentOpen}
+        onOpen={() => setAgentOpen(true)}
         onClose={() => setAgentOpen(false)}
+        isAdmin={false}
       />
     </div>
   );

@@ -9,7 +9,7 @@ The desktop client application for the **OKRSystem (Objecto)** platform, built u
 - **Desktop-Native Experience**: Packaged with Electron to deliver an installer-based (`.exe`) and portable Windows desktop application.
 - **Dynamic 7-Level OKR Management**: Interactive navigation and management across organizational, divisional, departmental, team, and individual OKRs.
 - **Quarterly Performance & ML Forecasts**: Record quarterly completion percentages and view AI/ML-driven future completion projections.
-- **Embedded AI Chat Assistant**: In-app conversational assistant powered by Groq LLM to aid in crafting measurable objectives and strategic alignment.
+- **Embedded OKR Copilot & Floating Launcher**: In-app conversational AI Copilot powered by Groq LLM, accessible via a modern floating agent widget, with role-gated "Save Last Response as PDF" executive briefing generation for administrators.
 - **Interactive Visualizations**: High-performance analytical charts rendered with Recharts and styled with Tailwind CSS and Framer Motion micro-interactions.
 - **Secure Authentication Flow**: Support for credentials-based login, email OTP verification, password resets, and role-based interface restrictions.
 
